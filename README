@@ -1,0 +1,62 @@
+                            Compiz Deskmenu
+
+=== Requirements ===
+
+ * A recent version of GLib 2.x and GTK+ 2.x
+ * libwnck (2.20 is probably best, but not strictly required)
+ * dbus (you must have a running session bus) and dbus-glib
+
+It does not strictly require compiz (but it does need a recent version of the
+vpswitch plugin for 'Initiate on Desktop' to work)
+
+=== Install ===
+
+ $ make
+ $ sudo make install
+
+Prefix support is currently broken, so it only works correctly if you install
+to /usr (will be fixed when it gets a proper buildsystem or perhaps sooner)
+
+=== Usage ===
+
+For the lazy, you can run the provided "autoconfig-compiz.py" script (as your
+user, *not* as root!), but here's what it sets:
+ + General Options > Commands > Commands > Command line 0 to "compiz-deskmenu"
+ + General Options > Commands > Key bindings > Run command 0 to "<Control>space"
+ + Viewport Switcher > Desktop-based Viewport Switching > Plugin for initiate
+   action to "core"
+ + Viewport Switcher > Desktop-based Viewport Switching > Action name for
+   initiate to "run_command0_key"
+
+=== Menu Format ===
+
+The default menu lives at /etc/xdg/compiz/deskmenu/menu.xml. You can override
+that menu by copying it to ~/.config/compiz/deskmenu/menu.xml (it's XDG
+basedir-compliant, so if you're setting those variables, adjust accordingly)
+
+Menus: <menu title="Title"> Menus can contain <item> and more <menu> tags (so
+  they're infinitely nestable!). The title attribute is optional and is ignored
+  for the toplevel menu
+
+Items: <item type="Type"> There are a few supported item types:
+ * launcher: supports the following child elements:
+    - <name>: the label to show in the menu
+    - <icon>: the icon name to use in the menu.
+      This name is looked up by gtk+, so you can toss custom icons in 
+      ~/.icons/$YOUR_THEME/$ICON_SIZE/apps/
+    - <command>: the launcher command line
+ * separator: a simple GtkSeparatorMenuItem
+ * windowlist: libwnck-based window list menu.
+ * viewportlist: libwnck-based viewport list menu.
+ * reload: reload button (it actually quits the daemon)
+ * pipeitem: dynamically generated items based on script output (originally inspired by Openbox pipemenus)
+ * documents: access to recent documents list
+
+=== Implementation ===
+
+It compiles into two binaries, compiz-deskmenu and compiz-deskmenu-daemon.
+compiz-deskmenu is a simple dbus client that connects
+to org.compiz_fusion.deskmenu and calls the show method. The actual menu is
+compiz-deskmenu-daemon, but you shouldn't ever need to manually launch it; the
+dbus service file will cause it to be automatically spawned when the name is
+requested.

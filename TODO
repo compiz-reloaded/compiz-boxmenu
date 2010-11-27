@@ -1,0 +1,10 @@
+Patch-up Roadmap:
+	Possible TODO: Toggle tearoff menu just for making it a more *boxy feel?
+	TODO: Add ability to write custom filter for recent documents
+    Difficult TODO: Add configuration for menu icon size (need to register icon size for compatibility)
+    Difficult TODO: Add a sane icon dialog or autocomplete filepath/iconname
+    Difficult TODO: Pipemenu chunk validator
+    Possible TODO: add autocomplete for commands
+    Possible TODO: Variable expansion according to ~/.bashrc?
+	Difficult TODO: Make the GUI for the upcoming daemon configuration
+	Possible TODO: Make an Apwal-esque mode if requested

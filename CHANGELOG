@@ -1,0 +1,38 @@
+11.26.2010
+	* Reintroduce dbus and make the main binary act more like a daemon
+	* Error reporting is back to normal
+11.22.2010
+	* Get rid of compiling bugs
+	* Change separator decorator mode to stuff a button in its menu item
+11.21.2010
+	* Added "decoration" functionality to the separator (for now, it derives its fg & bg via your hover colors)
+	* Fixed bug involving exec: named menus
+	* Updated UI
+11.20.2010
+	* code optimization
+	* some UI sanity for the newitemdialog
+11.18.2010
+	* Added Recent Documents item type
+	* Updated GUI to configure the Recent Documents type
+	* use actual tab characters in menu generation
+	* error handling for inexecutable pipeitems
+	* use custom command to open recent documents
+11.17.2010
+    * Updated compiz-deskmenu-editor that works with previous menu.xml files for this program, although you will need to remove your reload item manually (it won't show in the gui editor or the menu)
+    * No longer depends on dbus
+    * Edit other menu files for compiz-deskmenu-editor (this is done by compiz-deskmenu-editor /path/to/file.ext)
+    * Expand the tilde whenever it is used in an executable name, launcher's command, pipe's command, or icon location if set to file mode
+11.16.2010
+    * Viewport icon choice
+11.13.2010
+    * Allow the user to toggle the use of icons in window list (this is done through the extended icon customization I added)
+    * Allow the user to toggle the use of icons in viewport list (see above item for more detail)
+    * Removed the reload item since the edited show method for the menu for pipeitems to work makes this obsolete
+    * Allow the user to set custom icons for menus, viewport lists, and window lists
+    * Allow the user to set icons from files
+    * Fix bug involving commands with spaces in their names
+    * Expand the tilde whenever it is used in an executable name, launcher's command
+    * Updated compiz-deskmenu-editor to allow access to previously mentioned features
+    * Updated compiz-deskmenu-editor autodetects whether to set icon mode to file or normal depending on the presence of /'s in the Icon property of a dragged *.desktop file
+    * bugfix for compiz-deskmenu-editor: delete the exec attribute if it is set back to normal instead of putting mode="normal"
+    * And last, but not least, pipeitems! These work a little differently than pipemenus since they do not create their own submenu (which can mean a dastardly huge menu if you accidentally place it in your toplevel). If you're interested in creating a submenu for your pipeitems, either have your pipeitem script make its own submenu or add a menu just for it with the editor.
