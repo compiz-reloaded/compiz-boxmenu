@@ -1,4 +1,6 @@
 Patch-up Roadmap:
+	TODO: fix deskmenu control to completely wipe menu so icons show for windows&viewports
+	TODO: Move config files to new directory
 	Possible TODO: Toggle tearoff menu just for making it a more *boxy feel?
 	TODO: Add ability to write custom filter for recent documents
     Difficult TODO: Add configuration for menu icon size (need to register icon size for compatibility)

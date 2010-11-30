@@ -24,11 +24,12 @@ install: all
 	install compiz-boxmenu $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-daemon $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-editor $(DESTDIR)$(PREFIX)/bin/
-	mkdir -p $(DESTDIR)/etc/xdg/compiz/deskmenu/
-	install menu.xml $(DESTDIR)/etc/xdg/compiz/deskmenu/
+	mkdir -p $(DESTDIR)/etc/xdg/compiz/boxmenu/
+	install menu.xml $(DESTDIR)/etc/xdg/compiz/boxmenu/
+	install precache.ini $(DESTDIR)/etc/xdg/compiz/boxmenu/
 	mkdir -p $(DESTDIR)$(PREFIX)/share/dbus-1/services/
-	install org.compiz_fusion.deskmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
+	install org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 
 clean:
-	rm -f compiz-deskmenu compiz-deskmenu-menu deskmenu-glue.h
+	rm -f compiz-boxmenu compiz-boxmenu-daemon deskmenu-glue.h
 

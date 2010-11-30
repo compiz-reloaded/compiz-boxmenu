@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<node name="/org/compiz_fusion/deskmenu/menu">
-  <interface name="org.compiz_fusion.deskmenu">
+<node name="/org/compiz_fusion/boxmenu/menu">
+  <interface name="org.compiz_fusion.boxmenu">
     <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="deskmenu"/>
     <method name="control">
       <arg type="s" name="filename" direction="in" />

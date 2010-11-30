@@ -1,3 +1,7 @@
+11.27.2010
+	* Renamed some dbus stuff to correspond with new fork name
+	* Added precache configuration and feature
+	* Fixed bug where it would attempt to load a non-existent default config file
 11.26.2010
 	* Reintroduce dbus and make the main binary act more like a daemon
 	* Error reporting is back to normal
