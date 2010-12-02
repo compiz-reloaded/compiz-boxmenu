@@ -12,7 +12,7 @@ class DeskmenuEditor(gtk.Window):
 	def __init__(self):
 		gtk.Window.__init__(self)
 		
-		self.props.title = 'Compiz Deskmenu Editor'
+		self.props.title = 'Compiz Boxmenu Editor'
 		self.props.icon_name = 'gtk-edit'
 		self.props.border_width = 12
 		self.set_size_request(400, 400)
@@ -854,7 +854,7 @@ class Documents(Item):
 		else:
 			command = ''
 		widget.props.text = command
-		widget.set_tooltip_text('If you need a more complicated command, type in that command and %f, which will tell compiz-deskmenu where to place the file name.')
+		widget.set_tooltip_text('If you need a more complicated command, type in that command and %f, which will tell compiz-boxmenu where to place the file name.')
 		widget.connect('changed', self.on_subnode_changed, 'command')
 
 		hbox = gtk.HBox()
@@ -1401,8 +1401,8 @@ def write_menu():
 	
 	if bus is not None:
 		try:
-			bus.get_object('org.compiz_fusion.deskmenu',
-			'/org/compiz_fusion/deskmenu/menu').reload()
+			bus.get_object('org.compiz_fusion.boxmenu',
+			'/org/compiz_fusion/boxmenu/menu').reload()
 		except dbus.DBusException:
 			return
 
@@ -1434,7 +1434,7 @@ if __name__ == '__main__':
 			filename = sys.argv[1]
 			print 'Loading alternate file, %s' % filename
 	else:
-		filename = BaseDirectory.load_first_config('compiz/deskmenu/menu.xml')
+		filename = BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
 		print 'Loading default file, %s' % filename
 	menufile = etree.parse(filename)
 	root = menufile.getroot()

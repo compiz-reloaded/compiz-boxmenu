@@ -78,7 +78,6 @@ struct Deskmenu
     DeskmenuItem *current_item;
     GHashTable *item_hash;
     GHashTable *element_hash;
-    GHookList *show_hooks;
 };
 
 struct DeskmenuClass

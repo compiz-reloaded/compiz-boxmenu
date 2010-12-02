@@ -62,6 +62,7 @@ quit (GtkWidget *widget,
 }
 
 //stolen from openbox, possibly move this outside in order to make it a function to parse launchers and icon location
+//optimize code to reduce calls to this, should only be called once per parse
 static
 gchar *parse_expand_tilde(const gchar *f)
 {
@@ -70,7 +71,6 @@ GRegex *regex;
 
 if (!f)
     return NULL;
-
 regex = g_regex_new("(?:^|(?<=[ \\t]))~(?:(?=[/ \\t])|$)",
                     G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
 ret = g_regex_replace_literal(regex, f, -1, 0, g_get_home_dir(), 0, NULL);
@@ -86,9 +86,7 @@ launcher_activated (GtkWidget *widget,
                     gchar     *command)
 {
     GError *error = NULL;
-    Deskmenu *deskmenu;
-	
-    deskmenu = g_object_get_data (G_OBJECT (widget), "deskmenu");
+
 	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(command), &error))
     {
         GtkWidget *message = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR,
@@ -138,19 +136,6 @@ recent_activated (GtkRecentChooser *chooser,
 
 }
 
-//place & in front of stdout for standard stdout, how a command is launched as an exec
-static void
-launcher_name_exec_update (GtkWidget *label)
-{
-    gchar *exec, *stdout;
-    exec = g_object_get_data (G_OBJECT (label), "exec");
-    if (g_spawn_command_line_sync (parse_expand_tilde(exec), &stdout, NULL, NULL, NULL))
-        gtk_label_set_text (GTK_LABEL (label), g_strstrip(stdout));
-    else
-        gtk_label_set_text (GTK_LABEL (label), "execution error");
-    g_free (stdout);
-}
-
 static void
 deskmenu_construct_item (Deskmenu *deskmenu)
 {
@@ -164,22 +149,13 @@ deskmenu_construct_item (Deskmenu *deskmenu)
         case DESKMENU_ITEM_LAUNCHER:
             if (item->name_exec)
             {
-                GtkWidget *label;
-                GHook *hook;
-
+                gchar *stdout;
                 name = g_strstrip (item->name->str);
-
-                menu_item = gtk_image_menu_item_new ();
-                label = gtk_label_new_with_mnemonic (NULL);
-                gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-
-                g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
-                gtk_container_add (GTK_CONTAINER (menu_item), label);
-                hook = g_hook_alloc (deskmenu->show_hooks);
-
-                hook->data = (gpointer) label;
-                hook->func = (GHookFunc *) launcher_name_exec_update;
-                g_hook_append (deskmenu->show_hooks, hook);
+				if (g_spawn_command_line_sync (parse_expand_tilde(name), &stdout, NULL, NULL, NULL))
+					menu_item = gtk_image_menu_item_new_with_mnemonic (g_strstrip(stdout));
+				else
+					menu_item = gtk_image_menu_item_new_with_mnemonic ("Unable to get output");
+				g_free (stdout);
             }
             else
             {
@@ -209,7 +185,6 @@ deskmenu_construct_item (Deskmenu *deskmenu)
             {
 				
                 command = g_strstrip (item->command->str);
-                g_object_set_data (G_OBJECT (menu_item), "deskmenu", deskmenu);
                 g_signal_connect (G_OBJECT (menu_item), "activate",
                     G_CALLBACK (launcher_activated), g_strdup (command));
             }
@@ -459,20 +434,12 @@ start_element (GMarkupParseContext *context,
                 }
 				if (name_exec)
 				{
-					GtkWidget *label;
-					GHook *hook;
-				
-					item = gtk_image_menu_item_new ();
-					label = gtk_label_new_with_mnemonic (NULL);
-					gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-				
-					g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
-					gtk_container_add (GTK_CONTAINER (item), label);
-					hook = g_hook_alloc (deskmenu->show_hooks);
-				
-					hook->data = (gpointer) label;
-					hook->func = (GHookFunc *) launcher_name_exec_update;
-					g_hook_append (deskmenu->show_hooks, hook);
+					gchar *stdout;
+					if (g_spawn_command_line_sync (parse_expand_tilde(name), &stdout, NULL, NULL, NULL))
+						item = gtk_image_menu_item_new_with_mnemonic (g_strstrip(stdout));
+					else
+						item = gtk_image_menu_item_new_with_mnemonic ("Unable to get output");
+					g_free (stdout);
 				}
 				else
 				{
@@ -557,20 +524,12 @@ start_element (GMarkupParseContext *context,
 				{
 					if (name_exec)
 					{
-						GtkWidget *label;
-						GHook *hook;
-					
-						item = gtk_image_menu_item_new ();
-						label = gtk_label_new_with_mnemonic (NULL);
-						gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-					
-						g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
-						gtk_container_add (GTK_CONTAINER (item), label);
-						hook = g_hook_alloc (deskmenu->show_hooks);
-					
-						hook->data = (gpointer) label;
-						hook->func = (GHookFunc *) launcher_name_exec_update;
-						g_hook_append (deskmenu->show_hooks, hook);
+						gchar *stdout;
+						if (g_spawn_command_line_sync (parse_expand_tilde(name), &stdout, NULL, NULL, NULL))
+							item = gtk_image_menu_item_new_with_mnemonic (g_strstrip(stdout));
+						else
+							item = gtk_image_menu_item_new_with_mnemonic ("Unable to get output");
+						g_free (stdout);
 					}
 					else
 					{
@@ -838,11 +797,6 @@ static void
 deskmenu_init (Deskmenu *deskmenu)
 {
 
-    deskmenu->show_hooks = g_slice_new0 (GHookList);
-
-    g_hook_list_init (deskmenu->show_hooks, sizeof (GHook));
-
-
     deskmenu->menu = NULL;
     deskmenu->current_menu = NULL;
     deskmenu->current_item = NULL;
@@ -888,7 +842,6 @@ deskmenu_init (Deskmenu *deskmenu)
         GINT_TO_POINTER (DESKMENU_ELEMENT_AGE));
 }
 
-//http://www.ibm.com/developerworks/linux/tutorials/l-glib/section5.html
 static
 gchar *check_file_cache (gchar *filename) {
 static GHashTable *cache;
@@ -896,11 +849,11 @@ gchar *t = NULL;
 gchar *f = NULL;
 gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir (),
                                    "compiz",
-                                   "deskmenu",
+                                   "boxmenu",
                                    "menu.xml",
                                    NULL);
 
-//TODO: add a size column to cache
+//TODO: add a size column to cache for possible autorefresh
 if (!cache)
 {
 	g_print("Creating cache...");
@@ -915,11 +868,12 @@ else
 if (strlen(filename) == 0) {
 	g_print("No filename supplied, looking up default menu...\n");
 		/*
-        set default filename to be [configdir]/compiz/deskmenu/menu.xml
+        set default filename to be [configdir]/compiz/boxmenu/menu.xml
         */
         filename = user_default;
+        gboolean success = FALSE;
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-			g_print("Getting default system menu...");
+			g_print("Getting default system menu...\n");
 			const gchar* const *cursor = g_get_system_config_dirs ();
 			gchar *path = NULL;
 			while (*cursor)
@@ -929,15 +883,16 @@ if (strlen(filename) == 0) {
 				filename = g_build_path (G_DIR_SEPARATOR_S,
 										path,
 										"compiz",
-										"deskmenu",
+										"boxmenu",
 										"menu.xml",
 										NULL);
 		
 				if (g_file_get_contents (filename, &f, NULL, NULL))
 				{
-					g_hash_table_replace (cache, g_strdup(filename), g_strdup(f));
+					g_hash_table_insert (cache, g_strdup(filename), g_strdup(f));
 					g_free (path);
-					g_print("Got it!");
+					g_print("Got it!\n");
+					success = TRUE;
 					break;
 				}
 					cursor++;
@@ -949,21 +904,26 @@ if (strlen(filename) == 0) {
 			{
 				g_file_get_contents (filename, &f, NULL, NULL);
 				g_print("Cacheing default user file...\n");
-				g_hash_table_replace (cache, g_strdup(filename), g_strdup(f));
+				g_hash_table_insert (cache, g_strdup(filename), g_strdup(f));
 			}
 			g_print("Retrieving cached default user file...\n");
+			success = TRUE;
 		}
+	if (!success)
+	{
+		g_printerr ("Couldn't find a menu file...\n");
+		exit (1);		
+	}
 }
-else 
-{
+else {
 	if (!g_hash_table_lookup_extended(cache, filename, NULL, NULL)) {
 		if (g_file_get_contents (filename, &f, NULL, NULL))
 			{
 				g_print("Cacheing new non-default file...\n");
-				g_hash_table_replace (cache, g_strdup(filename), g_strdup(f));
+				g_hash_table_insert (cache, g_strdup(filename), g_strdup(f));
 			}
 			else {
-				if (g_hash_table_lookup_extended(cache, user_default, NULL, NULL)) //do if both exist, again, doesn't work
+				if (g_hash_table_lookup_extended(cache, user_default, NULL, NULL))
 				{
 					g_print("Couldn't find specified file, loading default...\n");
 					filename = user_default;
@@ -978,9 +938,11 @@ else
 }
 
 t = g_hash_table_lookup (cache, filename);
+
 g_printf("Done loading %s!\n", filename);
 g_free (f);
 g_free (filename);
+
 return t;
 }
 
@@ -1043,8 +1005,6 @@ static void
 deskmenu_show (Deskmenu *deskmenu,
                GError  **error)
 {
-    g_hook_list_invoke (deskmenu->show_hooks, FALSE);
-
     gtk_menu_popup (GTK_MENU (deskmenu->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
@@ -1055,31 +1015,33 @@ deskmenu_reload (Deskmenu *deskmenu,
                GError  **error)
 {
     gtk_main_quit ();
-    //this will destroy all data the daemon currently gathered
     return TRUE;
 }
 
-/* The dbus method */
+/* The dbus method for binary client */
 gboolean
 deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
 {
 	if (deskmenu->menu)
 	{
-		deskmenu->menu = NULL; //destroy the current menu so we can refresh it
+		deskmenu->menu = NULL;
 	}
 	deskmenu_parse_text(deskmenu, check_file_cache(g_strdup(filename))); //recreate the menu, check caches for data
+    
 	deskmenu_show(deskmenu, error);
 	return TRUE;
 }
 
-/*
+
 //precache backend, currently needs GUI
 static void
 deskmenu_precache (gchar *filename)
 {
 	GError *error = NULL;
-	GKeyfile *config = g_key_file_new ();
-	gboolean success = FALSE;
+	GKeyFile *config = g_key_file_new ();
+	int i;
+	
+//	(void *)check_file_cache(""); //always cache default menu
 	
 	g_print("Attempting to precache files in config...");
 	if (!filename)
@@ -1087,36 +1049,32 @@ deskmenu_precache (gchar *filename)
 		filename = g_build_path (G_DIR_SEPARATOR_S,
                                    g_get_user_config_dir (),
                                    "compiz",
-                                   "deskmenu",
+                                   "boxmenu",
                                    "precache.ini",
                                    NULL);
 	}
 	if (!g_key_file_load_from_file (config, filename, G_KEY_FILE_NONE, NULL))
 	{
 		g_print("Configuration not found, will not precache files...");
-		return;
+		g_key_file_free (config);
 	}
 	else
 	{
 		g_print("Configuration found! Starting precache...");
+		gchar **files = g_key_file_get_keys (config, "Files", NULL, &error);
+		gchar *feed;
+		
+		while (files[i])
+		{
+			feed = g_key_file_get_string (config, "Files", files[i], &error);
+			(void *)check_file_cache(parse_expand_tilde(feed));
+			i++;
+		}
+		g_strfreev(files);
+		g_free(feed);
+		g_key_file_free (config);
 	}
-	
-	gchar **files = g_key_file_get_keys (config, "File", NULL, &error);
-	gchar *feed;
-//format
-* [Files]
-* file_1=/path/to/bla.xml
-* file_2=/path/to/bla.xml
-	while (files[i])
-	{
-		feed = g_strstrip(g_key_file_get_value (config, "File", files[i], &error));
-		deskmenu_check_file_cache(feed);
-	}
-	g_strfreev(files);
-	g_free(feed);
-	g_key_file_free (config);
-}*/
-//http://library.gnome.org/devel/glib/stable/glib-Key-value-file-parser.html#g-key-file-get-string
+}
 
 int
 main (int    argc,
@@ -1137,9 +1095,9 @@ main (int    argc,
     }
 //gtk_tearoff_menu_item_new();
 	g_print ("Starting the daemon...\n");
-	/*
+
 	GOptionContext *context;
-	gchar *file;
+	gchar *file = NULL;
     GOptionEntry entries[] =
     {
         { "config", 'c', 0, G_OPTION_ARG_FILENAME, &file,
@@ -1157,8 +1115,7 @@ main (int    argc,
         return 1;
     }	
 	g_option_context_free (context);
-	deskmenu_precache(file);
-	*/
+
 #if HAVE_WNCK
     wnck_set_client_type (WNCK_CLIENT_TYPE_PAGER);
 #endif
@@ -1174,6 +1131,8 @@ main (int    argc,
                                 DBUS_NAME_FLAG_REPLACE_EXISTING,
 						        NULL))
         return 1;
+
+	deskmenu_precache(file);
 
     gtk_main ();
 

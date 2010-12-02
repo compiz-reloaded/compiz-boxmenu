@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=org.compiz_fusion.deskmenu
-Exec=/usr/bin/compiz-boxmenu-daemon

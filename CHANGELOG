@@ -1,3 +1,6 @@
+12.1.2010
+	* Get rid of Ghooks since menus are generated during each call
+	* Introduce precacheing
 11.27.2010
 	* Renamed some dbus stuff to correspond with new fork name
 	* Added precache configuration and feature
