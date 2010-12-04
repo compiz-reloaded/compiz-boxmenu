@@ -78,22 +78,22 @@ wnck_selector_get_width (GtkWidget  *widget,
 /* end borrowing */
 
 static void
-dmwin_set_weight (DeskmenuWindow *dmwin, PangoWeight weight)
+dmwin_set_weight (GtkWidget *label, PangoWeight weight)
 {
     PangoFontDescription *font_desc;
     font_desc = pango_font_description_new ();
     pango_font_description_set_weight (font_desc, weight);
-    gtk_widget_modify_font (dmwin->label, font_desc);
+    gtk_widget_modify_font (label, font_desc);
     pango_font_description_free (font_desc);
 }
 
 static void
-dmwin_set_decoration (DeskmenuWindow *dmwin, gchar *ante, gchar *post)
+dmwin_set_decoration (WnckWindow *window, DeskmenuWindowlist *windowlist, GtkWidget *label, gchar *ante, gchar *post)
 {
     GString *name;
     gchar *namecpy, *mnemonic, *decorated_name, *unescaped;
     guint i, n;
-    name = g_string_new (wnck_window_get_name (dmwin->window));
+    name = g_string_new (wnck_window_get_name (window));
     
     namecpy = g_strdup (name->str);
 
@@ -117,12 +117,12 @@ dmwin_set_decoration (DeskmenuWindow *dmwin, gchar *ante, gchar *post)
 
 	decorated_name = g_strconcat (ante, mnemonic, name->str, post, NULL);
 
-    unescaped = g_strconcat (ante, wnck_window_get_name (dmwin->window),
+    unescaped = g_strconcat (ante, wnck_window_get_name (window),
         post, NULL);
-    gtk_label_set_text_with_mnemonic (GTK_LABEL (dmwin->label), decorated_name);
+    gtk_label_set_text_with_mnemonic (GTK_LABEL (label), decorated_name);
 
-    gtk_widget_set_size_request (dmwin->label,
-        wnck_selector_get_width (dmwin->windowlist->menu, unescaped), -1);
+    gtk_widget_set_size_request (label,
+        wnck_selector_get_width (windowlist->menu, unescaped), -1);
 
     g_string_free (name, TRUE);
     //g_free (vpid);
@@ -142,24 +142,23 @@ activate_window (GtkWidget  *widget,
 }
 
 static void
-window_name_changed (WnckWindow *window, 
-                     DeskmenuWindow *dmwin)
+window_name_changed (WnckWindow *window, GtkWidget *label, DeskmenuWindowlist *windowlist)
 {
     if (wnck_window_is_minimized (window))
     {
         if (wnck_window_is_shaded (window))
-            dmwin_set_decoration (dmwin, "=", "=");
+            dmwin_set_decoration (window, windowlist, label, "=", "=");
         else
-            dmwin_set_decoration (dmwin, "[", "]");
+            dmwin_set_decoration (window, windowlist, label, "[", "]");
     }
     else
-        dmwin_set_decoration (dmwin, "", "");
+        dmwin_set_decoration (window, windowlist, label, "", "");
 
 }
 
 static void
 window_icon_changed (WnckWindow *window, 
-                     DeskmenuWindow* dmwin)
+                     GtkWidget *image)
 {
     GdkPixbuf *pixbuf;
     gboolean free_pixbuf;
@@ -171,7 +170,7 @@ window_icon_changed (WnckWindow *window,
 		free_pixbuf = TRUE;
 	}
 
-	gtk_image_set_from_pixbuf (GTK_IMAGE (dmwin->image), pixbuf);
+	gtk_image_set_from_pixbuf (GTK_IMAGE (image), pixbuf);
 	
 	if (free_pixbuf)
 		g_object_unref (pixbuf);
@@ -181,43 +180,35 @@ static void
 deskmenu_windowlist_window_new (WnckWindow *window,
                                 DeskmenuWindowlist *windowlist)
 {
-    DeskmenuWindow *dmwin;
-
-    dmwin = g_slice_new0 (DeskmenuWindow);
-    dmwin->window = window;
-    dmwin->windowlist = windowlist;
-
-    dmwin->item = gtk_image_menu_item_new ();
-    dmwin->label = gtk_label_new (NULL);
-    dmwin->image = gtk_image_new ();
+    GtkWidget *item = gtk_image_menu_item_new ();
+    GtkWidget *label = gtk_label_new (NULL);
 	
-	gtk_container_add (GTK_CONTAINER (dmwin->item), dmwin->label);
-    gtk_misc_set_alignment (GTK_MISC (dmwin->label), 0.0, 0.5);
-    gtk_label_set_ellipsize (GTK_LABEL (dmwin->label), PANGO_ELLIPSIZE_END);
+	gtk_container_add (GTK_CONTAINER (item), label);
+    gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+    gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
 	
-    g_signal_connect (G_OBJECT (dmwin->item), "activate", 
+    g_signal_connect (G_OBJECT (item), "activate", 
         G_CALLBACK (activate_window), window);
 
-    window_name_changed (window, dmwin);
+    window_name_changed (window, label, windowlist);
 
     if (wnck_window_or_transient_needs_attention (window))
-        dmwin_set_weight (dmwin, PANGO_WEIGHT_BOLD);
+        dmwin_set_weight (label, PANGO_WEIGHT_BOLD);
     else
-        dmwin_set_weight (dmwin, PANGO_WEIGHT_NORMAL);
+        dmwin_set_weight (label, PANGO_WEIGHT_NORMAL);
 
-    gtk_widget_set_no_show_all (dmwin->item,
+    gtk_widget_set_no_show_all (item,
         wnck_window_is_skip_tasklist (window));
 
 	if (windowlist->images) {
-		window_icon_changed (window, dmwin);
-        gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (dmwin->item),
-            dmwin->image);
+		GtkWidget *image = gtk_image_new ();
+		window_icon_changed (window, image);
+        gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
 	}
 
-    gtk_widget_show_all (dmwin->item);
+    gtk_widget_show_all (item);
 
-    gtk_menu_shell_append (GTK_MENU_SHELL (windowlist->menu), 
-        dmwin->item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (windowlist->menu), item);
 }
 
 DeskmenuWindowlist*

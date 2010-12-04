@@ -76,6 +76,7 @@ struct Deskmenu
     GtkWidget *menu;
     GtkWidget *current_menu;
     DeskmenuItem *current_item;
+    gboolean pinnable;
     GHashTable *item_hash;
     GHashTable *element_hash;
 };
@@ -103,3 +104,4 @@ GQuark deskmenu_error_quark (void);
 
 gboolean deskmenu_reload (Deskmenu *deskmenu, GError **error);
 gboolean deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error);
+gboolean deskmenu_pin (Deskmenu *deskmenu, gboolean pin);

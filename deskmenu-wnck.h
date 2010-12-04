@@ -9,15 +9,6 @@ typedef struct DeskmenuWindowlist
     gboolean images; //toggles use of icons
 } DeskmenuWindowlist;
 
-typedef struct DeskmenuWindow
-{
-    WnckWindow *window;
-    DeskmenuWindowlist *windowlist;
-    GtkWidget *item;
-    GtkWidget *label;
-    GtkWidget *image;
-} DeskmenuWindow;
-
 typedef struct DeskmenuVplist
 {
     WnckScreen *screen;

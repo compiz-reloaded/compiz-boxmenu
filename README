@@ -1,10 +1,10 @@
-                            Compiz Deskmenu
+                            Compiz Boxmenu
 
 === Requirements ===
 
  * A recent version of GLib 2.x and GTK+ 2.x
  * libwnck (2.20 is probably best, but not strictly required)
- * dbus (you must have a running session bus) and dbus-glib
+ * dbus (you must have a running session bus) and dbus-glib (for dbus version)
 
 It does not strictly require compiz (but it does need a recent version of the
 vpswitch plugin for 'Initiate on Desktop' to work)
@@ -21,7 +21,7 @@ to /usr (will be fixed when it gets a proper buildsystem or perhaps sooner)
 
 For the lazy, you can run the provided "autoconfig-compiz.py" script (as your
 user, *not* as root!), but here's what it sets:
- + General Options > Commands > Commands > Command line 0 to "compiz-deskmenu"
+ + General Options > Commands > Commands > Command line 0 to "compiz-boxmenu"
  + General Options > Commands > Key bindings > Run command 0 to "<Control>space"
  + Viewport Switcher > Desktop-based Viewport Switching > Plugin for initiate
    action to "core"
@@ -30,8 +30,8 @@ user, *not* as root!), but here's what it sets:
 
 === Menu Format ===
 
-The default menu lives at /etc/xdg/compiz/deskmenu/menu.xml. You can override
-that menu by copying it to ~/.config/compiz/deskmenu/menu.xml (it's XDG
+The default menu lives at /etc/xdg/compiz/boxmenu/menu.xml. You can override
+that menu by copying it to ~/.config/compiz/boxmenu/menu.xml (it's XDG
 basedir-compliant, so if you're setting those variables, adjust accordingly)
 
 Menus: <menu title="Title"> Menus can contain <item> and more <menu> tags (so
@@ -54,9 +54,9 @@ Items: <item type="Type"> There are a few supported item types:
 
 === Implementation ===
 
-It compiles into two binaries, compiz-deskmenu and compiz-deskmenu-daemon.
-compiz-deskmenu is a simple dbus client that connects
-to org.compiz_fusion.deskmenu and calls the show method. The actual menu is
-compiz-deskmenu-daemon, but you shouldn't ever need to manually launch it; the
+It compiles into two binaries, compiz-boxmenu and compiz-boxmenu-daemon.
+compiz-boxmenu is a simple dbus client that connects
+to org.compiz_fusion.boxmenu and calls the show method. The actual menu is
+compiz-boxmenu-daemon, but you shouldn't ever need to manually launch it; the
 dbus service file will cause it to be automatically spawned when the name is
 requested.

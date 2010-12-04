@@ -280,6 +280,21 @@ class DeskmenuEditor(gtk.Window):
 				self.popup.popup(None, None, None, event.button, event.time)
 			return 1
 
+	def get_icon_mode(self):
+		iconnode = self.node.find('icon')
+		if iconnode is not None:
+			if iconnode.attrib.get('mode1') == 'file':
+				return iconnode.attrib.get('mode1')
+		else:
+			return None
+
+	def get_icon_mode(self):
+		iconnode = self.node.find('icon')
+		if iconnode is not None:
+			if iconnode.attrib.get('mode1') == 'file':
+				return iconnode.attrib.get('mode1')
+		else:
+			return None
 
 class NewItemDialog(gtk.Dialog):
 
@@ -795,24 +810,6 @@ class Viewportlist(Item):
 		else:
 			text = 'false'
 		self.wrap.text = text
-
-	def on_icon_mode_changed(self, widget):
-		iconnode = self.node.find('icon')
-		if widget.props.active:
-			if iconnode is None:
-				iconnode = etree.SubElement(self.node, 'icon')
-			iconnode.attrib['mode1'] = 'file'
-		elif 'mode1' in iconnode.attrib:
-			del iconnode.attrib['mode1']
-
-	def on_vpicon_mode_changed(self, widget):
-		iconnode = self.node.find('vpicon')
-		if widget.props.active:
-			if iconnode is None:
-				iconnode = etree.SubElement(self.node, 'vpicon')
-			iconnode.attrib['mode1'] = 'file'
-		elif 'mode1' in iconnode.attrib:
-			del iconnode.attrib['mode1']
 
 class Documents(Item):
 	

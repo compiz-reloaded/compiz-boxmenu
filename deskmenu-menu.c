@@ -43,8 +43,6 @@ TODO: Add ability to call up menus from the menu.xml file by name, if this is re
 
 G_DEFINE_TYPE(Deskmenu, deskmenu, G_TYPE_OBJECT) //this is calling deskmenu_class_init
 
-//launcher.c is the file to look for apwal mode for deskmenu
-
 GQuark
 deskmenu_error_quark (void)
 {
@@ -61,7 +59,7 @@ quit (GtkWidget *widget,
     gtk_main_quit ();
 }
 
-//stolen from openbox, possibly move this outside in order to make it a function to parse launchers and icon location
+//stolen from openbox
 //optimize code to reduce calls to this, should only be called once per parse
 static
 gchar *parse_expand_tilde(const gchar *f)
@@ -351,6 +349,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
     }
 
 }
+
 /* The handler functions. */
 
 static void
@@ -408,6 +407,10 @@ start_element (GMarkupParseContext *context,
                 g_object_set_data (G_OBJECT (deskmenu->menu), "parent menu",
                     NULL);
                 deskmenu->current_menu = deskmenu->menu;
+				if (deskmenu->pinnable)
+				{
+					gtk_menu_set_title (GTK_MENU (deskmenu->menu), "Compiz Boxmenu");
+				}
             }
             else
             {
@@ -470,6 +473,10 @@ start_element (GMarkupParseContext *context,
                 deskmenu->current_menu = menu;
                 gtk_menu_item_set_submenu (GTK_MENU_ITEM (item),
                     deskmenu->current_menu);
+                if (deskmenu->pinnable)
+				{
+					gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu), gtk_tearoff_menu_item_new()); //add a pin menu item
+				}
                 g_free (name);
                 g_free (icon);
             }
@@ -493,6 +500,7 @@ start_element (GMarkupParseContext *context,
                 gboolean icon_file = FALSE;
                 gboolean decorate = FALSE;
                 gint w, h;
+                item = gtk_separator_menu_item_new();
                 while (*ncursor)
                 {
                     if (strcmp (*ncursor, "name") == 0) {
@@ -524,41 +532,50 @@ start_element (GMarkupParseContext *context,
                 }
 				if (decorate)
 				{
+					GtkHBox *box = gtk_hbox_new (FALSE, 3);
+					gtk_container_add (GTK_CONTAINER(item), GTK_WIDGET(box));
 					if (name_exec)
 					{
 						gchar *stdout;
 						if (g_spawn_command_line_sync (parse_expand_tilde(name), &stdout, NULL, NULL, NULL))
-							item = gtk_image_menu_item_new_with_mnemonic (g_strstrip(stdout));
+							gtk_box_pack_end (GTK_BOX(box), gtk_label_new_with_mnemonic (g_strstrip(stdout)),
+                                                         TRUE,
+                                                         FALSE,
+                                                         0);
 						else
-							item = gtk_image_menu_item_new_with_mnemonic ("Unable to get output");
+							gtk_box_pack_end (GTK_BOX(box), gtk_label_new_with_mnemonic ("Unable to get output"),
+                                 TRUE,
+                                 FALSE,
+                                 0);
 						g_free (stdout);
 					}
 					else
 					{
-						item = gtk_image_menu_item_new_with_mnemonic (name);
+						gtk_box_pack_end (GTK_BOX(box), gtk_label_new_with_mnemonic (name),
+                                 TRUE,
+                                 FALSE,
+                                 0);
 					}
 					if (icon)
 					{
+						GtkWidget *image;
 						if (icon_file) {
-						gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
-						gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
-						(item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
+							gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
+							image = gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL));
 						}
 						else {
-						gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-							gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
+							image = gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU);
 						}
+						gtk_box_pack_start (GTK_BOX(box), image,
+                                 FALSE,
+                                 FALSE,
+                                 0);
 					}
-					gtk_widget_set_state (item,GTK_STATE_PRELIGHT); /*derive colors from menu hover*/
-					gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu), item);
+					gtk_widget_set_state (item, GTK_STATE_PRELIGHT); /*derive colors from menu hover*/
 					g_free (name);
 					g_free (icon);
 				}
-				else
-				{
-					item = gtk_separator_menu_item_new ();
-					gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu), item);
-				}
+				gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu), item);
 			}
             break;
 
@@ -794,7 +811,9 @@ deskmenu_class_init (DeskmenuClass *deskmenu_class)
         &dbus_glib_deskmenu_object_info);
 }
 
-/* Instance init, matches up words to types, note how there's no handler for pipe since it's replaced in its own chunk */
+/* Instance init, matches up words to types, 
+note how there's no handler for pipe since it's
+replaced in its own chunk */
 static void 
 deskmenu_init (Deskmenu *deskmenu)
 {
@@ -802,6 +821,7 @@ deskmenu_init (Deskmenu *deskmenu)
     deskmenu->menu = NULL;
     deskmenu->current_menu = NULL;
     deskmenu->current_item = NULL;
+    deskmenu->pinnable = FALSE;
 
     deskmenu->item_hash = g_hash_table_new (g_str_hash, g_str_equal);
 
@@ -1007,9 +1027,24 @@ static void
 deskmenu_show (Deskmenu *deskmenu,
                GError  **error)
 {
+	if (deskmenu->pinnable)
+	{
+		gtk_menu_set_tearoff_state (GTK_MENU (deskmenu->menu), TRUE); 
+		//make a window for the menu when it's finished
+	}
+	else {
     gtk_menu_popup (GTK_MENU (deskmenu->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
+	}
+}
+
+gboolean
+deskmenu_pin (Deskmenu *deskmenu,
+			gboolean pin)
+{
+	deskmenu->pinnable = pin;
+	return TRUE;
 }
 
 gboolean
@@ -1027,8 +1062,6 @@ deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
 	if (deskmenu->menu)
 	{
 		gtk_widget_destroy (deskmenu->menu); //free mem
-		//g_object_ref_sink (deskmenu->menu);
-		//g_object_unref (deskmenu->menu);
 		deskmenu->menu = NULL; //destroy menu
 	}
 	deskmenu_parse_text(deskmenu, check_file_cache(g_strdup(filename))); //recreate the menu, check caches for data
@@ -1097,7 +1130,7 @@ main (int    argc,
         g_error_free (error);
         exit (1);
     }
-//gtk_tearoff_menu_item_new();
+
 	g_print ("Starting the daemon...\n");
 
 	GOptionContext *context;
@@ -1111,6 +1144,7 @@ main (int    argc,
 
     context = g_option_context_new (NULL);
     g_option_context_add_main_entries (context, entries, NULL);
+
 	error = NULL;
     if (!g_option_context_parse (context, &argc, &argv, &error))
     {

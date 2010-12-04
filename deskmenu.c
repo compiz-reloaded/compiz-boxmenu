@@ -25,6 +25,7 @@ int main (int argc, char *argv[])
 	GError *error;
 	DBusGProxy *proxy;
 	gchar *filename = NULL;
+	gboolean pin = FALSE;
 	
     usleep (200000);
 
@@ -35,6 +36,8 @@ int main (int argc, char *argv[])
     {
         { "menu", 'm', 0, G_OPTION_ARG_FILENAME, &filename,
             "Use FILE instead of the default menu file", "FILE" },
+        { "pin", 'p', 0, G_OPTION_ARG_NONE, &pin,
+            "PIN the root menu as soon as it's generated", NULL },
         { NULL, 0, 0, 0, NULL, NULL, NULL }
     };
 
@@ -66,7 +69,13 @@ int main (int argc, char *argv[])
         g_error_free (error);
         return 1;
     }
-    
+    if (!dbus_g_proxy_call (proxy, "pin", &error, G_TYPE_BOOLEAN, pin,
+        G_TYPE_INVALID, G_TYPE_INVALID))
+    {
+        g_printerr ("Error: %s\n", error->message);
+        g_error_free (error);
+        return 1;
+    }    
     if (!dbus_g_proxy_call (proxy, "control", &error, G_TYPE_STRING, filename,
         G_TYPE_INVALID, G_TYPE_INVALID))
     {

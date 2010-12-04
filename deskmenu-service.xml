@@ -6,6 +6,9 @@
     <method name="control">
       <arg type="s" name="filename" direction="in" />
     </method>
+    <method name="pin">
+      <arg type="b" name="pin" direction="in" />
+    </method>
     <method name="reload">
     </method>
   </interface>
