@@ -6,8 +6,6 @@ typedef struct DeskmenuWindowlist
 {
     WnckScreen *screen;
     GtkWidget *menu;
-    GtkWidget *empty_item;
-    GList *windows;
     gboolean images; //toggles use of icons
 } DeskmenuWindowlist;
 
@@ -29,7 +27,6 @@ typedef struct DeskmenuVplist
     GtkWidget *go_right;
     GtkWidget *go_up;
     GtkWidget *go_down;
-    GPtrArray *goto_items;
     gboolean wrap;
     gboolean images; //toggles use of icons
     gboolean file; // whether the icon of choice is from theme or not
@@ -44,12 +41,10 @@ typedef struct DeskmenuVplist
     guint screen_height;
     guint workspace_width; /* store workspace_get_width (workspace) */
     guint workspace_height;
-    guint old_count; /* store old hsize * vsize */
-    guint old_vpid; /* store old viewport number */
     gchar *icon; /* stores viewport icon of choice */
 } DeskmenuVplist;
 
-DeskmenuWindowlist* deskmenu_windowlist_new (void);
+DeskmenuWindowlist* deskmenu_windowlist_new (gboolean images);
 
-DeskmenuVplist* deskmenu_vplist_new (void);
+DeskmenuVplist* deskmenu_vplist_new (gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);
 

@@ -1,3 +1,5 @@
+12.3.2010
+	* Fixed bug involving windowlist and viewports
 12.1.2010
 	* Get rid of Ghooks since menus are generated during each call
 	* Introduce precacheing

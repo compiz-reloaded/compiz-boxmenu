@@ -195,15 +195,11 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 #if HAVE_WNCK
         case DESKMENU_ITEM_WINDOWLIST:
             menu_item = gtk_image_menu_item_new_with_mnemonic ("_Windows");
-
-            DeskmenuWindowlist *windowlist = deskmenu_windowlist_new ();
-            gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
-                windowlist->menu);
-            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
-                menu_item);
+			gboolean images_2;
+			images_2 = FALSE;
             if (item->icon)
             {
-				windowlist->images = TRUE;
+				images_2 = TRUE;
                 icon = g_strstrip (item->icon->str);
                 if (item->icon_file) {
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
@@ -215,23 +211,25 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 				}
             }
+            DeskmenuWindowlist *windowlist = deskmenu_windowlist_new (images_2);
+            gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
+                windowlist->menu);
+            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
+                menu_item);
             break;
 
         case DESKMENU_ITEM_VIEWPORTLIST:
             menu_item = gtk_image_menu_item_new_with_mnemonic ("_Viewports");
-
-            DeskmenuVplist *vplist = deskmenu_vplist_new ();
+            gboolean wrap, file, images;
+            wrap = FALSE;
+            images = FALSE;
+            file = FALSE;
             if (item->wrap
                 && strcmp (g_strstrip (item->wrap->str), "true") == 0)
-                vplist->wrap = TRUE;
-
-            gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
-                vplist->menu);
-            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
-                menu_item);
+                wrap = TRUE;
             if (item->icon)
             {
-				vplist->images = TRUE;
+				images = TRUE;
                 icon = g_strstrip (item->icon->str);
                 if (item->icon_file) {
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
@@ -247,10 +245,14 @@ deskmenu_construct_item (Deskmenu *deskmenu)
             {
                 vpicon = g_strstrip (parse_expand_tilde(item->vpicon->str));
                 if (item->vpicon_file) {
-					vplist->file = TRUE;
+					file = TRUE;
 				}
-					vplist->icon = vpicon;
             }
+            DeskmenuVplist *vplist = deskmenu_vplist_new (wrap, images, file, vpicon);
+            gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
+                vplist->menu);
+            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
+                menu_item);
             break;
 #endif
         case DESKMENU_ITEM_RELOAD:
@@ -1024,7 +1026,10 @@ deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
 {
 	if (deskmenu->menu)
 	{
-		deskmenu->menu = NULL;
+		gtk_widget_destroy (deskmenu->menu); //free mem
+		//g_object_ref_sink (deskmenu->menu);
+		//g_object_unref (deskmenu->menu);
+		deskmenu->menu = NULL; //destroy menu
 	}
 	deskmenu_parse_text(deskmenu, check_file_cache(g_strdup(filename))); //recreate the menu, check caches for data
     
@@ -1041,7 +1046,7 @@ deskmenu_precache (gchar *filename)
 	GKeyFile *config = g_key_file_new ();
 	int i;
 	
-//	(void *)check_file_cache(""); //always cache default menu
+ 	(void *)check_file_cache(""); //always cache default menu
 	
 	g_print("Attempting to precache files in config...");
 	if (!filename)
@@ -1056,7 +1061,6 @@ deskmenu_precache (gchar *filename)
 	if (!g_key_file_load_from_file (config, filename, G_KEY_FILE_NONE, NULL))
 	{
 		g_print("Configuration not found, will not precache files...");
-		g_key_file_free (config);
 	}
 	else
 	{
@@ -1072,8 +1076,8 @@ deskmenu_precache (gchar *filename)
 		}
 		g_strfreev(files);
 		g_free(feed);
-		g_key_file_free (config);
 	}
+	g_key_file_free (config);
 }
 
 int
