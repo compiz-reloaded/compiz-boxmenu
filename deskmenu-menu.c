@@ -868,96 +868,96 @@ deskmenu_init (Deskmenu *deskmenu)
 
 static
 gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
-gchar *t = NULL;
-gchar *f = NULL;
-gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir (),
-                                   "compiz",
-                                   "boxmenu",
-                                   "menu.xml",
-                                   NULL);
-
-//TODO: add a size column to cache for possible autorefresh
-	g_print("Checking cache...\n");	
-
-if (strlen(filename) == 0) {
-	g_print("No filename supplied, looking up default menu...\n");
-		/*
-        set default filename to be [configdir]/compiz/boxmenu/menu.xml
-        */
-        filename = user_default;
-        gboolean success = FALSE;
-    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-			g_print("Getting default system menu...\n");
-			const gchar* const *cursor = g_get_system_config_dirs ();
-			gchar *path = NULL;
-			while (*cursor)
-			{
-				g_free (path);
-				path = g_strdup (*cursor);
-				filename = g_build_path (G_DIR_SEPARATOR_S,
-										path,
-										"compiz",
-										"boxmenu",
-										"menu.xml",
-										NULL);
-		
-				if (g_file_get_contents (filename, &f, NULL, NULL))
+	gchar *t = NULL;
+	gchar *f = NULL;
+	gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir (),
+									"compiz",
+									"boxmenu",
+									"menu.xml",
+									NULL);
+	
+	//TODO: add a size column to cache for possible autorefresh
+		g_print("Checking cache...\n");	
+	
+	if (strlen(filename) == 0) {
+		g_print("No filename supplied, looking up default menu...\n");
+			/*
+			set default filename to be [configdir]/compiz/boxmenu/menu.xml
+			*/
+			filename = user_default;
+			gboolean success = FALSE;
+		if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+				g_print("Getting default system menu...\n");
+				const gchar* const *cursor = g_get_system_config_dirs ();
+				gchar *path = NULL;
+				while (*cursor)
 				{
-					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
 					g_free (path);
-					g_print("Got it!\n");
-					success = TRUE;
-					break;
+					path = g_strdup (*cursor);
+					filename = g_build_path (G_DIR_SEPARATOR_S,
+											path,
+											"compiz",
+											"boxmenu",
+											"menu.xml",
+											NULL);
+			
+					if (g_file_get_contents (filename, &f, NULL, NULL))
+					{
+						g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
+						g_free (path);
+						g_print("Got it!\n");
+						success = TRUE;
+						break;
+					}
+						cursor++;
 				}
-					cursor++;
 			}
-		}
-	else
+		else
+			{
+				if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL)
+				{
+					g_file_get_contents (filename, &f, NULL, NULL);
+					g_print("Cacheing default user file...\n");
+					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
+				}
+				g_print("Retrieving cached default user file...\n");
+				success = TRUE;
+			}
+		if (!success)
 		{
-			if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL)
-			{
-				g_file_get_contents (filename, &f, NULL, NULL);
-				g_print("Cacheing default user file...\n");
-				g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
-			}
-			g_print("Retrieving cached default user file...\n");
-			success = TRUE;
+			g_printerr ("Couldn't find a menu file...\n");
+			exit (1);		
 		}
-	if (!success)
-	{
-		g_printerr ("Couldn't find a menu file...\n");
-		exit (1);		
 	}
-}
-else {
-	if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL) {
-		if (g_file_get_contents (filename, &f, NULL, NULL))
-			{
-				g_print("Cacheing new non-default file...\n");
-				g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
-			}
-			else {
-				if (g_hash_table_lookup(deskmenu->file_cache, user_default) != NULL)
+	else {
+		if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL) {
+			if (g_file_get_contents (filename, &f, NULL, NULL))
 				{
-					g_print("Couldn't find specified file, loading default...\n");
-					filename = user_default;
+					g_print("Cacheing new non-default file...\n");
+					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
 				}
-				else
-				{
-					g_printerr ("Couldn't find a menu file...\n");
-					exit (1);
+				else {
+					if (g_hash_table_lookup(deskmenu->file_cache, user_default) != NULL)
+					{
+						g_print("Couldn't find specified file, loading default...\n");
+						filename = user_default;
+					}
+					else
+					{
+						g_printerr ("Couldn't find a menu file...\n");
+						exit (1);
+					}
 				}
-			}
+		}
 	}
-}
-
-t = g_hash_table_lookup (deskmenu->file_cache, filename);
-
-g_printf("Done loading %s!\n", filename);
-g_free (f);
-g_free (filename);
-
-return t;
+	
+	t = g_hash_table_lookup (deskmenu->file_cache, filename);
+	
+	g_printf("Done loading %s!\n", filename);
+	g_free (f);
+	g_free (filename);
+	
+	return t;
 }
 
 static void
