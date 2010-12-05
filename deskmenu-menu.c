@@ -824,6 +824,8 @@ deskmenu_init (Deskmenu *deskmenu)
     deskmenu->pinnable = FALSE;
 
     deskmenu->item_hash = g_hash_table_new (g_str_hash, g_str_equal);
+    deskmenu->file_cache = g_hash_table_new (g_str_hash, g_str_equal);
+    deskmenu->chunk_marks = g_hash_table_new (g_str_hash, g_str_equal);
 
     g_hash_table_insert (deskmenu->item_hash, "launcher",
         GINT_TO_POINTER (DESKMENU_ITEM_LAUNCHER));
@@ -865,8 +867,7 @@ deskmenu_init (Deskmenu *deskmenu)
 }
 
 static
-gchar *check_file_cache (gchar *filename) {
-static GHashTable *cache;
+gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
 gchar *t = NULL;
 gchar *f = NULL;
 gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir (),
@@ -876,16 +877,7 @@ gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir ()
                                    NULL);
 
 //TODO: add a size column to cache for possible autorefresh
-if (!cache)
-{
-	g_print("Creating cache...");
-	cache = g_hash_table_new (g_str_hash, g_str_equal);
-	g_print("Done creating cache!\n");
-}
-else
-{
 	g_print("Checking cache...\n");	
-}
 
 if (strlen(filename) == 0) {
 	g_print("No filename supplied, looking up default menu...\n");
@@ -911,7 +903,7 @@ if (strlen(filename) == 0) {
 		
 				if (g_file_get_contents (filename, &f, NULL, NULL))
 				{
-					g_hash_table_insert (cache, g_strdup(filename), g_strdup(f));
+					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
 					g_free (path);
 					g_print("Got it!\n");
 					success = TRUE;
@@ -922,11 +914,11 @@ if (strlen(filename) == 0) {
 		}
 	else
 		{
-			if (!g_hash_table_lookup_extended(cache, user_default, NULL, NULL))
+			if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL)
 			{
 				g_file_get_contents (filename, &f, NULL, NULL);
 				g_print("Cacheing default user file...\n");
-				g_hash_table_insert (cache, g_strdup(filename), g_strdup(f));
+				g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
 			}
 			g_print("Retrieving cached default user file...\n");
 			success = TRUE;
@@ -938,14 +930,14 @@ if (strlen(filename) == 0) {
 	}
 }
 else {
-	if (!g_hash_table_lookup_extended(cache, filename, NULL, NULL)) {
+	if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL) {
 		if (g_file_get_contents (filename, &f, NULL, NULL))
 			{
 				g_print("Cacheing new non-default file...\n");
-				g_hash_table_insert (cache, g_strdup(filename), g_strdup(f));
+				g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
 			}
 			else {
-				if (g_hash_table_lookup_extended(cache, user_default, NULL, NULL))
+				if (g_hash_table_lookup(deskmenu->file_cache, user_default) != NULL)
 				{
 					g_print("Couldn't find specified file, loading default...\n");
 					filename = user_default;
@@ -959,7 +951,7 @@ else {
 	}
 }
 
-t = g_hash_table_lookup (cache, filename);
+t = g_hash_table_lookup (deskmenu->file_cache, filename);
 
 g_printf("Done loading %s!\n", filename);
 g_free (f);
@@ -969,40 +961,63 @@ return t;
 }
 
 static void
+pipe_execute (gint i, gchar **menu_chunk) {
+	gchar *exec, *stdout, *pipe_error;
+	GRegex *command;
+	command = g_regex_new("<pipe command=\"|\"/>", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
+	pipe_error = g_strdup ("<item type=\"launcher\"><name>Cannot retrieve pipe output</name></item>");
+	
+    exec = parse_expand_tilde(g_strstrip(g_regex_replace_literal(command, menu_chunk[i], -1, 0, "", 0, NULL)));
+	if (g_spawn_command_line_sync (exec, &stdout, NULL, NULL, NULL))
+	{
+		menu_chunk[i] = stdout;
+	}
+	else
+	{
+		menu_chunk[i] = pipe_error;
+	}
+	g_regex_unref(command); //free the pipe command extractor
+    //fix this to be able to replace faulty pipe with an item that says it can't be executed
+    //needs validator in order to make sure it can be parsed, if not, set parsed error
+}
+
+static void
 deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
 {
     GError *error = NULL;
-    gchar *exec, *stdout, *pipe_error;
-	GRegex *regex, *command;
+	GRegex *regex;
 	int i = 0;
 
     GMarkupParseContext *context = g_markup_parse_context_new (&parser,
         0, deskmenu, NULL);
     
-	pipe_error = g_strdup ("<item type=\"launcher\"><name>Cannot retrieve pipe output</name></item>");
 	regex = g_regex_new("(<pipe command=\".*\"/>)", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	command = g_regex_new("<pipe command=\"|\"/>", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
 	gchar **menu_chunk = g_regex_split (regex, text, 0); //this splits the menu into parsable chunks, needed for pipe item capabilities
 	
-	//this loop will replace the pipeitem chunk with its output, other chunks are let through as is
-	while (menu_chunk[i])
+	GList* list = NULL, *iterator = NULL;
+	list = g_hash_table_lookup (deskmenu->chunk_marks, text);
+    
+	if (list)
 	{
-		if (g_regex_match (regex,menu_chunk[i],0,0))
-		{
-            exec = parse_expand_tilde(g_strstrip(g_regex_replace_literal(command, menu_chunk[i], -1, 0, "", 0, NULL)));
-			if (g_spawn_command_line_sync (exec, &stdout, NULL, NULL, NULL))
-			{
-				menu_chunk[i] = stdout;
-			}
-			else
-			{
-				menu_chunk[i] = pipe_error;
-			}
-            //fix this to be able to replace faulty pipe with an item that says it can't be executed
-            //needs validator in order to make sure it can be parsed, if not, set parsed error
+		for (iterator = list; iterator; iterator = iterator->next) {
+			 pipe_execute (atoi(iterator->data), menu_chunk);
 		}
-		i++;
 	}
+	else
+	{
+		//this loop will replace the pipeitem chunk with its output, other chunks are let through as is
+		while (menu_chunk[i])
+		{
+			if (g_regex_match (regex,menu_chunk[i],0,0))
+			{
+				g_hash_table_insert(deskmenu->chunk_marks, g_strdup(text), 
+				g_slist_append(g_hash_table_lookup(deskmenu->chunk_marks, g_strdup(text)), g_strdup_printf ("%i", i)));
+				pipe_execute(i, menu_chunk);
+			}
+			i++;
+		}
+	}
+	
 	text = g_strjoinv (NULL, menu_chunk); //stitch the text so we can get error reporting back to normal
 	
 	if (!g_markup_parse_context_parse (context, text, strlen(text), &error)
@@ -1016,7 +1031,6 @@ deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
 	g_free(text); //free the joined array
 	g_strfreev(menu_chunk); //free the menu chunks and their container
 	g_regex_unref(regex); //free the pipeitem chunk checker
-	g_regex_unref(command); //free the pipe command extractor
     g_markup_parse_context_free (context); //free the parser
 
     gtk_widget_show_all (deskmenu->menu);
@@ -1064,7 +1078,8 @@ deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
 		gtk_widget_destroy (deskmenu->menu); //free mem
 		deskmenu->menu = NULL; //destroy menu
 	}
-	deskmenu_parse_text(deskmenu, check_file_cache(g_strdup(filename))); //recreate the menu, check caches for data
+	deskmenu_parse_text(deskmenu, check_file_cache (deskmenu, 
+		g_strdup(filename))); //recreate the menu, check caches for data
     
 	deskmenu_show(deskmenu, error);
 	return TRUE;
@@ -1073,13 +1088,13 @@ deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
 
 //precache backend, currently needs GUI
 static void
-deskmenu_precache (gchar *filename)
+deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 {
 	GError *error = NULL;
 	GKeyFile *config = g_key_file_new ();
 	int i;
 	
- 	(void *)check_file_cache(""); //always cache default menu
+ 	(void *)check_file_cache(deskmenu, ""); //always cache default menu
 	
 	g_print("Attempting to precache files in config...");
 	if (!filename)
@@ -1104,7 +1119,7 @@ deskmenu_precache (gchar *filename)
 		while (files[i])
 		{
 			feed = g_key_file_get_string (config, "Files", files[i], &error);
-			(void *)check_file_cache(parse_expand_tilde(feed));
+			(void *)check_file_cache(deskmenu, parse_expand_tilde(feed));
 			i++;
 		}
 		g_strfreev(files);
@@ -1170,7 +1185,7 @@ main (int    argc,
 						        NULL))
         return 1;
 
-	deskmenu_precache(file);
+	deskmenu_precache(DESKMENU(deskmenu), file);
 
     gtk_main ();
 

@@ -79,6 +79,8 @@ struct Deskmenu
     gboolean pinnable;
     GHashTable *item_hash;
     GHashTable *element_hash;
+    GHashTable *file_cache;
+    GHashTable *chunk_marks;
 };
 
 struct DeskmenuClass

@@ -1,5 +1,4 @@
 Patch-up Roadmap:
-	Possible TODO: Determine whether the daemon mode needs pin settings per session or per menu.
 	TODO: Add ability to write custom filter for recent documents
     Difficult TODO: Add configuration for menu icon size (need to register icon size for compatibility)
     Difficult TODO: Add a sane icon dialog or autocomplete filepath/iconname
@@ -8,3 +7,15 @@ Patch-up Roadmap:
     Possible TODO: Variable expansion according to ~/.bashrc?
 	Difficult TODO: Make the GUI for the upcoming daemon configuration
 	Possible TODO: Make an Apwal-esque mode if requested
+	TODO: Add some columns to the cache
+
+cache structure?:
++-+---------+------------+-----------------+----------------+
+| |0        |1           |2                |3               |
++-+---------+------------+-----------------+----------------+
+|0|filename |access time |chunked contents | chunk bookmarks|
+|1|filename |access time |chunked contents | chunk bookmarks|
+|2|filename |access time |chunked contents | chunk bookmarks|
+|3|filename |access time |chunked contents | chunk bookmarks|
+|4|filename |access time |chunked contents | chunk bookmarks|
++-+---------+------------+-----------------+----------------+

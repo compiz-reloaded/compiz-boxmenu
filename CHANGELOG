@@ -3,6 +3,7 @@
 	* Rewrote the separator bit so it retains prelight and still be inactive
 	* Fixed bug involving windowlist and viewports
 	* Add second dbus-only feature: pinnable mode
+	* Intelligently find where menu chunks are on first scan
 12.1.2010
 	* Get rid of Ghooks since menus are generated during each call
 	* Introduce precacheing
