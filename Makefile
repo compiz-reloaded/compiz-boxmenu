@@ -31,6 +31,9 @@ deskmenu-glue.h: deskmenu-service.xml
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu $(DESTDIR)$(PREFIX)/bin/
+	install compiz-boxmenu-dlist $(DESTDIR)$(PREFIX)/bin/
+	install compiz-boxmenu-vplist $(DESTDIR)$(PREFIX)/bin/
+	install compiz-boxmenu-wlist $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-daemon $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-editor $(DESTDIR)$(PREFIX)/bin/
 	mkdir -p $(DESTDIR)/etc/xdg/compiz/boxmenu/
