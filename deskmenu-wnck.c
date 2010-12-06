@@ -197,9 +197,6 @@ deskmenu_windowlist_window_new (WnckWindow *window,
     else
         dmwin_set_weight (label, PANGO_WEIGHT_NORMAL);
 
-    gtk_widget_set_no_show_all (item,
-        wnck_window_is_skip_tasklist (window));
-
 	if (windowlist->images) {
 		GtkWidget *image = gtk_image_new ();
 		window_icon_changed (window, image);
@@ -233,7 +230,10 @@ deskmenu_windowlist_new (gboolean images)
 	if (list)
 	{
 		for (iterator = list; iterator; iterator = iterator->next) {
-			 deskmenu_windowlist_window_new(iterator->data, windowlist);
+			if (!wnck_window_is_skip_tasklist (iterator->data)) //don't bother making the item if it isn't to be on a tasklist
+			{
+				deskmenu_windowlist_window_new(iterator->data, windowlist);
+			}
 		}
 	}
 	else

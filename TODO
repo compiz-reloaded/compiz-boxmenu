@@ -1,11 +1,21 @@
 Patch-up Roadmap:
+	TODO: Add ability to place files inline menu? (match filename up with appropriately split chunks?)
+	TODO: Integrate compiz settings
 	TODO: Add ability to write custom filter for recent documents
-    Difficult TODO: Add configuration for menu icon size (need to register icon size for compatibility)
+	TODO: Isolate & rewrite Recent documents feature into function
+	TODO: Make recent documents, viewport list, windowlist, and filebrowser? able to call up without menu file
+	TODO: Make file browser component (hints: cairo-dock's quick browser, old pcmanfm for detect mime-types, gtkfilechooser)?
+	TODO: Add compile flags for further tweakability (disabling/enabling certain features)
+	TODO: Run pipemenu input as own menu (be sure to auto insert menu tags if it doesn't make its own menu)
+	TODO: Make this plugin able
+
+    Difficult TODO: Add configuration for menu icon size (need to register icon size for compatibility? Also needs recent documents rewrite)
     Difficult TODO: Add a sane icon dialog or autocomplete filepath/iconname
     Difficult TODO: Pipemenu chunk validator
-    Possible TODO: add autocomplete for commands
-    Possible TODO: Variable expansion according to ~/.bashrc?
 	Difficult TODO: Make the GUI for the upcoming daemon configuration
+
+    Possible TODO: add autocomplete for commands
+    Possible TODO: Variable expansion according to ~/.bashrc? (either tedious regex or just append sh -c '|\' to every command)
 	Possible TODO: Make an Apwal-esque mode if requested
 	TODO: Add some columns to the cache
 
@@ -19,3 +29,52 @@ cache structure?:
 |3|filename |access time |chunked contents | chunk bookmarks|
 |4|filename |access time |chunked contents | chunk bookmarks|
 +-+---------+------------+-----------------+----------------+
+
+file browser structure:
+faves
+- folder
+-- open
+-- remove from bookmarks
+- folder
+-- open
+-- remove from bookmarks
++---+
+- mounted drive
+-- open
+-- unmount
+folder
+- ops
+-- copy to > folders
+-- cut to > folders
+-- rename
+-- open
+-- delete
+-- move to trash
+-- information
+- file
+-- copy to > folders
+-- cut to > folders
+-- rename
+-- open
+-- delete
+-- move to trash
+-- information
+file
+- copy to > folders
+- cut to > folders
+- rename
+- open
+- delete
+- move to trash
+- information
+file
+file
+
+Options:
+icons toggle
+file manager
+open command
+disable trash
+disable delete
+disable cut/copy
+disable rename

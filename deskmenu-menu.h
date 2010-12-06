@@ -80,6 +80,7 @@ struct Deskmenu
     GHashTable *item_hash;
     GHashTable *element_hash;
     GHashTable *file_cache;
+    GHashTable *split_cache;
     GHashTable *chunk_marks;
 };
 

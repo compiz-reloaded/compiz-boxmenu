@@ -825,6 +825,7 @@ deskmenu_init (Deskmenu *deskmenu)
 
     deskmenu->item_hash = g_hash_table_new (g_str_hash, g_str_equal);
     deskmenu->file_cache = g_hash_table_new (g_str_hash, g_str_equal);
+    deskmenu->split_cache = g_hash_table_new (g_str_hash, g_str_equal);
     deskmenu->chunk_marks = g_hash_table_new (g_str_hash, g_str_equal);
 
     g_hash_table_insert (deskmenu->item_hash, "launcher",
@@ -985,26 +986,29 @@ static void
 deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
 {
     GError *error = NULL;
-	GRegex *regex;
-	int i = 0;
+	gchar **menu_chunk;
 
     GMarkupParseContext *context = g_markup_parse_context_new (&parser,
         0, deskmenu, NULL);
     
-	regex = g_regex_new("(<pipe command=\".*\"/>)", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	gchar **menu_chunk = g_regex_split (regex, text, 0); //this splits the menu into parsable chunks, needed for pipe item capabilities
+
 	
 	GList* list = NULL, *iterator = NULL;
 	list = g_hash_table_lookup (deskmenu->chunk_marks, text);
     
 	if (list)
 	{
+		menu_chunk = g_strdupv(g_hash_table_lookup (deskmenu->split_cache, text));
 		for (iterator = list; iterator; iterator = iterator->next) {
 			 pipe_execute (atoi(iterator->data), menu_chunk);
 		}
 	}
 	else
 	{
+		GRegex *regex = g_regex_new("(<pipe command=\".*\"/>)", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
+		menu_chunk = g_regex_split (regex, text, 0); //this splits the menu into parsable chunks, needed for pipe item capabilities
+		g_hash_table_insert(deskmenu->split_cache, g_strdup(text), g_strdupv(menu_chunk));
+		int i = 0;
 		//this loop will replace the pipeitem chunk with its output, other chunks are let through as is
 		while (menu_chunk[i])
 		{
@@ -1016,6 +1020,7 @@ deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
 			}
 			i++;
 		}
+		g_regex_unref(regex); //free the pipeitem chunk checker
 	}
 	
 	text = g_strjoinv (NULL, menu_chunk); //stitch the text so we can get error reporting back to normal
@@ -1030,7 +1035,6 @@ deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
 
 	g_free(text); //free the joined array
 	g_strfreev(menu_chunk); //free the menu chunks and their container
-	g_regex_unref(regex); //free the pipeitem chunk checker
     g_markup_parse_context_free (context); //free the parser
 
     gtk_widget_show_all (deskmenu->menu);
