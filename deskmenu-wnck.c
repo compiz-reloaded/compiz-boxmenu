@@ -202,7 +202,7 @@ deskmenu_windowlist_window_new (WnckWindow *window,
 		window_icon_changed (window, image);
         gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
 	}
-
+//wnck_window_is_in_viewport (iterator->data, wnck_screen_get_workspace(windowlist->screen,0))
     gtk_widget_show_all (item);
 
     gtk_menu_shell_append (GTK_MENU_SHELL (windowlist->menu), item);
@@ -236,7 +236,7 @@ deskmenu_windowlist_new (gboolean images)
 			}
 		}
 	}
-	else
+	if (gtk_container_get_children (GTK_CONTAINER(windowlist->menu)) == NULL)
 	{
 		GtkWidget *empty_item = gtk_menu_item_new_with_label ("None");
 		gtk_widget_set_sensitive (empty_item, FALSE);

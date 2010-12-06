@@ -134,12 +134,52 @@ recent_activated (GtkRecentChooser *chooser,
 
 }
 
+static 
+GtkWidget *make_recent_documents_list (gboolean images, gchar *command, int limit, int age, gchar *sort_type)
+{
+	GtkWidget *widget = gtk_recent_chooser_menu_new ();
+
+    if (images)
+    {
+		gtk_recent_chooser_set_show_icons (GTK_RECENT_CHOOSER(widget), TRUE);
+    }
+	else
+	{
+		gtk_recent_chooser_set_show_icons (GTK_RECENT_CHOOSER(widget), FALSE);
+	}
+
+	g_signal_connect (G_OBJECT (widget), "item-activated", G_CALLBACK (recent_activated), g_strdup (command));
+
+    if (age)
+    {
+		GtkRecentFilter *filter = gtk_recent_filter_new ();
+		gtk_recent_filter_add_pattern (filter, "*");
+        gtk_recent_filter_add_age (filter, age);
+        gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER(widget), filter);
+    }
+
+	if (sort_type) {
+			if (strcmp (sort_type, "most used") == 0)
+			{
+				gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER(widget), GTK_RECENT_SORT_MRU);
+			}
+			else
+			{
+				gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER(widget), GTK_RECENT_SORT_LRU);
+			}
+	}
+	gtk_recent_chooser_set_limit (GTK_RECENT_CHOOSER(widget), limit);
+
+	return widget;
+}
+
 static void
 deskmenu_construct_item (Deskmenu *deskmenu)
 {
     DeskmenuItem *item = deskmenu->current_item;
     GtkWidget *menu_item;
     gchar *name, *icon, *command, *vpicon;
+    gboolean images;
     gint w, h;
 //constructs the items in menu
     switch (item->type)
@@ -193,11 +233,10 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 #if HAVE_WNCK
         case DESKMENU_ITEM_WINDOWLIST:
             menu_item = gtk_image_menu_item_new_with_mnemonic ("_Windows");
-			gboolean images_2;
-			images_2 = FALSE;
+			images = FALSE;
             if (item->icon)
             {
-				images_2 = TRUE;
+				images = TRUE;
                 icon = g_strstrip (item->icon->str);
                 if (item->icon_file) {
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
@@ -209,7 +248,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 				}
             }
-            DeskmenuWindowlist *windowlist = deskmenu_windowlist_new (images_2);
+            DeskmenuWindowlist *windowlist = deskmenu_windowlist_new (images);
             gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
                 windowlist->menu);
             gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
@@ -218,7 +257,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 
         case DESKMENU_ITEM_VIEWPORTLIST:
             menu_item = gtk_image_menu_item_new_with_mnemonic ("_Viewports");
-            gboolean wrap, file, images;
+            gboolean wrap, file;
             wrap = FALSE;
             images = FALSE;
             file = FALSE;
@@ -277,11 +316,12 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 
         case DESKMENU_ITEM_DOCUMENTS:
             menu_item = gtk_image_menu_item_new_with_mnemonic ("Recent Doc_uments");
-            GtkWidget *docs = gtk_recent_chooser_menu_new ();
-
+			gint limit, age;
+			gchar *sort_type;
+			images = FALSE;
             if (item->icon)
             {
-				gtk_recent_chooser_set_show_icons (GTK_RECENT_CHOOSER(docs), TRUE);
+				images = TRUE;
                 icon = g_strstrip (item->icon->str);
                 if (item->icon_file) {
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
@@ -293,51 +333,30 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 				}
             }
-			else
-			{
-				gtk_recent_chooser_set_show_icons (GTK_RECENT_CHOOSER(docs), FALSE);
-			}
             if (item->age)
             {
-				gint days;
-				GtkRecentFilter *filter = gtk_recent_filter_new ();
-				gtk_recent_filter_add_pattern (filter, "*");
-                days = atoi(g_strstrip (item->age->str));
-                gtk_recent_filter_add_age (filter, days);
-                gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER(docs), filter);
+                age = atoi(g_strstrip (item->age->str));
             }
             if (item->sort_type) {
-					if (strcmp (g_strstrip (item->sort_type->str), "most used") == 0)
-					{
-						gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER(docs), GTK_RECENT_SORT_MRU);
-					}
-					else
-					{
-						gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER(docs), GTK_RECENT_SORT_LRU);
-					}
+				sort_type = g_strstrip (item->sort_type->str);
 			}
             if (item->quantity)
             {
-				gint limit;
                 limit = atoi(g_strstrip (item->quantity->str));
-				gtk_recent_chooser_set_limit (GTK_RECENT_CHOOSER(docs), limit);
             }
 			else
 			{
-				gtk_recent_chooser_set_limit (GTK_RECENT_CHOOSER(docs), -1);
+				limit = -1;
 			}
 			if (item->command)
 			{
 				command = g_strstrip (item->command->str);
-				g_signal_connect (G_OBJECT (docs), "item-activated",
-                    G_CALLBACK (recent_activated), g_strdup (command));
 			}
 			else
 			{
 				command = g_strdup ("xdg-open");
-				g_signal_connect (G_OBJECT (docs), "item-activated",
-                    G_CALLBACK (recent_activated), g_strdup (command));
 			}
+			GtkWidget *docs = make_recent_documents_list(images, command, limit, age, sort_type);
 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
                 docs);
             gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
@@ -1040,6 +1059,37 @@ deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
     gtk_widget_show_all (deskmenu->menu);
 }
 
+gboolean
+deskmenu_vplist (Deskmenu *deskmenu,gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon) {
+	DeskmenuVplist *vplist = deskmenu_vplist_new(toggle_wrap, toggle_images, toggle_file, g_strdup(viewport_icon));
+
+    gtk_menu_popup (GTK_MENU (vplist->menu),
+                    NULL, NULL, NULL, NULL,
+                    0, 0);
+
+	return TRUE;
+}
+
+gboolean
+deskmenu_windowlist (Deskmenu *deskmenu, gboolean images) {
+	DeskmenuWindowlist *windowlist = deskmenu_windowlist_new (images);
+
+    gtk_menu_popup (GTK_MENU (windowlist->menu),
+                    NULL, NULL, NULL, NULL,
+                    0, 0);
+	return TRUE;
+}
+
+gboolean
+deskmenu_documentlist (Deskmenu *deskmenu, gboolean images, gchar *command, int limit, int age, gchar *sort_type) {
+	GtkWidget *menu = make_recent_documents_list (images, g_strdup(command), limit, age, g_strdup(sort_type));
+	
+    gtk_menu_popup (GTK_MENU (menu),
+                    NULL, NULL, NULL, NULL,
+                    0, 0);
+
+	return TRUE;
+}
 /* The show method */
 static void
 deskmenu_show (Deskmenu *deskmenu,
@@ -1048,7 +1098,6 @@ deskmenu_show (Deskmenu *deskmenu,
 	if (deskmenu->pinnable)
 	{
 		gtk_menu_set_tearoff_state (GTK_MENU (deskmenu->menu), TRUE); 
-		//make a window for the menu when it's finished
 	}
 	else {
     gtk_menu_popup (GTK_MENU (deskmenu->menu),

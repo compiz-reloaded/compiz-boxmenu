@@ -1,3 +1,9 @@
+12.6.2010
+	* Isolated documents list into own function
+	* Made viewport list as a dbus service
+	* Made windowlist as a dbus service
+	* Made documents list as a dbus service
+	* Made binaries for access to each new service's features
 12.3.2010
 	* Remove unnecessary structure due to new method for windowlist
 	* Rewrote the separator bit so it retains prelight and still be inactive

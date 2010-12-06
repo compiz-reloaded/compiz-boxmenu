@@ -1,13 +1,13 @@
 Patch-up Roadmap:
+	TODO: Fix bug where windowlist as service doesn't pick up any windows on the first launch
 	TODO: Add ability to place files inline menu? (match filename up with appropriately split chunks?)
 	TODO: Integrate compiz settings
 	TODO: Add ability to write custom filter for recent documents
-	TODO: Isolate & rewrite Recent documents feature into function
-	TODO: Make recent documents, viewport list, windowlist, and filebrowser? able to call up without menu file
 	TODO: Make file browser component (hints: cairo-dock's quick browser, old pcmanfm for detect mime-types, gtkfilechooser)?
 	TODO: Add compile flags for further tweakability (disabling/enabling certain features)
 	TODO: Run pipemenu input as own menu (be sure to auto insert menu tags if it doesn't make its own menu)
 	TODO: Make this plugin able
+	TODO: Add these options to windowlist: show only on this viewport, show only minimized
 
     Difficult TODO: Add configuration for menu icon size (need to register icon size for compatibility? Also needs recent documents rewrite)
     Difficult TODO: Add a sane icon dialog or autocomplete filepath/iconname

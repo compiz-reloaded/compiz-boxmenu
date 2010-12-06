@@ -9,6 +9,22 @@
     <method name="pin">
       <arg type="b" name="pin" direction="in" />
     </method>
+    <method name="windowlist">
+      <arg type="b" name="images" direction="in" />
+    </method>
+    <method name="vplist">
+	  <arg type="b" name="toggle_wrap" direction="in" />
+	  <arg type="b" name="toggle_images" direction="in" />
+	  <arg type="b" name="toggle_file" direction="in" />
+	  <arg type="s" name="viewport_icon" direction="in" />
+    </method>
+    <method name="documentlist">
+	  <arg type="b" name="images" direction="in" />
+	  <arg type="s" name="command" direction="in" />
+	  <arg type="i" name="limit" direction="in" />
+	  <arg type="i" name="age" direction="in" />
+	  <arg type="s" name="sort_type" direction="in" />
+    </method>
     <method name="reload">
     </method>
   </interface>

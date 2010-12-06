@@ -7,9 +7,18 @@ CFLAGS := -O2 -g $(WARNINGS)
 LDFLAGS := `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
 LDFLAGS_CLIENT := `pkg-config --libs dbus-glib-1`
 
-all: compiz-boxmenu-daemon compiz-boxmenu
+all: compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist
 
 compiz-boxmenu: deskmenu.c deskmenu-common.h
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) $(LDFLAGS_CLIENT) -o $@ $<
+
+compiz-boxmenu-dlist: deskmenu-documentlist-client.c deskmenu-common.h
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) $(LDFLAGS_CLIENT) -o $@ $<
+
+compiz-boxmenu-vplist: deskmenu-vplist-client.c deskmenu-common.h
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) $(LDFLAGS_CLIENT) -o $@ $<
+
+compiz-boxmenu-wlist: deskmenu-windowlist-client.c deskmenu-common.h
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) $(LDFLAGS_CLIENT) -o $@ $<
 
 compiz-boxmenu-daemon: deskmenu-menu.c deskmenu-wnck.c deskmenu-wnck.h deskmenu-glue.h deskmenu-common.h deskmenu-menu.h
@@ -31,5 +40,5 @@ install: all
 	install org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 
 clean:
-	rm -f compiz-boxmenu compiz-boxmenu-daemon deskmenu-glue.h
+	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h
 
