@@ -225,6 +225,13 @@ deskmenu_windowlist_new (gboolean images)
     windowlist->images = images;
 
 	GList* list = NULL, *iterator = NULL;
+
+	if (!wnck_screen_get_windows (windowlist->screen))
+	{
+		while (gtk_events_pending ())
+			gtk_main_iteration (); //wait until we get a screen
+	}
+
 	list = wnck_screen_get_windows (windowlist->screen);
 
 	if (list)
