@@ -1,5 +1,4 @@
 Patch-up Roadmap:
-	TODO: Fix bug where windowlist as service doesn't pick up any windows on the first launch
 	TODO: Add ability to place files inline menu? (match filename up with appropriately split chunks?)
 	TODO: Integrate compiz settings
 	TODO: Add ability to write custom filter for recent documents
@@ -8,6 +7,8 @@ Patch-up Roadmap:
 	TODO: Run pipemenu input as own menu (be sure to auto insert menu tags if it doesn't make its own menu)
 	TODO: Make this plugin able
 	TODO: Add these options to windowlist: show only on this viewport, show only minimized
+	TODO: PIPES in PIPES
+	TODO: replace the mess of hashtables with GTree (binary)
 
     Difficult TODO: Add configuration for menu icon size (need to register icon size for compatibility? Also needs recent documents rewrite)
     Difficult TODO: Add a sane icon dialog or autocomplete filepath/iconname

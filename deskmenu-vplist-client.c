@@ -15,6 +15,7 @@
  * Copyright 2008 Christopher Williams <christopherw@verizon.net> 
  */
 #include <dbus/dbus-glib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "deskmenu-common.h"
@@ -37,7 +38,7 @@ int main (int argc, char *argv[])
     GOptionEntry entries[] =
     {
         { "icon", 'i', 0, G_OPTION_ARG_STRING, &icon,
-            "Use ICON/FILENAME instead of the default viewport icon. This also toggles icon support", "ICON" },
+            "Use ICON/FILENAME as the viewport icon. This also toggles icon support. Type \"\" for the default icon.", "ICON" },
         { "wrap", 'w', 0, G_OPTION_ARG_NONE, &toggle_wrap,
             "Turn on viewport wrap navigation", NULL },
         { NULL, 0, 0, 0, NULL, NULL, NULL }
@@ -76,7 +77,14 @@ int main (int argc, char *argv[])
 	if (icon)
 	{
 		images = TRUE;
-		toggle_file = g_regex_match_simple ("/", icon, 0, 0);
+		if (strlen(icon) != 0) {
+			toggle_file = g_regex_match_simple ("/", icon, 0, 0);
+		}
+		else
+		{
+			icon = "user-desktop";
+		}
+		
 	}
 
     if (!dbus_g_proxy_call (proxy, "vplist", &error, 
@@ -96,4 +104,3 @@ int main (int argc, char *argv[])
 
     return 0;
 }
-

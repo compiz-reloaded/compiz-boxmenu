@@ -64,17 +64,17 @@ quit (GtkWidget *widget,
 static
 gchar *parse_expand_tilde(const gchar *f)
 {
-gchar *ret;
-GRegex *regex;
-
-if (!f)
-    return NULL;
-regex = g_regex_new("(?:^|(?<=[ \\t]))~(?:(?=[/ \\t])|$)",
-                    G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-ret = g_regex_replace_literal(regex, f, -1, 0, g_get_home_dir(), 0, NULL);
-g_regex_unref(regex);
-
-return ret;
+	gchar *ret;
+	GRegex *regex;
+	
+	if (!f)
+		return NULL;
+	regex = g_regex_new("(?:^|(?<=[ \\t]))~(?:(?=[/ \\t])|$)",
+						G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
+	ret = g_regex_replace_literal(regex, f, -1, 0, g_get_home_dir(), 0, NULL);
+	g_regex_unref(regex);
+	
+	return ret;
 }
 //end stolen
 
@@ -1009,9 +1009,7 @@ deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
 
     GMarkupParseContext *context = g_markup_parse_context_new (&parser,
         0, deskmenu, NULL);
-    
 
-	
 	GList* list = NULL, *iterator = NULL;
 	list = g_hash_table_lookup (deskmenu->chunk_marks, text);
     
@@ -1061,7 +1059,7 @@ deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
 
 gboolean
 deskmenu_vplist (Deskmenu *deskmenu,gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon) {
-	DeskmenuVplist *vplist = deskmenu_vplist_new(toggle_wrap, toggle_images, toggle_file, g_strdup(viewport_icon));
+	DeskmenuVplist *vplist = deskmenu_vplist_new(toggle_wrap, toggle_images, toggle_file, g_strstrip(viewport_icon));
 
     gtk_menu_popup (GTK_MENU (vplist->menu),
                     NULL, NULL, NULL, NULL,
@@ -1082,7 +1080,7 @@ deskmenu_windowlist (Deskmenu *deskmenu, gboolean images) {
 
 gboolean
 deskmenu_documentlist (Deskmenu *deskmenu, gboolean images, gchar *command, int limit, int age, gchar *sort_type) {
-	GtkWidget *menu = make_recent_documents_list (images, g_strdup(command), limit, age, g_strdup(sort_type));
+	GtkWidget *menu = make_recent_documents_list (images, g_strdup(command), limit, age, g_strstrip(sort_type));
 	
     gtk_menu_popup (GTK_MENU (menu),
                     NULL, NULL, NULL, NULL,
@@ -1132,12 +1130,11 @@ deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
 		deskmenu->menu = NULL; //destroy menu
 	}
 	deskmenu_parse_text(deskmenu, check_file_cache (deskmenu, 
-		g_strdup(filename))); //recreate the menu, check caches for data
+		g_strstrip(filename))); //recreate the menu, check caches for data
     
 	deskmenu_show(deskmenu, error);
 	return TRUE;
 }
-
 
 //precache backend, currently needs GUI
 static void

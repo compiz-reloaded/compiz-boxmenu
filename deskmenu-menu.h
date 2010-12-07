@@ -74,6 +74,7 @@ struct Deskmenu
     DeskmenuWindowlist *windowlist;
 #endif
     GtkWidget *menu;
+    GtkWidget *temp_menu;
     GtkWidget *current_menu;
     DeskmenuItem *current_item;
     gboolean pinnable;

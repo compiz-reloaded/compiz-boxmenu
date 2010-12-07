@@ -1,4 +1,5 @@
 12.6.2010
+	* Added temporary fix for vplist issue where it would not take no argument
 	* Isolated documents list into own function
 	* Made viewport list as a dbus service
 	* Made windowlist as a dbus service
