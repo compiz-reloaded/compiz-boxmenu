@@ -1,8 +1,12 @@
 Patch-up Roadmap:
+	TODO: Port to libxml2: SAX parser (http://www.jamesh.id.au/articles/libxml-sax/libxml-sax.html#start-end-doc)
+This will ease the cache and allow us to cache only the pipes. We also need to port the menu editor to pyxml to complete
+this port so python-lxml isn't needed.
+	TODO: Reduce memleaks related to windowlist & viewportlist
 	TODO: Add ability to place files inline menu? (match filename up with appropriately split chunks?)
 	TODO: Integrate compiz settings
 	TODO: Add ability to write custom filter for recent documents
-	TODO: Make file browser component (hints: cairo-dock's quick browser, old pcmanfm for detect mime-types, gtkfilechooser)?
+	TODO: Make file browser component (hints: cairo-dock's quick browser, old pcmanfm for detect mime-types, gtkfilechooser, gio? backend has to be gio)
 	TODO: Add compile flags for further tweakability (disabling/enabling certain features)
 	TODO: Run pipemenu input as own menu (be sure to auto insert menu tags if it doesn't make its own menu)
 	TODO: Make this plugin able

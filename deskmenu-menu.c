@@ -1064,7 +1064,6 @@ deskmenu_vplist (Deskmenu *deskmenu,gboolean toggle_wrap, gboolean toggle_images
     gtk_menu_popup (GTK_MENU (vplist->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
-
 	return TRUE;
 }
 
@@ -1085,7 +1084,6 @@ deskmenu_documentlist (Deskmenu *deskmenu, gboolean images, gchar *command, int 
     gtk_menu_popup (GTK_MENU (menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
-
 	return TRUE;
 }
 /* The show method */

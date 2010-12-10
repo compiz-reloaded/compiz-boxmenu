@@ -37,8 +37,10 @@ int main (int argc, char *argv[])
     GOptionContext *context;
     GOptionEntry entries[] =
     {
-        { "icon", 'i', 0, G_OPTION_ARG_STRING, &icon,
-            "Use ICON/FILENAME as the viewport icon. This also toggles icon support. Type \"\" for the default icon.", "ICON" },
+		{ "images", 'i', 0, G_OPTION_ARG_NONE, &images,
+            "Use IMAGES in the viewportlist. Change the viewport icon with '-v <ICON>.'", NULL },
+        { "viewport-icon", 'v', 0, G_OPTION_ARG_STRING, &icon,
+            "Use ICON/FILENAME as the viewport icon.", "ICON" },
         { "wrap", 'w', 0, G_OPTION_ARG_NONE, &toggle_wrap,
             "Turn on viewport wrap navigation", NULL },
         { NULL, 0, 0, 0, NULL, NULL, NULL }
@@ -74,10 +76,9 @@ int main (int argc, char *argv[])
         return 1;
     }
 
-	if (icon)
+	if (images)
 	{
-		images = TRUE;
-		if (strlen(icon) != 0) {
+		if (icon) {
 			toggle_file = g_regex_match_simple ("/", icon, 0, 0);
 		}
 		else

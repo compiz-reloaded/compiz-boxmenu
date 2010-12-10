@@ -1,3 +1,6 @@
+12.7.2010
+	* Fix boxmenu editor vplist bug
+	* Commit real fix for vplist issue w/turning on icons
 12.6.2010
 	* Added temporary fix for vplist issue where it would not take no argument
 	* Isolated documents list into own function

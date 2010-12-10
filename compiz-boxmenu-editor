@@ -802,6 +802,15 @@ class Viewportlist(Item):
 			if subnode is not None:
 				self.node.remove(subnode)
 
+	def on_icon_mode_changed(self, widget):
+		iconnode = self.node.find('icon')
+		if widget.props.active:
+			if iconnode is None:
+				iconnode = etree.SubElement(self.node, 'icon')
+			iconnode.attrib['mode1'] = 'file'
+		elif 'mode1' in iconnode.attrib:
+			del iconnode.attrib['mode1']
+
 	def on_wrap_changed(self, widget):
 		if self.wrap is None:
 			self.wrap = etree.SubElement(self.node, 'wrap')

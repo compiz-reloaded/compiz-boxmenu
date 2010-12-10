@@ -64,3 +64,8 @@ requested.
 There are also three other binaries that allow you to call up the viewport list,
 windowlist, and documents list on their own. These are compiz-boxmenu-wlist, compiz-boxmenu-vplist,
 and compiz-boxmenu-dlist.
+
+== Credits ==
+crdlb for the original
+Openbox developers for the pipeitem idea
+Windowmaker developers for the filebrowser idea
