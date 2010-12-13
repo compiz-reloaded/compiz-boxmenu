@@ -1,3 +1,5 @@
+12.12.2010
+	* Windowlist and vplist in menus now autorefresh
 12.7.2010
 	* Fix boxmenu editor vplist bug
 	* Commit real fix for vplist issue w/turning on icons

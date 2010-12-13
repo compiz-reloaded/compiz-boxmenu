@@ -21,9 +21,9 @@ compiz-boxmenu-vplist: deskmenu-vplist-client.c deskmenu-common.h
 compiz-boxmenu-wlist: deskmenu-windowlist-client.c deskmenu-common.h
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) $(LDFLAGS_CLIENT) -o $@ $<
 
-compiz-boxmenu-daemon: deskmenu-menu.c deskmenu-wnck.c deskmenu-wnck.h deskmenu-glue.h deskmenu-common.h deskmenu-menu.h
+compiz-boxmenu-daemon: deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c deskmenu-utils.h deskmenu-wnck.h deskmenu-glue.h deskmenu-common.h deskmenu-menu.h
 
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ deskmenu-menu.c deskmenu-wnck.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c
 
 deskmenu-glue.h: deskmenu-service.xml
 	dbus-binding-tool --mode=glib-server --prefix=deskmenu --output=$@ $^

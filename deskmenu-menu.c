@@ -37,9 +37,10 @@ TODO: Add ability to call up menus from the menu.xml file by name, if this is re
 #include "deskmenu-wnck.h"
 #endif
 
+#include "deskmenu-utils.h"
+
 #include "deskmenu-menu.h"
 #include "deskmenu-glue.h"
-
 
 G_DEFINE_TYPE(Deskmenu, deskmenu, G_TYPE_OBJECT) //this is calling deskmenu_class_init
 
@@ -59,25 +60,6 @@ quit (GtkWidget *widget,
     gtk_main_quit ();
 }
 
-//stolen from openbox
-//optimize code to reduce calls to this, should only be called once per parse
-static
-gchar *parse_expand_tilde(const gchar *f)
-{
-	gchar *ret;
-	GRegex *regex;
-	
-	if (!f)
-		return NULL;
-	regex = g_regex_new("(?:^|(?<=[ \\t]))~(?:(?=[/ \\t])|$)",
-						G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	ret = g_regex_replace_literal(regex, f, -1, 0, g_get_home_dir(), 0, NULL);
-	g_regex_unref(regex);
-	
-	return ret;
-}
-//end stolen
-
 //This is how menu command is launched
 static void
 launcher_activated (GtkWidget *widget,
@@ -87,12 +69,8 @@ launcher_activated (GtkWidget *widget,
 
 	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(command), &error))
     {
-        GtkWidget *message = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR,
-            GTK_BUTTONS_CLOSE, "%s", error->message);
-        gtk_dialog_run (GTK_DIALOG (message));
-        gtk_widget_destroy (message);
+        deskmenu_widget_error(error);
     }
-
 }
 
 //This is how a recent document is opened
@@ -101,37 +79,14 @@ recent_activated (GtkRecentChooser *chooser,
                   gchar     *command)
 {
     GError *error = NULL;
-	
-	gchar *full_command;
-	gchar *file;
-	GRegex *regex, *regex2;
-
-	regex = g_regex_new("file:///", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	regex2 = g_regex_new("%f", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-
-	file = g_strstrip(g_regex_replace_literal(regex, gtk_recent_chooser_get_current_uri (chooser), -1, 0, "/", 0, NULL));
-	
-	if (g_regex_match (regex2,command,0,0))
-	{
-		//if using custom complex command, replace %f with filename
-		full_command = g_strstrip(g_regex_replace_literal(regex2, command, -1, 0, file, 0, NULL));
-	}
-	else
-	{
-		full_command = g_strjoin (" ", command, file, NULL);
-	}
-	
-	g_regex_unref(regex);
-	g_regex_unref(regex2);
+	gchar *full_command, *file;
+	file = gtk_recent_chooser_get_current_uri (chooser);
+	full_command = get_full_command(command, file);
 	
 	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(full_command), &error))
     {
-        GtkWidget *message = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR,
-            GTK_BUTTONS_CLOSE, "%s", error->message);
-        gtk_dialog_run (GTK_DIALOG (message));
-        gtk_widget_destroy (message);
+        deskmenu_widget_error(error);
     }
-
 }
 
 static 
@@ -177,7 +132,7 @@ static void
 deskmenu_construct_item (Deskmenu *deskmenu)
 {
     DeskmenuItem *item = deskmenu->current_item;
-    GtkWidget *menu_item;
+    GtkWidget *menu_item, *submenu;
     gchar *name, *icon, *command, *vpicon;
     gboolean images;
     gint w, h;
@@ -248,9 +203,11 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 				}
             }
-            DeskmenuWindowlist *windowlist = deskmenu_windowlist_new (images);
-            gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
-                windowlist->menu);
+            g_object_set_data(G_OBJECT(menu_item), "windowlist", deskmenu_windowlist_initialize (images));
+            g_signal_connect (G_OBJECT (menu_item), "activate", 
+					G_CALLBACK (refresh_windowlist_item), NULL);
+			submenu = gtk_menu_new();
+			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
             gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
                 menu_item);
             break;
@@ -285,9 +242,11 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 					file = TRUE;
 				}
             }
-            DeskmenuVplist *vplist = deskmenu_vplist_new (wrap, images, file, vpicon);
-            gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
-                vplist->menu);
+            g_object_set_data(G_OBJECT(menu_item), "vplist", deskmenu_vplist_initialize (wrap, images, file, vpicon));
+            g_signal_connect (G_OBJECT (menu_item), "activate", 
+					G_CALLBACK (refresh_viewportlist_item), NULL);
+			submenu = gtk_menu_new();
+			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
             gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
                 menu_item);
             break;
@@ -362,7 +321,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
             gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
                 menu_item);
             break;
-            
+
         default:
             break;
     }
@@ -801,9 +760,6 @@ end_element (GMarkupParseContext *context,
                 g_string_free (deskmenu->current_item->sort_type, TRUE);
             if (deskmenu->current_item->quantity)
                 g_string_free (deskmenu->current_item->quantity, TRUE);
-            if (deskmenu->current_item->age)
-                g_string_free (deskmenu->current_item->age, TRUE);
-            g_slice_free (DeskmenuItem, deskmenu->current_item);
             deskmenu->current_item = NULL;
             break;
         default:
@@ -1057,9 +1013,15 @@ deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
     gtk_widget_show_all (deskmenu->menu);
 }
 
+#if HAVE_WNCK
 gboolean
-deskmenu_vplist (Deskmenu *deskmenu,gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon) {
-	DeskmenuVplist *vplist = deskmenu_vplist_new(toggle_wrap, toggle_images, toggle_file, g_strstrip(viewport_icon));
+deskmenu_vplist (Deskmenu *deskmenu,
+				gboolean toggle_wrap, 
+				gboolean toggle_images, 
+				gboolean toggle_file, 
+				gchar *viewport_icon) {
+	DeskmenuVplist *vplist = deskmenu_vplist_initialize(toggle_wrap, toggle_images, toggle_file, g_strstrip(viewport_icon));
+	deskmenu_vplist_new (vplist);
 
     gtk_menu_popup (GTK_MENU (vplist->menu),
                     NULL, NULL, NULL, NULL,
@@ -1068,17 +1030,25 @@ deskmenu_vplist (Deskmenu *deskmenu,gboolean toggle_wrap, gboolean toggle_images
 }
 
 gboolean
-deskmenu_windowlist (Deskmenu *deskmenu, gboolean images) {
-	DeskmenuWindowlist *windowlist = deskmenu_windowlist_new (images);
+deskmenu_windowlist (Deskmenu *deskmenu, 
+					 gboolean images) {
+	DeskmenuWindowlist *windowlist = deskmenu_windowlist_initialize (images);
+	deskmenu_windowlist_new(windowlist);
 
     gtk_menu_popup (GTK_MENU (windowlist->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
 	return TRUE;
 }
+#endif
 
 gboolean
-deskmenu_documentlist (Deskmenu *deskmenu, gboolean images, gchar *command, int limit, int age, gchar *sort_type) {
+deskmenu_documentlist (Deskmenu *deskmenu, 
+					   gboolean images, 
+					   gchar *command, 
+					   int limit, 
+					   int age, 
+					   gchar *sort_type) {
 	GtkWidget *menu = make_recent_documents_list (images, g_strdup(command), limit, age, g_strstrip(sort_type));
 	
     gtk_menu_popup (GTK_MENU (menu),
@@ -1193,7 +1163,8 @@ main (int    argc,
         g_error_free (error);
         exit (1);
     }
-
+    //force working directory
+	chdir (g_get_home_dir());
 	g_print ("Starting the daemon...\n");
 
 	GOptionContext *context;

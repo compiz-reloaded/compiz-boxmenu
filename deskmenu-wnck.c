@@ -4,6 +4,22 @@
 
 #include "deskmenu-wnck.h"
 
+void 
+refresh_viewportlist_item (GtkWidget *item, gpointer data) {
+	DeskmenuVplist *vplist = g_object_get_data(G_OBJECT(item), "vplist");
+	deskmenu_vplist_new(vplist);
+	g_object_set_data(G_OBJECT(item), "vplist", vplist);
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), vplist->menu);
+}
+
+void
+refresh_windowlist_item (GtkWidget *item, gpointer data) {
+	DeskmenuWindowlist *windowlist = g_object_get_data(G_OBJECT(item), "windowlist");
+	deskmenu_windowlist_new(windowlist);
+	g_object_set_data(G_OBJECT(item), "windowlist", windowlist);
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), windowlist->menu);
+}
+
 /* borrowed from libwnck selector.c */
 static GdkPixbuf *
 wnck_selector_dimm_icon (GdkPixbuf *pixbuf)
@@ -208,12 +224,9 @@ deskmenu_windowlist_window_new (WnckWindow *window,
     gtk_menu_shell_append (GTK_MENU_SHELL (windowlist->menu), item);
 }
 
-DeskmenuWindowlist*
-deskmenu_windowlist_new (gboolean images)
-{
-    DeskmenuWindowlist *windowlist;
-    windowlist = g_slice_new0 (DeskmenuWindowlist);
-	
+void
+deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
+{	
 	if (!wnck_screen_get_default ())
 	{
 		while (gtk_events_pending ())
@@ -221,8 +234,11 @@ deskmenu_windowlist_new (gboolean images)
 	}
 
     windowlist->screen = wnck_screen_get_default ();
+	if (windowlist->menu)
+	{
+		gtk_widget_destroy(windowlist->menu);
+	}
     windowlist->menu = gtk_menu_new ();
-    windowlist->images = images;
 
 	GList* list = NULL, *iterator = NULL;
 
@@ -243,6 +259,7 @@ deskmenu_windowlist_new (gboolean images)
 			}
 		}
 	}
+
 	if (gtk_container_get_children (GTK_CONTAINER(windowlist->menu)) == NULL)
 	{
 		GtkWidget *empty_item = gtk_menu_item_new_with_label ("None");
@@ -250,7 +267,17 @@ deskmenu_windowlist_new (gboolean images)
 		gtk_menu_shell_append (GTK_MENU_SHELL (windowlist->menu),
 			empty_item);
 	}
+
 	gtk_widget_show_all (windowlist->menu);
+}
+
+DeskmenuWindowlist*
+deskmenu_windowlist_initialize (gboolean images) {
+	DeskmenuWindowlist *windowlist;
+    windowlist = g_slice_new0 (DeskmenuWindowlist);
+
+    windowlist->images = images;
+
     return windowlist;
 }
 
@@ -471,18 +498,15 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
     }   
 }
 
-DeskmenuVplist*
-deskmenu_vplist_new (gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon)
-{
-    DeskmenuVplist *vplist;
-    vplist = g_slice_new0 (DeskmenuVplist);
-	
+void
+deskmenu_vplist_new (DeskmenuVplist *vplist)
+{	
     vplist->screen = wnck_screen_get_default ();
 
-	vplist->icon = viewport_icon;
-	vplist->wrap = toggle_wrap;
-	vplist->images = toggle_images;
-	vplist->file = toggle_file;
+	if (vplist->menu)
+	{
+		gtk_widget_destroy(vplist->menu);
+	}
 
     vplist->menu = gtk_menu_new ();
 
@@ -551,7 +575,18 @@ deskmenu_vplist_new (gboolean toggle_wrap, gboolean toggle_images, gboolean togg
 
 	deskmenu_vplist_make_goto_viewport(vplist);
 
-	gtk_widget_show_all (vplist->menu); 
-	
-    return vplist;
+	gtk_widget_show_all (vplist->menu);
+}
+
+DeskmenuVplist*
+deskmenu_vplist_initialize(gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon) {
+	DeskmenuVplist *vplist;
+    vplist = g_slice_new0 (DeskmenuVplist);
+
+	vplist->icon = viewport_icon;
+	vplist->wrap = toggle_wrap;
+	vplist->images = toggle_images;
+	vplist->file = toggle_file;
+
+	return vplist;
 }

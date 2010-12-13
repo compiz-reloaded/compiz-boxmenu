@@ -35,7 +35,9 @@ typedef struct DeskmenuVplist
     gchar *icon; /* stores viewport icon of choice */
 } DeskmenuVplist;
 
-DeskmenuWindowlist* deskmenu_windowlist_new (gboolean images);
-
-DeskmenuVplist* deskmenu_vplist_new (gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);
-
+void refresh_viewportlist_item (GtkWidget *item, gpointer data);
+void refresh_windowlist_item (GtkWidget *item, gpointer data);
+void deskmenu_windowlist_new (DeskmenuWindowlist *windowlist);
+void deskmenu_vplist_new (DeskmenuVplist *vplist);
+DeskmenuVplist* deskmenu_vplist_initialize (gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);
+DeskmenuWindowlist* deskmenu_windowlist_initialize (gboolean images);
