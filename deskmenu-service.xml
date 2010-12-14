@@ -11,6 +11,8 @@
     </method>
     <method name="windowlist">
       <arg type="b" name="images" direction="in" />
+      <arg type="b" name="thisvp" direction="in" />
+      <arg type="b" name="mini_only" direction="in" />
     </method>
     <method name="vplist">
 	  <arg type="b" name="toggle_wrap" direction="in" />

@@ -22,7 +22,7 @@ class DeskmenuEditor(gtk.Window):
 		vbox = gtk.VBox(spacing=12)
 
 		scrolled = gtk.ScrolledWindow()
-		scrolled.props.hscrollbar_policy = gtk.POLICY_NEVER
+		scrolled.props.hscrollbar_policy = gtk.POLICY_AUTOMATIC #because you really might want to read some of the stuff hanging off
 		scrolled.props.vscrollbar_policy = gtk.POLICY_AUTOMATIC
 		treeview = gtk.TreeView(self.model)
 		treeview.set_reorderable(True)
@@ -603,6 +603,8 @@ class Windowlist(Item):
 	def __init__(self, node=None):
 		Item.__init__(self, node, type='windowlist')
 		self.editable = True
+		self.thisvp = self.node.find('thisvp')
+		self.minionly = self.node.find('minionly')
 	
 	def get_icon(self):
 		iconnode = self.node.find('icon')
@@ -622,6 +624,16 @@ class Windowlist(Item):
 	def get_options(self):
 		retlist = []
 		sgroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+
+		widget = gtk.CheckButton("Show windows only on current viewport")
+		widget.props.active = self.get_thisvp()
+		widget.connect('toggled', self.on_thisvp_changed)
+		retlist.append(widget)
+
+		widget = gtk.CheckButton("Show only minimized windows")
+		widget.props.active = self.get_minionly()
+		widget.connect('toggled', self.on_minionly_changed)
+		retlist.append(widget)
 
 		label = gtk.Label()
 		label.set_alignment(0, 0.5)
@@ -678,6 +690,34 @@ class Windowlist(Item):
 			iconnode.attrib['mode1'] = 'file'
 		elif 'mode1' in iconnode.attrib:
 			del iconnode.attrib['mode1']
+
+	def get_thisvp(self):
+		if self.thisvp is not None:
+			return self.thisvp.text == 'true'
+		return False
+
+	def get_minionly(self):
+		if self.minionly is not None:
+			return self.minionly.text == 'true'
+		return False
+
+	def on_thisvp_changed(self, widget):
+		if self.thisvp is None:
+			self.thisvp = etree.SubElement(self.node, 'thisvp')
+		if widget.props.active:
+			text = 'true'
+		else:
+			text = 'false'
+		self.thisvp.text = text
+
+	def on_minionly_changed(self, widget):
+		if self.minionly is None:
+			self.minionly = etree.SubElement(self.node, 'minionly')
+		if widget.props.active:
+			text = 'true'
+		else:
+			text = 'false'
+		self.minionly.text = text
 
 	def get_type(self):
 		return 'Windows list'
@@ -791,6 +831,24 @@ class Viewportlist(Item):
 			return self.wrap.text == 'true'
 		return False
 
+	def on_icon_mode_changed(self, widget):
+		iconnode = self.node.find('icon')
+		if widget.props.active:
+			if iconnode is None:
+				iconnode = etree.SubElement(self.node, 'icon')
+			iconnode.attrib['mode1'] = 'file'
+		elif 'mode1' in iconnode.attrib:
+			del iconnode.attrib['mode1']
+
+	def on_vpicon_mode_changed(self, widget):
+		iconnode = self.node.find('vpicon')
+		if widget.props.active:
+			if iconnode is None:
+				iconnode = etree.SubElement(self.node, 'vpicon')
+			iconnode.attrib['mode1'] = 'file'
+		elif 'mode1' in iconnode.attrib:
+			del iconnode.attrib['mode1']
+
 	def on_subnode_changed(self, widget, tag):
 		text = widget.props.text
 		subnode = self.node.find(tag)
@@ -801,15 +859,6 @@ class Viewportlist(Item):
 		else:
 			if subnode is not None:
 				self.node.remove(subnode)
-
-	def on_icon_mode_changed(self, widget):
-		iconnode = self.node.find('icon')
-		if widget.props.active:
-			if iconnode is None:
-				iconnode = etree.SubElement(self.node, 'icon')
-			iconnode.attrib['mode1'] = 'file'
-		elif 'mode1' in iconnode.attrib:
-			del iconnode.attrib['mode1']
 
 	def on_wrap_changed(self, widget):
 		if self.wrap is None:

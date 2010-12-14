@@ -25,6 +25,8 @@ int main (int argc, char *argv[])
 	GError *error;
 	DBusGProxy *proxy;
 	gboolean images = FALSE;
+	gboolean thisvp = FALSE;
+	gboolean mini_only = FALSE;
 	
     usleep (200000);
 
@@ -35,6 +37,10 @@ int main (int argc, char *argv[])
     {
         { "images", 'i', 0, G_OPTION_ARG_NONE, &images,
             "Use IMAGES in the windowlist", NULL },
+        { "minimized", 'm', 0, G_OPTION_ARG_NONE, &mini_only,
+            "Show only MINIMIZED windows in the windowlist", NULL },
+        { "current-viewport", 'c', 0, G_OPTION_ARG_NONE, &thisvp,
+            "Show only windows in CURRENT VIEWPORT in the windowlist", NULL },
         { NULL, 0, 0, 0, NULL, NULL, NULL }
     };
 
@@ -67,7 +73,10 @@ int main (int argc, char *argv[])
         g_error_free (error);
         return 1;
     }
-    if (!dbus_g_proxy_call (proxy, "windowlist", &error, G_TYPE_BOOLEAN, images,
+    if (!dbus_g_proxy_call (proxy, "windowlist", &error, 
+		G_TYPE_BOOLEAN, images,
+		G_TYPE_BOOLEAN, thisvp,
+		G_TYPE_BOOLEAN, mini_only,
         G_TYPE_INVALID, G_TYPE_INVALID))
     {
         g_printerr ("Error: %s\n", error->message);
@@ -80,4 +89,3 @@ int main (int argc, char *argv[])
 
     return 0;
 }
-

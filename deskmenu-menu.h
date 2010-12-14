@@ -42,6 +42,8 @@ typedef enum
     DESKMENU_ELEMENT_NAME,
     DESKMENU_ELEMENT_ICON,
     DESKMENU_ELEMENT_COMMAND,
+    DESKMENU_ELEMENT_THISVP,
+    DESKMENU_ELEMENT_MINIONLY,
     DESKMENU_ELEMENT_WRAP,
     DESKMENU_ELEMENT_VPICON,
     DESKMENU_ELEMENT_AGE, //age of dox
@@ -62,9 +64,16 @@ struct DeskmenuItem
     GString *vpicon;
     GString *command;
     GString *wrap;
+    GString *thisvp;
+    GString *mini_only;
     GString *sort_type; //get sort type for document items
 	GString *age;  //get age limit for document items
 	GString *quantity; //get item limit for document items
+	GString *path; //filebrowser path
+	GString *media; //media?
+	GString *shortcuts; //shortcuts?
+	GString *browsegen; //browse the above?
+	GString *no_hidden;
 };
 
 struct Deskmenu
@@ -109,6 +118,6 @@ GQuark deskmenu_error_quark (void);
 gboolean deskmenu_reload (Deskmenu *deskmenu, GError **error);
 gboolean deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error);
 gboolean deskmenu_pin (Deskmenu *deskmenu, gboolean pin);
-gboolean deskmenu_windowlist (Deskmenu *deskmenu, gboolean images);
+gboolean deskmenu_windowlist (Deskmenu *deskmenu, gboolean images, gboolean thisvp, gboolean mini_only);
 gboolean deskmenu_vplist (Deskmenu *deskmenu, gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);
 gboolean deskmenu_documentlist (Deskmenu *deskmenu, gboolean images, gchar *command, int limit, int age, gchar *sort_type);

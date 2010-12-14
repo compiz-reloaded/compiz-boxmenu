@@ -255,6 +255,16 @@ deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
 		for (iterator = list; iterator; iterator = iterator->next) {
 			if (!wnck_window_is_skip_tasklist (iterator->data)) //don't bother making the item if it isn't to be on a tasklist
 			{
+				if (!wnck_window_is_minimized (iterator->data) && windowlist->iconified_only)
+				{
+					continue;
+				}
+				if (!wnck_window_is_in_viewport (iterator->data, 
+						wnck_screen_get_workspace (windowlist->screen,0)) &&
+					windowlist->this_viewport)
+				{
+					continue;
+				}
 				deskmenu_windowlist_window_new(iterator->data, windowlist);
 			}
 		}
@@ -272,11 +282,13 @@ deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
 }
 
 DeskmenuWindowlist*
-deskmenu_windowlist_initialize (gboolean images) {
+deskmenu_windowlist_initialize (gboolean images, gboolean this_viewport, gboolean iconified_only) {
 	DeskmenuWindowlist *windowlist;
     windowlist = g_slice_new0 (DeskmenuWindowlist);
 
     windowlist->images = images;
+    windowlist->this_viewport = this_viewport;
+    windowlist->iconified_only = iconified_only;
 
     return windowlist;
 }

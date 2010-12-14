@@ -189,6 +189,8 @@ deskmenu_construct_item (Deskmenu *deskmenu)
         case DESKMENU_ITEM_WINDOWLIST:
             menu_item = gtk_image_menu_item_new_with_mnemonic ("_Windows");
 			images = FALSE;
+			gboolean this_vp = FALSE;
+			gboolean mini_only = FALSE;
             if (item->icon)
             {
 				images = TRUE;
@@ -203,7 +205,13 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 				}
             }
-            g_object_set_data(G_OBJECT(menu_item), "windowlist", deskmenu_windowlist_initialize (images));
+            if (item->thisvp
+                && strcmp (g_strstrip (item->thisvp->str), "true") == 0)
+                this_vp = TRUE;
+            if (item->mini_only
+                && strcmp (g_strstrip (item->mini_only->str), "true") == 0)
+                mini_only = TRUE;
+            g_object_set_data(G_OBJECT(menu_item), "windowlist", deskmenu_windowlist_initialize (images, this_vp, mini_only));
             g_signal_connect (G_OBJECT (menu_item), "activate", 
 					G_CALLBACK (refresh_windowlist_item), NULL);
 			submenu = gtk_menu_new();
@@ -617,6 +625,14 @@ start_element (GMarkupParseContext *context,
             if (deskmenu->current_item)
                 deskmenu->current_item->current_element = element_type;
             break;
+        case DESKMENU_ELEMENT_THISVP:
+            if (deskmenu->current_item)
+                deskmenu->current_item->current_element = element_type;
+            break;
+        case DESKMENU_ELEMENT_MINIONLY:
+            if (deskmenu->current_item)
+                deskmenu->current_item->current_element = element_type;
+            break;
         case DESKMENU_ELEMENT_QUANTITY:
             if (deskmenu->current_item)
                 deskmenu->current_item->current_element = element_type;
@@ -684,6 +700,20 @@ text (GMarkupParseContext *context,
                 item->wrap = g_string_new_len (text, text_len);
             else
                 g_string_append_len (item->wrap, text, text_len);
+            break;
+
+        case DESKMENU_ELEMENT_THISVP:
+            if (!item->thisvp)
+                item->thisvp = g_string_new_len (text, text_len);
+            else
+                g_string_append_len (item->thisvp, text, text_len);
+            break;
+
+        case DESKMENU_ELEMENT_MINIONLY:
+            if (!item->mini_only)
+                item->mini_only = g_string_new_len (text, text_len);
+            else
+                g_string_append_len (item->mini_only, text, text_len);
             break;
 
         case DESKMENU_ELEMENT_AGE:
@@ -756,10 +786,17 @@ end_element (GMarkupParseContext *context,
                 g_string_free (deskmenu->current_item->wrap, TRUE);
             if (deskmenu->current_item->vpicon)
                 g_string_free (deskmenu->current_item->vpicon, TRUE);
+            if (deskmenu->current_item->mini_only)
+                g_string_free (deskmenu->current_item->mini_only, TRUE);
+            if (deskmenu->current_item->thisvp)
+                g_string_free (deskmenu->current_item->thisvp, TRUE);
             if (deskmenu->current_item->sort_type)
                 g_string_free (deskmenu->current_item->sort_type, TRUE);
             if (deskmenu->current_item->quantity)
                 g_string_free (deskmenu->current_item->quantity, TRUE);
+            if (deskmenu->current_item->age)
+                g_string_free (deskmenu->current_item->age, TRUE);
+            g_slice_free (DeskmenuItem, deskmenu->current_item);
             deskmenu->current_item = NULL;
             break;
         default:
@@ -832,6 +869,10 @@ deskmenu_init (Deskmenu *deskmenu)
         GINT_TO_POINTER (DESKMENU_ELEMENT_VPICON));
     g_hash_table_insert (deskmenu->element_hash, "command", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_COMMAND));
+    g_hash_table_insert (deskmenu->element_hash, "thisvp", 
+        GINT_TO_POINTER (DESKMENU_ELEMENT_THISVP));
+    g_hash_table_insert (deskmenu->element_hash, "minionly", 
+        GINT_TO_POINTER (DESKMENU_ELEMENT_MINIONLY));
     g_hash_table_insert (deskmenu->element_hash, "wrap", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_WRAP));
     g_hash_table_insert (deskmenu->element_hash, "sort", 
@@ -1031,8 +1072,10 @@ deskmenu_vplist (Deskmenu *deskmenu,
 
 gboolean
 deskmenu_windowlist (Deskmenu *deskmenu, 
-					 gboolean images) {
-	DeskmenuWindowlist *windowlist = deskmenu_windowlist_initialize (images);
+					 gboolean images,
+					 gboolean thisvp,
+					 gboolean mini_only) {
+	DeskmenuWindowlist *windowlist = deskmenu_windowlist_initialize (images, thisvp, mini_only);
 	deskmenu_windowlist_new(windowlist);
 
     gtk_menu_popup (GTK_MENU (windowlist->menu),
