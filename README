@@ -44,12 +44,13 @@ Items: <item type="Type"> There are a few supported item types:
     - <icon>: the icon name to use in the menu.
       This name is looked up by gtk+, so you can toss custom icons in 
       ~/.icons/$YOUR_THEME/$ICON_SIZE/apps/
-    - <command>: the launcher command line
+    - <command>: the launcher command line, now can be used as 
+		a pipemenu by setting the mode2="pipe" attribute (this was done
+		to make up for the removal of pipeitems)
  * separator: a simple GtkSeparatorMenuItem
  * windowlist: libwnck-based window list menu.
  * viewportlist: libwnck-based viewport list menu.
  * reload: reload button (it actually quits the daemon)
- * pipeitem: dynamically generated items based on script output (originally inspired by Openbox pipemenus)
  * documents: access to recent documents list
 
 === Implementation ===
@@ -67,5 +68,5 @@ and compiz-boxmenu-dlist.
 
 == Credits ==
 crdlb for the original
-Openbox developers for the pipeitem idea
+Openbox developers for the pipeitem -> pipemenu idea
 Windowmaker developers for the filebrowser idea

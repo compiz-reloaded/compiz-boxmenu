@@ -58,6 +58,8 @@ struct DeskmenuItem
     DeskmenuElementType current_element;
     GString *name;
     gboolean name_exec;
+    gboolean command_pipe;
+    gboolean cache_output;
     gboolean icon_file;
     gboolean vpicon_file;
     GString *icon;
@@ -69,11 +71,6 @@ struct DeskmenuItem
     GString *sort_type; //get sort type for document items
 	GString *age;  //get age limit for document items
 	GString *quantity; //get item limit for document items
-	GString *path; //filebrowser path
-	GString *media; //media?
-	GString *shortcuts; //shortcuts?
-	GString *browsegen; //browse the above?
-	GString *no_hidden;
 };
 
 struct Deskmenu
@@ -82,16 +79,8 @@ struct Deskmenu
 #if HAVE_WNCK
     DeskmenuWindowlist *windowlist;
 #endif
-    GtkWidget *menu;
-    GtkWidget *temp_menu;
-    GtkWidget *current_menu;
-    DeskmenuItem *current_item;
     gboolean pinnable;
-    GHashTable *item_hash;
-    GHashTable *element_hash;
     GHashTable *file_cache;
-    GHashTable *split_cache;
-    GHashTable *chunk_marks;
 };
 
 struct DeskmenuClass
@@ -99,6 +88,15 @@ struct DeskmenuClass
     GObjectClass parent;
 };
 
+typedef struct DeskmenuObject
+{
+    GtkWidget *menu;
+    GtkWidget *current_menu;
+    DeskmenuItem *current_item;
+    Deskmenu *deskmenu;
+    gboolean make_from_pipe;
+    GSList *pin_items;
+} DeskmenuObject;
 
 #define DESKMENU_TYPE              (deskmenu_get_type ())
 #define DESKMENU(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), DESKMENU_TYPE, Deskmenu))

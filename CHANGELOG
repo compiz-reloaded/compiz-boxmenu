@@ -1,5 +1,15 @@
+12.17.2010
+	* Pipeitems are now replaced by pipemenus
+	* Pipemenus are launchers with command mode set to "pipe"
+	* Windowlist can show only current viewport &/ minimized windows
+	* MASSIVE Cache speed up
 12.12.2010
 	* Windowlist and vplist in menus now autorefresh
+12.10.2010 (only for *b versions)
+	* Updated GUI for filebrowser type
+	* Made filebrowser
+	* Added service for it
+	* Added binary for it
 12.7.2010
 	* Fix boxmenu editor vplist bug
 	* Commit real fix for vplist issue w/turning on icons

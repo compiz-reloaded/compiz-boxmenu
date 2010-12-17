@@ -288,18 +288,10 @@ class DeskmenuEditor(gtk.Window):
 		else:
 			return None
 
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
-
 class NewItemDialog(gtk.Dialog):
 
 	elementlist = ['Launcher', 'Menu', 'Separator', 'Windows List',
-		'Viewports List', 'Recent Documents', 'Pipeitem', 'Reload']
+		'Viewports List', 'Recent Documents', 'Reload']
 
 	def __init__(self, model, row):
 		gtk.Dialog.__init__(self, 'New Item', None, 0, None)
@@ -567,6 +559,26 @@ class Launcher(Item):
 		hbox.pack_start(widget, True, True)
 		retlist.append(hbox)
 
+		label = gtk.Label()
+		label.set_alignment(0, 0.5)
+		sgroup.add_widget(label)
+		label.set_markup('<b>Command mode:</b>')
+		widget = gtk.combo_box_new_text()
+		widget.append_text('Normal')
+		widget.append_text('Pipe')
+		widget.props.active = commandnode is not None and commandnode.attrib.get('mode2') == 'pipe'
+		widget.connect('changed', self.on_command_mode_changed)
+
+		hbox = gtk.HBox()
+		hbox.pack_start(label)
+		hbox.pack_start(widget, True, True)
+		retlist.append(hbox)
+
+		widget = gtk.CheckButton("Cache output of pipe")
+		widget.props.active = commandnode is not None and commandnode.attrib.get('mode2') == 'pipe' and commandnode.attrib.get('cache') == 'true'
+		widget.connect('toggled', self.on_cached_changed)
+		retlist.append(widget)
+
 		return retlist
 
 	def on_subnode_changed(self, widget, tag):
@@ -597,6 +609,24 @@ class Launcher(Item):
 			iconnode.attrib['mode1'] = 'file'
 		elif 'mode1' in iconnode.attrib:
 			del iconnode.attrib['mode1']
+
+	def on_command_mode_changed(self, widget):
+		commandnode = self.node.find('command')
+		if widget.props.active:
+			if commandnode is None:
+				commandnode = etree.SubElement(self.node, 'command')
+			commandnode.attrib['mode2'] = 'pipe'
+		elif 'mode2' in commandnode.attrib:
+			del commandnode.attrib['mode2']
+
+	def on_cached_changed(self, widget):
+		commandnode = self.node.find('command')
+		if widget.props.active:
+			if commandnode is None:
+				commandnode = etree.SubElement(self.node, 'command')
+			commandnode.attrib['cache'] = 'true'
+		elif 'cache' in commandnode.attrib:
+			del commandnode.attrib['cache']
 
 class Windowlist(Item):
 	
@@ -1252,50 +1282,6 @@ class Separator(object):
 		elif 'mode1' in self.node.attrib:
 			del self.node.attrib['mode1']
 
-class Pipe(object):
-
-	def __init__(self, node=None):
-		self.node = node
-		self.editable = True
-
-		if node is None:
-			self.node = etree.Element('pipe', command='')
-
-	def get_name(self):
-		name = self.node.attrib.get('command', '')
-		return name
-
-	def get_icon(self):
-		return None
-
-	def get_icon_mode(self):
-		return None
-
-	def get_type(self):
-		return 'Pipeitem'
-
-	def get_options(self):
-
-		retlist = []
-		sgroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-
-		label = gtk.Label()
-		label.set_alignment(0, 0.5)
-		label.set_markup('<b>Command:</b>')
-		widget = gtk.Entry()
-		widget.props.text = self.node.attrib.get('command', '')
-		widget.connect('changed', self.on_command_changed)
-		
-		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
-		retlist.append(hbox)
-
-		return retlist
-
-	def on_command_changed(self, widget):
-		self.node.attrib['command'] = widget.props.text
-
 class Menu(object):
 
 	def __init__(self, node=None):
@@ -1461,17 +1447,16 @@ def write_menu():
 		except dbus.DBusException:
 			return
 
-elements = {'menu': Menu, 'item': make_item, 'separator': Separator, 'pipe': Pipe}
+elements = {'menu': Menu, 'item': make_item, 'separator': Separator}
 
 elementsbyname = {
 	'Launcher': Launcher,
 	'Windows List': Windowlist,
 	'Viewports List': Viewportlist,
 	'Recent Documents': Documents,
+	'Reload': Reload,
 	'Separator': Separator,
 	'Menu': Menu,
-	'Pipeitem': Pipe,
-	'Reload': Reload,
 }
 
 

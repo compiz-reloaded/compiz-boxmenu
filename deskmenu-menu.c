@@ -44,6 +44,38 @@ TODO: Add ability to call up menus from the menu.xml file by name, if this is re
 
 G_DEFINE_TYPE(Deskmenu, deskmenu, G_TYPE_OBJECT) //this is calling deskmenu_class_init
 
+static void
+start_element (GMarkupParseContext *context,
+               const gchar         *element_name,
+               const gchar        **attr_names,
+               const gchar        **attr_values,
+               gpointer             user_data,
+               GError             **error);
+
+static void
+text (GMarkupParseContext *context,
+      const gchar         *text,
+      gsize                text_len,
+      gpointer             user_data,
+      GError             **error);
+
+static void
+end_element (GMarkupParseContext *context,
+             const gchar         *element_name,
+             gpointer             user_data,
+             GError             **error);
+
+static GMarkupParser parser = {
+    start_element,
+    end_element,
+    text,
+    NULL,
+    NULL
+};
+
+static GHashTable *item_hash;
+static GHashTable *element_hash;
+
 GQuark
 deskmenu_error_quark (void)
 {
@@ -89,6 +121,57 @@ recent_activated (GtkRecentChooser *chooser,
     }
 }
 
+/* prototype code for pipemenu */
+
+static void
+pipe_menu_recreate (GtkWidget *item,
+					gchar *command) 
+{
+	gchar *stdout;
+	gchar *cache_entries = g_object_get_data (G_OBJECT(item), "cached");
+	GtkWidget *submenu;
+	submenu = gtk_menu_item_get_submenu (GTK_MENU_ITEM(item));
+
+	if (submenu)
+	{
+		if (strcmp (cache_entries, "yes") != 0)
+		{
+			gtk_widget_destroy (submenu);
+			submenu = NULL;
+		}
+	}
+	if (!submenu)
+	{
+		submenu = gtk_menu_new();
+		if (g_spawn_command_line_sync (parse_expand_tilde(command), &stdout, NULL, NULL, NULL))
+		{
+			GError *error = NULL;
+			DeskmenuObject *dm_object = g_object_get_data (G_OBJECT(item), "menu");
+			dm_object->current_menu = submenu;
+			dm_object->make_from_pipe = TRUE;
+			if (gtk_menu_get_tearoff_state (GTK_MENU(dm_object->menu)))
+			{
+				gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), 
+					gtk_tearoff_menu_item_new());
+			}
+			GMarkupParseContext *context = g_markup_parse_context_new (&parser,
+				0, dm_object, NULL);
+			g_markup_parse_context_parse (context, stdout, strlen(stdout), &error);
+			g_markup_parse_context_free (context);
+			g_free(stdout);
+			dm_object->make_from_pipe = FALSE;
+		}
+		else
+		{
+			GtkWidget *empty_item = gtk_menu_item_new_with_label ("Unable to get output");
+			gtk_widget_set_sensitive (empty_item, FALSE);
+			gtk_menu_shell_append (GTK_MENU_SHELL (submenu), empty_item);
+		}
+		gtk_widget_show_all(submenu);
+		gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), submenu);
+	}
+}
+
 static 
 GtkWidget *make_recent_documents_list (gboolean images, gchar *command, int limit, int age, gchar *sort_type)
 {
@@ -129,9 +212,9 @@ GtkWidget *make_recent_documents_list (gboolean images, gchar *command, int limi
 }
 
 static void
-deskmenu_construct_item (Deskmenu *deskmenu)
+deskmenu_construct_item (DeskmenuObject *dm_object)
 {
-    DeskmenuItem *item = deskmenu->current_item;
+    DeskmenuItem *item = dm_object->current_item;
     GtkWidget *menu_item, *submenu;
     gchar *name, *icon, *command, *vpicon;
     gboolean images;
@@ -173,16 +256,33 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 					}
             }
-
-            if (item->command)
-            {
-				
-                command = g_strstrip (item->command->str);
-                g_signal_connect (G_OBJECT (menu_item), "activate",
-                    G_CALLBACK (launcher_activated), g_strdup (command));
-            }
-
-            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
+			if (item->command_pipe)
+			{
+				command = g_strstrip (item->command->str);
+				if (item->cache_output)
+				{
+					g_object_set_data(G_OBJECT(menu_item), "cached", g_strdup("yes"));
+				}
+				else
+				{
+					g_object_set_data(G_OBJECT(menu_item), "cached", g_strdup("no"));
+				}
+				g_object_set_data(G_OBJECT(menu_item), "menu", dm_object);
+				g_signal_connect (G_OBJECT (menu_item), "activate", 
+					G_CALLBACK (pipe_menu_recreate), g_strdup(command));
+				submenu = gtk_menu_new();
+				gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
+			}
+			else
+			{
+				if (item->command)
+				{
+					command = g_strstrip (item->command->str);
+					g_signal_connect (G_OBJECT (menu_item), "activate",
+						G_CALLBACK (launcher_activated), g_strdup (command));
+				}
+			}
+            gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
                 menu_item);
             break;
 #if HAVE_WNCK
@@ -216,7 +316,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 					G_CALLBACK (refresh_windowlist_item), NULL);
 			submenu = gtk_menu_new();
 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
-            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
+            gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
                 menu_item);
             break;
 
@@ -255,7 +355,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 					G_CALLBACK (refresh_viewportlist_item), NULL);
 			submenu = gtk_menu_new();
 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
-            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
+            gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
                 menu_item);
             break;
 #endif
@@ -277,7 +377,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
             }
             g_signal_connect (G_OBJECT (menu_item), "activate", 
                 G_CALLBACK (quit), NULL); 
-            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
+            gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
                 menu_item);
             break;
 
@@ -326,7 +426,7 @@ deskmenu_construct_item (Deskmenu *deskmenu)
 			GtkWidget *docs = make_recent_documents_list(images, command, limit, age, sort_type);
 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item),
                 docs);
-            gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu),
+            gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
                 menu_item);
             break;
 
@@ -346,17 +446,18 @@ start_element (GMarkupParseContext *context,
                gpointer             user_data,
                GError             **error)
 {
-    Deskmenu *deskmenu = DESKMENU (user_data);
+	DeskmenuObject *dm_object = user_data;
+
     DeskmenuElementType element_type;
     const gchar **ncursor = attr_names, **vcursor = attr_values;
     GtkWidget *item, *menu;
     gint w, h;
 
     element_type = GPOINTER_TO_INT (g_hash_table_lookup
-        (deskmenu->element_hash, element_name));
+        (element_hash, element_name));
 
-    if ((deskmenu->menu && !deskmenu->current_menu)
-       || (!deskmenu->menu && element_type != DESKMENU_ELEMENT_MENU))
+    if ((dm_object->menu && !dm_object->current_menu)
+       || (!dm_object->menu && element_type != DESKMENU_ELEMENT_MENU))
     {
         gint line_num, char_num;
         g_markup_parse_context_get_position (context, &line_num, &char_num);
@@ -370,7 +471,7 @@ start_element (GMarkupParseContext *context,
     {
         case DESKMENU_ELEMENT_MENU:
 
-            if (deskmenu->current_item != NULL)
+            if (dm_object->current_item != NULL)
             {
                 gint line_num, char_num;
                 g_markup_parse_context_get_position (context, &line_num,
@@ -380,7 +481,7 @@ start_element (GMarkupParseContext *context,
                     "inside of an item element", line_num, char_num);
                 return;
             }
-            if (!deskmenu->menu)
+            if (!dm_object->menu)
             {
 	            /*if (strcmp (*ncursor, "size") == 0) {
                     deskmenu->w = g_strdup (*vcursor);
@@ -389,14 +490,10 @@ start_element (GMarkupParseContext *context,
                 else {
 	                gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, deskmenu->w, deskmenu->h);
                 }*/
-                deskmenu->menu = gtk_menu_new ();
-                g_object_set_data (G_OBJECT (deskmenu->menu), "parent menu",
+                dm_object->menu = gtk_menu_new ();
+                g_object_set_data (G_OBJECT (dm_object->menu), "parent menu",
                     NULL);
-                deskmenu->current_menu = deskmenu->menu;
-				if (deskmenu->pinnable)
-				{
-					gtk_menu_set_title (GTK_MENU (deskmenu->menu), "Compiz Boxmenu");
-				}
+                dm_object->current_menu = dm_object->menu;
             }
             else
             {
@@ -452,24 +549,38 @@ start_element (GMarkupParseContext *context,
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 					}
 				}
-				gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu), item);
+				gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), item);
                 menu = gtk_menu_new ();
                 g_object_set_data (G_OBJECT (menu), "parent menu",
-                    deskmenu->current_menu);
-                deskmenu->current_menu = menu;
+                    dm_object->current_menu);
+                dm_object->current_menu = menu;
                 gtk_menu_item_set_submenu (GTK_MENU_ITEM (item),
-                    deskmenu->current_menu);
-                if (deskmenu->pinnable)
+                    dm_object->current_menu);
+
+                if (!dm_object->make_from_pipe)
 				{
-					gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu), gtk_tearoff_menu_item_new()); //add a pin menu item
+					GtkWidget *pin = gtk_tearoff_menu_item_new();
+					gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), 
+						pin); //add a pin menu item
+					dm_object->pin_items = g_slist_prepend (dm_object->pin_items, pin);
 				}
+				else
+				{
+					if (gtk_menu_get_tearoff_state (GTK_MENU(dm_object->menu)))
+					{
+						GtkWidget *pin = gtk_tearoff_menu_item_new();
+						gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), 
+							pin); //add a pin menu item
+					}
+				}
+				
                 g_free (name);
                 g_free (icon);
             }
             break;
 
         case DESKMENU_ELEMENT_SEPARATOR:
-        if (deskmenu->current_item != NULL)
+        if (dm_object->current_item != NULL)
             {
                 gint line_num, char_num;
                 g_markup_parse_context_get_position (context, &line_num,
@@ -561,13 +672,13 @@ start_element (GMarkupParseContext *context,
 					g_free (name);
 					g_free (icon);
 				}
-				gtk_menu_shell_append (GTK_MENU_SHELL (deskmenu->current_menu), item);
+				gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), item);
 			}
             break;
 
         case DESKMENU_ELEMENT_ITEM:
 
-            if (deskmenu->current_item != NULL)
+            if (dm_object->current_item != NULL)
             {
                 gint line_num, char_num;
                 g_markup_parse_context_get_position (context, &line_num,
@@ -578,12 +689,12 @@ start_element (GMarkupParseContext *context,
                 return;
             }
 
-            deskmenu->current_item = g_slice_new0 (DeskmenuItem);
+            dm_object->current_item = g_slice_new0 (DeskmenuItem);
                 while (*ncursor)
                 {
                     if (strcmp (*ncursor, "type") == 0)
-                        deskmenu->current_item->type = GPOINTER_TO_INT
-                        (g_hash_table_lookup (deskmenu->item_hash, *vcursor));
+                        dm_object->current_item->type = GPOINTER_TO_INT
+                        (g_hash_table_lookup (item_hash, *vcursor));
                     else
                         g_set_error (error, G_MARKUP_ERROR,
                             G_MARKUP_ERROR_UNKNOWN_ATTRIBUTE,
@@ -598,7 +709,7 @@ start_element (GMarkupParseContext *context,
                 {
                     if ((strcmp (*ncursor, "mode") == 0)
                         && (strcmp (*vcursor, "exec") == 0))
-                        deskmenu->current_item->name_exec = TRUE;
+                        dm_object->current_item->name_exec = TRUE;
                     ncursor++;
                     vcursor++;
                 } /* no break here to let it fall through */
@@ -607,7 +718,7 @@ start_element (GMarkupParseContext *context,
                 {
                     if ((strcmp (*ncursor, "mode1") == 0)
                         && (strcmp (*vcursor, "file") == 0))
-                        deskmenu->current_item->icon_file = TRUE;
+                        dm_object->current_item->icon_file = TRUE;
                     ncursor++;
                     vcursor++;
                 } /* no break here to let it fall through */
@@ -616,35 +727,48 @@ start_element (GMarkupParseContext *context,
                 {
                     if ((strcmp (*ncursor, "mode1") == 0)
                         && (strcmp (*vcursor, "file") == 0))
-                        deskmenu->current_item->vpicon_file = TRUE;
+                        dm_object->current_item->vpicon_file = TRUE;
                     ncursor++;
                     vcursor++;
                 } /* no break here to let it fall through */
         case DESKMENU_ELEMENT_COMMAND:
+                while (*ncursor)
+                {
+                    if ((strcmp (*ncursor, "mode2") == 0)
+                        && (strcmp (*vcursor, "pipe") == 0))
+                        dm_object->current_item->command_pipe = TRUE;
+                    if (dm_object->current_item->command_pipe == TRUE
+                        && (strcmp (*ncursor, "cache") == 0)
+                        && (strcmp (*vcursor, "true") == 0))
+                        dm_object->current_item->cache_output = TRUE;
+                    ncursor++;
+                    vcursor++;
+                } /* no break here to let it fall through */
         case DESKMENU_ELEMENT_WRAP:
-            if (deskmenu->current_item)
-                deskmenu->current_item->current_element = element_type;
+            if (dm_object->current_item)
+                dm_object->current_item->current_element = element_type;
             break;
         case DESKMENU_ELEMENT_THISVP:
-            if (deskmenu->current_item)
-                deskmenu->current_item->current_element = element_type;
+            if (dm_object->current_item)
+                dm_object->current_item->current_element = element_type;
             break;
         case DESKMENU_ELEMENT_MINIONLY:
-            if (deskmenu->current_item)
-                deskmenu->current_item->current_element = element_type;
+            if (dm_object->current_item)
+                dm_object->current_item->current_element = element_type;
             break;
         case DESKMENU_ELEMENT_QUANTITY:
-            if (deskmenu->current_item)
-                deskmenu->current_item->current_element = element_type;
+            if (dm_object->current_item)
+                dm_object->current_item->current_element = element_type;
             break;
         case DESKMENU_ELEMENT_SORT:
-            if (deskmenu->current_item)
-                deskmenu->current_item->current_element = element_type;
+            if (dm_object->current_item)
+                dm_object->current_item->current_element = element_type;
             break;
         case DESKMENU_ELEMENT_AGE:
-            if (deskmenu->current_item)
-                deskmenu->current_item->current_element = element_type;
+            if (dm_object->current_item)
+                dm_object->current_item->current_element = element_type;
             break;
+
         default:
             g_set_error (error, G_MARKUP_ERROR, G_MARKUP_ERROR_UNKNOWN_ELEMENT,
                 "Unknown element: %s", element_name);
@@ -659,8 +783,8 @@ text (GMarkupParseContext *context,
       gpointer             user_data,
       GError             **error)
 {
-    Deskmenu *deskmenu = DESKMENU (user_data);
-    DeskmenuItem *item = deskmenu->current_item;
+    DeskmenuObject *dm_object = user_data;
+    DeskmenuItem *item = dm_object->current_item;
 
     if (!(item && item->current_element))
         return;
@@ -750,70 +874,60 @@ end_element (GMarkupParseContext *context,
 {
 
     DeskmenuElementType element_type;
-    Deskmenu *deskmenu = DESKMENU (user_data);
+    DeskmenuObject *dm_object = user_data;
+
     GtkWidget *parent;
     element_type = GPOINTER_TO_INT (g_hash_table_lookup
-        (deskmenu->element_hash, element_name));
+        (element_hash, element_name));
 
     switch (element_type)
     {
         case DESKMENU_ELEMENT_MENU:
 
-            g_return_if_fail (deskmenu->current_item == NULL);
+            g_return_if_fail (dm_object->current_item == NULL);
 
-            parent = g_object_get_data (G_OBJECT (deskmenu->current_menu),
+            parent = g_object_get_data (G_OBJECT (dm_object->current_menu),
                 "parent menu");
 
-            deskmenu->current_menu = parent;
+            dm_object->current_menu = parent;
 
             break;
 /* separator building is now dealt with in the beginning */
         case DESKMENU_ELEMENT_ITEM:
 
-            g_return_if_fail (deskmenu->current_item != NULL);
+            g_return_if_fail (dm_object->current_item != NULL);
 
             /* finally make the item ^_^ */
-            deskmenu_construct_item (deskmenu);
+            deskmenu_construct_item (dm_object);
 
             /* free data used to make it */
-            if (deskmenu->current_item->name)
-                g_string_free (deskmenu->current_item->name, TRUE);
-            if (deskmenu->current_item->icon)
-                g_string_free (deskmenu->current_item->icon, TRUE);
-            if (deskmenu->current_item->command)
-                g_string_free (deskmenu->current_item->command, TRUE);
-            if (deskmenu->current_item->wrap)
-                g_string_free (deskmenu->current_item->wrap, TRUE);
-            if (deskmenu->current_item->vpicon)
-                g_string_free (deskmenu->current_item->vpicon, TRUE);
-            if (deskmenu->current_item->mini_only)
-                g_string_free (deskmenu->current_item->mini_only, TRUE);
-            if (deskmenu->current_item->thisvp)
-                g_string_free (deskmenu->current_item->thisvp, TRUE);
-            if (deskmenu->current_item->sort_type)
-                g_string_free (deskmenu->current_item->sort_type, TRUE);
-            if (deskmenu->current_item->quantity)
-                g_string_free (deskmenu->current_item->quantity, TRUE);
-            if (deskmenu->current_item->age)
-                g_string_free (deskmenu->current_item->age, TRUE);
-            g_slice_free (DeskmenuItem, deskmenu->current_item);
-            deskmenu->current_item = NULL;
+            if (dm_object->current_item->name)
+                g_string_free (dm_object->current_item->name, TRUE);
+            if (dm_object->current_item->icon)
+                g_string_free (dm_object->current_item->icon, TRUE);
+            if (dm_object->current_item->command)
+                g_string_free (dm_object->current_item->command, TRUE);
+            if (dm_object->current_item->wrap)
+                g_string_free (dm_object->current_item->wrap, TRUE);
+            if (dm_object->current_item->vpicon)
+                g_string_free (dm_object->current_item->vpicon, TRUE);
+            if (dm_object->current_item->mini_only)
+                g_string_free (dm_object->current_item->mini_only, TRUE);
+            if (dm_object->current_item->thisvp)
+                g_string_free (dm_object->current_item->thisvp, TRUE);
+            if (dm_object->current_item->sort_type)
+                g_string_free (dm_object->current_item->sort_type, TRUE);
+            if (dm_object->current_item->quantity)
+                g_string_free (dm_object->current_item->quantity, TRUE);
+            if (dm_object->current_item->age)
+                g_string_free (dm_object->current_item->age, TRUE);
+            g_slice_free (DeskmenuItem, dm_object->current_item);
+            dm_object->current_item = NULL;
             break;
         default:
             break;
     }
 }
-
-/* The list of what handler does what. */
-//this parses menus
-static GMarkupParser parser = {
-    start_element,
-    end_element,
-    text,
-    NULL,
-    NULL
-};
-
 
 /* Class init */
 static void 
@@ -823,70 +937,112 @@ deskmenu_class_init (DeskmenuClass *deskmenu_class)
         &dbus_glib_deskmenu_object_info);
 }
 
+
 /* Instance init, matches up words to types, 
 note how there's no handler for pipe since it's
 replaced in its own chunk */
 static void 
 deskmenu_init (Deskmenu *deskmenu)
 {
-
-    deskmenu->menu = NULL;
-    deskmenu->current_menu = NULL;
-    deskmenu->current_item = NULL;
     deskmenu->pinnable = FALSE;
-
-    deskmenu->item_hash = g_hash_table_new (g_str_hash, g_str_equal);
     deskmenu->file_cache = g_hash_table_new (g_str_hash, g_str_equal);
-    deskmenu->split_cache = g_hash_table_new (g_str_hash, g_str_equal);
-    deskmenu->chunk_marks = g_hash_table_new (g_str_hash, g_str_equal);
+}
 
-    g_hash_table_insert (deskmenu->item_hash, "launcher",
+static void
+set_up_item_hash (void) {
+	item_hash= g_hash_table_new (g_str_hash, g_str_equal);
+
+    g_hash_table_insert (item_hash, "launcher",
         GINT_TO_POINTER (DESKMENU_ITEM_LAUNCHER));
 #if HAVE_WNCK
-    g_hash_table_insert (deskmenu->item_hash, "windowlist",
+    g_hash_table_insert (item_hash, "windowlist",
         GINT_TO_POINTER (DESKMENU_ITEM_WINDOWLIST));
-    g_hash_table_insert (deskmenu->item_hash, "viewportlist",
+    g_hash_table_insert (item_hash, "viewportlist",
         GINT_TO_POINTER (DESKMENU_ITEM_VIEWPORTLIST));
 #endif
-    g_hash_table_insert (deskmenu->item_hash, "documents",
+    g_hash_table_insert (item_hash, "documents",
         GINT_TO_POINTER (DESKMENU_ITEM_DOCUMENTS));
-    g_hash_table_insert (deskmenu->item_hash, "reload",
+    g_hash_table_insert (item_hash, "reload",
         GINT_TO_POINTER (DESKMENU_ITEM_RELOAD));
+}
 
-    deskmenu->element_hash = g_hash_table_new (g_str_hash, g_str_equal);
+static void
+set_up_element_hash (void) {
+	element_hash = g_hash_table_new (g_str_hash, g_str_equal);
     
-    g_hash_table_insert (deskmenu->element_hash, "menu", 
+    g_hash_table_insert (element_hash, "menu", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_MENU));
-    g_hash_table_insert (deskmenu->element_hash, "separator",
+    g_hash_table_insert (element_hash, "separator",
         GINT_TO_POINTER (DESKMENU_ELEMENT_SEPARATOR));
-    g_hash_table_insert (deskmenu->element_hash, "item", 
+    g_hash_table_insert (element_hash, "item", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_ITEM));
-    g_hash_table_insert (deskmenu->element_hash, "name", 
+    g_hash_table_insert (element_hash, "name", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_NAME));
-    g_hash_table_insert (deskmenu->element_hash, "icon", 
+    g_hash_table_insert (element_hash, "icon", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_ICON));
-    g_hash_table_insert (deskmenu->element_hash, "vpicon", 
+    g_hash_table_insert (element_hash, "vpicon", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_VPICON));
-    g_hash_table_insert (deskmenu->element_hash, "command", 
+    g_hash_table_insert (element_hash, "command", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_COMMAND));
-    g_hash_table_insert (deskmenu->element_hash, "thisvp", 
+    g_hash_table_insert (element_hash, "thisvp", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_THISVP));
-    g_hash_table_insert (deskmenu->element_hash, "minionly", 
+    g_hash_table_insert (element_hash, "minionly", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_MINIONLY));
-    g_hash_table_insert (deskmenu->element_hash, "wrap", 
+    g_hash_table_insert (element_hash, "wrap", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_WRAP));
-    g_hash_table_insert (deskmenu->element_hash, "sort", 
+    g_hash_table_insert (element_hash, "sort", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_SORT));
-    g_hash_table_insert (deskmenu->element_hash, "quantity", 
+    g_hash_table_insert (element_hash, "quantity", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_QUANTITY));
-    g_hash_table_insert (deskmenu->element_hash, "age", 
+    g_hash_table_insert (element_hash, "age", 
         GINT_TO_POINTER (DESKMENU_ELEMENT_AGE));
 }
 
-static
-gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
-	gchar *t = NULL;
-	gchar *f = NULL;
+static DeskmenuObject
+*deskmenu_object_init (void) {
+	DeskmenuObject *dm_object = g_slice_new0 (DeskmenuObject);
+
+	dm_object->menu = NULL;
+    dm_object->current_menu = NULL;
+    dm_object->current_item = NULL;
+    dm_object->make_from_pipe = FALSE;
+    dm_object->pin_items = NULL;
+	
+	return dm_object;
+}
+
+static DeskmenuObject
+*deskmenu_parse_file (gchar *filename)
+{
+    GError *error = NULL;
+	DeskmenuObject *dm_object = deskmenu_object_init();
+    GMarkupParseContext *context = g_markup_parse_context_new (&parser,
+        0, dm_object, NULL);
+	
+	gchar *text;
+    gsize length;
+
+    g_file_get_contents (filename, &text, &length, NULL); //cache already handled file existence check
+	
+	if (!g_markup_parse_context_parse (context, text, strlen(text), &error)
+        || !g_markup_parse_context_end_parse (context, &error))
+    {
+        g_printerr ("Parse failed with message: %s \n", error->message);
+        g_error_free (error);
+        exit (1);
+    }
+
+	g_free(text); //free the joined array
+    g_markup_parse_context_free (context); //free the parser
+
+    gtk_widget_show_all (dm_object->menu);
+    return dm_object;
+}
+
+
+static DeskmenuObject 
+*check_file_cache (Deskmenu *deskmenu, gchar *filename) {
+	DeskmenuObject *dm_object;
 	gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir (),
 									"compiz",
 									"boxmenu",
@@ -895,15 +1051,20 @@ gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
 	
 	//TODO: add a size column to cache for possible autorefresh
 		g_print("Checking cache...\n");	
-	
-	if (strlen(filename) == 0) {
-		g_print("No filename supplied, looking up default menu...\n");
+	if (strlen(filename) == 0)
+    filename = g_build_path (G_DIR_SEPARATOR_S,
+                               g_get_user_config_dir (),
+                               "compiz",
+                               "boxmenu",
+                               "menu.xml",
+                               NULL);
+	if (strcmp(filename, user_default) == 0) {
+		g_print("Looking up default menu...\n");
 			/*
 			set default filename to be [configdir]/compiz/boxmenu/menu.xml
 			*/
-			filename = user_default;
 			gboolean success = FALSE;
-		if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+		if (!g_file_test(filename, G_FILE_TEST_EXISTS)) {
 				g_print("Getting default system menu...\n");
 				const gchar* const *cursor = g_get_system_config_dirs ();
 				gchar *path = NULL;
@@ -918,11 +1079,18 @@ gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
 											"menu.xml",
 											NULL);
 			
-					if (g_file_get_contents (filename, &f, NULL, NULL))
+					if (g_file_test(filename, G_FILE_TEST_EXISTS))
 					{
-						g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
+						if (g_hash_table_lookup(deskmenu->file_cache, filename) == NULL)
+						{
+							g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), deskmenu_parse_file(filename));
+							g_print("Prepared default system menu!\n");
+						}
+						else
+						{
+							g_print("Retrieving default system menu!\n");
+						}
 						g_free (path);
-						g_print("Got it!\n");
 						success = TRUE;
 						break;
 					}
@@ -933,12 +1101,17 @@ gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
 			{
 				if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL)
 				{
-					g_file_get_contents (filename, &f, NULL, NULL);
-					g_print("Cacheing default user file...\n");
-					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
+					if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
+						g_print("Preparing default menu!\n");
+						g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), deskmenu_parse_file(filename));
+						success = TRUE;
+					}
 				}
-				g_print("Retrieving cached default user file...\n");
-				success = TRUE;
+				else
+				{
+					g_print("Retrieving cached default user menu...\n");
+					success = TRUE;
+				}
 			}
 		if (!success)
 		{
@@ -947,11 +1120,11 @@ gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
 		}
 	}
 	else {
-		if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL) {
-			if (g_file_get_contents (filename, &f, NULL, NULL))
+		if (g_hash_table_lookup(deskmenu->file_cache, filename) == NULL) {
+			if (g_file_test(filename, G_FILE_TEST_EXISTS))
 				{
-					g_print("Cacheing new non-default file...\n");
-					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), g_strdup(f));
+					g_print("Preparing new non-default menu...\n");
+					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), deskmenu_parse_file(filename));
 				}
 				else {
 					if (g_hash_table_lookup(deskmenu->file_cache, user_default) != NULL)
@@ -968,90 +1141,11 @@ gchar *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
 		}
 	}
 	
-	t = g_hash_table_lookup (deskmenu->file_cache, filename);
+	dm_object = g_hash_table_lookup (deskmenu->file_cache, filename);
 	
 	g_printf("Done loading %s!\n", filename);
-	g_free (f);
-	g_free (filename);
 	
-	return t;
-}
-
-static void
-pipe_execute (gint i, gchar **menu_chunk) {
-	gchar *exec, *stdout, *pipe_error;
-	GRegex *command;
-	command = g_regex_new("<pipe command=\"|\"/>", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	pipe_error = g_strdup ("<item type=\"launcher\"><name>Cannot retrieve pipe output</name></item>");
-	
-    exec = parse_expand_tilde(g_strstrip(g_regex_replace_literal(command, menu_chunk[i], -1, 0, "", 0, NULL)));
-	if (g_spawn_command_line_sync (exec, &stdout, NULL, NULL, NULL))
-	{
-		menu_chunk[i] = stdout;
-	}
-	else
-	{
-		menu_chunk[i] = pipe_error;
-	}
-	g_regex_unref(command); //free the pipe command extractor
-    //fix this to be able to replace faulty pipe with an item that says it can't be executed
-    //needs validator in order to make sure it can be parsed, if not, set parsed error
-}
-
-static void
-deskmenu_parse_text (Deskmenu *deskmenu, gchar *text)
-{
-    GError *error = NULL;
-	gchar **menu_chunk;
-
-    GMarkupParseContext *context = g_markup_parse_context_new (&parser,
-        0, deskmenu, NULL);
-
-	GList* list = NULL, *iterator = NULL;
-	list = g_hash_table_lookup (deskmenu->chunk_marks, text);
-    
-	if (list)
-	{
-		menu_chunk = g_strdupv(g_hash_table_lookup (deskmenu->split_cache, text));
-		for (iterator = list; iterator; iterator = iterator->next) {
-			 pipe_execute (atoi(iterator->data), menu_chunk);
-		}
-	}
-	else
-	{
-		GRegex *regex = g_regex_new("(<pipe command=\".*\"/>)", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-		menu_chunk = g_regex_split (regex, text, 0); //this splits the menu into parsable chunks, needed for pipe item capabilities
-		g_hash_table_insert(deskmenu->split_cache, g_strdup(text), g_strdupv(menu_chunk));
-		int i = 0;
-		//this loop will replace the pipeitem chunk with its output, other chunks are let through as is
-		while (menu_chunk[i])
-		{
-			if (g_regex_match (regex,menu_chunk[i],0,0))
-			{
-				g_hash_table_insert(deskmenu->chunk_marks, g_strdup(text), 
-				g_slist_append(g_hash_table_lookup(deskmenu->chunk_marks, g_strdup(text)), g_strdup_printf ("%i", i)));
-				pipe_execute(i, menu_chunk);
-			}
-			i++;
-		}
-		g_regex_unref(regex); //free the pipeitem chunk checker
-	}
-	
-	text = g_strjoinv (NULL, menu_chunk); //stitch the text so we can get error reporting back to normal
-	
-	if (!g_markup_parse_context_parse (context, text, strlen(text), &error)
-        || !g_markup_parse_context_end_parse (context, &error))
-    {
-        g_printerr ("Parse failed with message: %s \n", error->message);
-        g_error_free (error);
-        exit (1);
-    }
-
-	g_free(text); //free the joined array
-	g_strfreev(menu_chunk); //free the menu chunks and their container
-    g_markup_parse_context_free (context); //free the parser
-
-    gtk_widget_show_all (deskmenu->menu);
+	return dm_object;
 }
 
 #if HAVE_WNCK
@@ -1099,17 +1193,30 @@ deskmenu_documentlist (Deskmenu *deskmenu,
                     0, 0);
 	return TRUE;
 }
+
 /* The show method */
 static void
-deskmenu_show (Deskmenu *deskmenu,
+deskmenu_show (DeskmenuObject *dm_object,
+			   Deskmenu *deskmenu,
                GError  **error)
 {
+	GSList *list = NULL, *iterator = NULL;
+	list = dm_object->pin_items;
+
 	if (deskmenu->pinnable)
 	{
-		gtk_menu_set_tearoff_state (GTK_MENU (deskmenu->menu), TRUE); 
+		for (iterator = list; iterator; iterator = iterator->next) {
+			gtk_widget_show (iterator->data);
+			gtk_widget_set_no_show_all (iterator->data, FALSE);
+		}
+		gtk_menu_set_tearoff_state (GTK_MENU (dm_object->menu), TRUE); 
 	}
 	else {
-    gtk_menu_popup (GTK_MENU (deskmenu->menu),
+		for (iterator = list; iterator; iterator = iterator->next) {
+			gtk_widget_hide (iterator->data);
+			gtk_widget_set_no_show_all (iterator->data, TRUE);
+		}
+		gtk_menu_popup (GTK_MENU (dm_object->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
 	}
@@ -1135,15 +1242,8 @@ deskmenu_reload (Deskmenu *deskmenu,
 gboolean
 deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
 {
-	if (deskmenu->menu)
-	{
-		gtk_widget_destroy (deskmenu->menu); //free mem
-		deskmenu->menu = NULL; //destroy menu
-	}
-	deskmenu_parse_text(deskmenu, check_file_cache (deskmenu, 
-		g_strstrip(filename))); //recreate the menu, check caches for data
-    
-	deskmenu_show(deskmenu, error);
+	DeskmenuObject *dm_object = check_file_cache (deskmenu, g_strstrip(filename));
+	deskmenu_show(dm_object, deskmenu, error);
 	return TRUE;
 }
 
@@ -1228,7 +1328,8 @@ main (int    argc,
         g_printerr ("option parsing failed: %s", error->message);
         g_error_free (error);
         return 1;
-    }	
+    }
+    g_set_prgname ("Compiz Boxmenu");
 	g_option_context_free (context);
 
 #if HAVE_WNCK
@@ -1246,7 +1347,9 @@ main (int    argc,
                                 DBUS_NAME_FLAG_REPLACE_EXISTING,
 						        NULL))
         return 1;
-
+	
+	set_up_element_hash();
+	set_up_item_hash();
 	deskmenu_precache(DESKMENU(deskmenu), file);
 
     gtk_main ();
