@@ -31,6 +31,7 @@ int main (int argc, char *argv[])
 
     g_type_init ();
 
+
     GOptionContext *context;
     GOptionEntry entries[] =
     {
@@ -76,7 +77,9 @@ int main (int argc, char *argv[])
         g_error_free (error);
         return 1;
     }    
-    if (!dbus_g_proxy_call (proxy, "control", &error, G_TYPE_STRING, filename,
+    if (!dbus_g_proxy_call (proxy, "control", &error, 
+		G_TYPE_STRING, filename,
+		G_TYPE_STRING, getcwd(NULL, 0),
         G_TYPE_INVALID, G_TYPE_INVALID))
     {
         g_printerr ("Error: %s\n", error->message);

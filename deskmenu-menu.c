@@ -76,6 +76,9 @@ static GMarkupParser parser = {
 static GHashTable *item_hash;
 static GHashTable *element_hash;
 
+static void
+deskmenu_free_item (DeskmenuObject *dm_object);
+
 GQuark
 deskmenu_error_quark (void)
 {
@@ -158,6 +161,10 @@ pipe_menu_recreate (GtkWidget *item,
 				0, dm_object, NULL);
 			g_markup_parse_context_parse (context, stdout, strlen(stdout), &error);
 			g_markup_parse_context_free (context);
+			if (error && dm_object->current_item)
+			{
+				deskmenu_free_item(dm_object);
+			}
 			g_free(stdout);
 			dm_object->make_from_pipe = FALSE;
 		}
@@ -455,6 +462,32 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             break;
     }
 
+}
+
+static void
+deskmenu_free_item (DeskmenuObject *dm_object) {
+	/* free data used to make it */
+    if (dm_object->current_item->name)
+        g_string_free (dm_object->current_item->name, TRUE);
+    if (dm_object->current_item->icon)
+        g_string_free (dm_object->current_item->icon, TRUE);
+    if (dm_object->current_item->command)
+        g_string_free (dm_object->current_item->command, TRUE);
+    if (dm_object->current_item->wrap)
+        g_string_free (dm_object->current_item->wrap, TRUE);
+    if (dm_object->current_item->vpicon)
+        g_string_free (dm_object->current_item->vpicon, TRUE);
+    if (dm_object->current_item->mini_only)
+        g_string_free (dm_object->current_item->mini_only, TRUE);
+    if (dm_object->current_item->thisvp)
+        g_string_free (dm_object->current_item->thisvp, TRUE);
+    if (dm_object->current_item->sort_type)
+        g_string_free (dm_object->current_item->sort_type, TRUE);
+    if (dm_object->current_item->quantity)
+        g_string_free (dm_object->current_item->quantity, TRUE);
+    if (dm_object->current_item->age)
+        g_string_free (dm_object->current_item->age, TRUE);
+    dm_object->current_item = NULL;
 }
 
 /* The handler functions. */
@@ -799,6 +832,7 @@ start_element (GMarkupParseContext *context,
             if (dm_object->current_item)
                 dm_object->current_item->current_element = element_type;
             break;
+
         default:
             g_set_error (error, G_MARKUP_ERROR, G_MARKUP_ERROR_UNKNOWN_ELEMENT,
                 "Unknown element: %s", element_name);
@@ -930,29 +964,7 @@ end_element (GMarkupParseContext *context,
             /* finally make the item ^_^ */
             deskmenu_construct_item (dm_object);
 
-            /* free data used to make it */
-            if (dm_object->current_item->name)
-                g_string_free (dm_object->current_item->name, TRUE);
-            if (dm_object->current_item->icon)
-                g_string_free (dm_object->current_item->icon, TRUE);
-            if (dm_object->current_item->command)
-                g_string_free (dm_object->current_item->command, TRUE);
-            if (dm_object->current_item->wrap)
-                g_string_free (dm_object->current_item->wrap, TRUE);
-            if (dm_object->current_item->vpicon)
-                g_string_free (dm_object->current_item->vpicon, TRUE);
-            if (dm_object->current_item->mini_only)
-                g_string_free (dm_object->current_item->mini_only, TRUE);
-            if (dm_object->current_item->thisvp)
-                g_string_free (dm_object->current_item->thisvp, TRUE);
-            if (dm_object->current_item->sort_type)
-                g_string_free (dm_object->current_item->sort_type, TRUE);
-            if (dm_object->current_item->quantity)
-                g_string_free (dm_object->current_item->quantity, TRUE);
-            if (dm_object->current_item->age)
-                g_string_free (dm_object->current_item->age, TRUE);
-            g_slice_free (DeskmenuItem, dm_object->current_item);
-            dm_object->current_item = NULL;
+			deskmenu_free_item(dm_object);
             break;
         default:
             break;
@@ -1273,8 +1285,9 @@ deskmenu_reload (Deskmenu *deskmenu,
 
 /* The dbus method for binary client */
 gboolean
-deskmenu_control (Deskmenu *deskmenu, gchar *filename, GError  **error)
+deskmenu_control (Deskmenu *deskmenu, gchar *filename, gchar *workingd, GError  **error)
 {
+	chdir (workingd);
 	DeskmenuObject *dm_object = check_file_cache (deskmenu, g_strstrip(filename));
 	deskmenu_show(dm_object, deskmenu, error);
 	return TRUE;
@@ -1339,8 +1352,7 @@ main (int    argc,
         g_error_free (error);
         exit (1);
     }
-    //force working directory
-	chdir (g_get_home_dir());
+
 	g_print ("Starting the daemon...\n");
 
 	GOptionContext *context;

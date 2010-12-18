@@ -5,6 +5,7 @@
     <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="deskmenu"/>
     <method name="control">
       <arg type="s" name="filename" direction="in" />
+      <arg type="s" name="workingd" direction="in" />
     </method>
     <method name="pin">
       <arg type="b" name="pin" direction="in" />
