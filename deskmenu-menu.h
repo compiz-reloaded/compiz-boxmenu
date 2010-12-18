@@ -96,6 +96,7 @@ typedef struct DeskmenuObject
     Deskmenu *deskmenu;
     gboolean make_from_pipe;
     GSList *pin_items;
+    GHookList *show_hooks;
 } DeskmenuObject;
 
 #define DESKMENU_TYPE              (deskmenu_get_type ())

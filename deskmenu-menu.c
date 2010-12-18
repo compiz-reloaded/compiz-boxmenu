@@ -172,6 +172,18 @@ pipe_menu_recreate (GtkWidget *item,
 	}
 }
 
+static void
+launcher_name_exec_update (GtkWidget *label)
+{
+    gchar *exec, *stdout;
+    exec = g_object_get_data (G_OBJECT (label), "exec");
+    if (g_spawn_command_line_sync (exec, &stdout, NULL, NULL, NULL))
+        gtk_label_set_text (GTK_LABEL (label), g_strstrip(stdout));
+    else
+        gtk_label_set_text (GTK_LABEL (label), "execution error");
+    g_free (stdout);
+}
+
 static 
 GtkWidget *make_recent_documents_list (gboolean images, gchar *command, int limit, int age, gchar *sort_type)
 {
@@ -225,13 +237,22 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
         case DESKMENU_ITEM_LAUNCHER:
             if (item->name_exec)
             {
-                gchar *stdout;
+                GtkWidget *label;
+                GHook *hook;
+                
                 name = g_strstrip (item->name->str);
-				if (g_spawn_command_line_sync (parse_expand_tilde(name), &stdout, NULL, NULL, NULL))
-					menu_item = gtk_image_menu_item_new_with_mnemonic (g_strstrip(stdout));
-				else
-					menu_item = gtk_image_menu_item_new_with_mnemonic ("Unable to get output");
-				g_free (stdout);
+
+                menu_item = gtk_image_menu_item_new ();
+                label = gtk_label_new_with_mnemonic (NULL);
+                gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+
+                g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
+                gtk_container_add (GTK_CONTAINER (menu_item), label);
+                hook = g_hook_alloc (dm_object->show_hooks);
+
+                hook->data = (gpointer) label;
+                hook->func = (GHookFunc *) launcher_name_exec_update;
+                g_hook_append (dm_object->show_hooks, hook);
             }
             else
             {
@@ -241,7 +262,7 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
                     name = "";
 
                 menu_item = gtk_image_menu_item_new_with_mnemonic (name);
-
+				
             }
             if (item->icon)
             {
@@ -522,18 +543,25 @@ start_element (GMarkupParseContext *context,
                 }
 				if (name_exec)
 				{
-					gchar *stdout;
-					if (g_spawn_command_line_sync (parse_expand_tilde(name), &stdout, NULL, NULL, NULL))
-						item = gtk_image_menu_item_new_with_mnemonic (g_strstrip(stdout));
-					else
-						item = gtk_image_menu_item_new_with_mnemonic ("Unable to get output");
-					g_free (stdout);
+					GtkWidget *label;
+					GHook *hook;
+	
+					item = gtk_image_menu_item_new ();
+					label = gtk_label_new_with_mnemonic (NULL);
+					gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+	
+					g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
+					gtk_container_add (GTK_CONTAINER (item), label);
+					hook = g_hook_alloc (dm_object->show_hooks);
+	
+					hook->data = (gpointer) label;
+					hook->func = (GHookFunc *) launcher_name_exec_update;
+					g_hook_append (dm_object->show_hooks, hook);
 				}
 				else
 				{
 					if (name)
-						item = gtk_image_menu_item_new_with_mnemonic (name); //allow menus to have icons
-				
+						item = gtk_image_menu_item_new_with_mnemonic (name);
 					else
 						item = gtk_image_menu_item_new_with_mnemonic ("");
 				}
@@ -633,25 +661,28 @@ start_element (GMarkupParseContext *context,
 					gtk_container_add (GTK_CONTAINER(item), GTK_WIDGET(box));
 					if (name_exec)
 					{
-						gchar *stdout;
-						if (g_spawn_command_line_sync (parse_expand_tilde(name), &stdout, NULL, NULL, NULL))
-							gtk_box_pack_end (GTK_BOX(box), gtk_label_new_with_mnemonic (g_strstrip(stdout)),
-                                                         TRUE,
-                                                         FALSE,
-                                                         0);
-						else
-							gtk_box_pack_end (GTK_BOX(box), gtk_label_new_with_mnemonic ("Unable to get output"),
-                                 TRUE,
-                                 FALSE,
-                                 0);
-						g_free (stdout);
+						GtkWidget *label;
+						GHook *hook;
+		
+						label = gtk_label_new_with_mnemonic (NULL);
+		
+						g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
+						gtk_box_pack_end (GTK_BOX(box), label,
+															TRUE,
+															FALSE,
+															0);
+						hook = g_hook_alloc (dm_object->show_hooks);
+		
+						hook->data = (gpointer) label;
+						hook->func = (GHookFunc *) launcher_name_exec_update;
+						g_hook_append (dm_object->show_hooks, hook);
 					}
 					else
 					{
 						gtk_box_pack_end (GTK_BOX(box), gtk_label_new_with_mnemonic (name),
-                                 TRUE,
-                                 FALSE,
-                                 0);
+						TRUE,
+						FALSE,
+						0);
 					}
 					if (icon)
 					{
@@ -768,7 +799,6 @@ start_element (GMarkupParseContext *context,
             if (dm_object->current_item)
                 dm_object->current_item->current_element = element_type;
             break;
-
         default:
             g_set_error (error, G_MARKUP_ERROR, G_MARKUP_ERROR_UNKNOWN_ELEMENT,
                 "Unknown element: %s", element_name);
@@ -1007,6 +1037,9 @@ static DeskmenuObject
     dm_object->current_item = NULL;
     dm_object->make_from_pipe = FALSE;
     dm_object->pin_items = NULL;
+	dm_object->show_hooks = g_slice_new0 (GHookList);
+
+    g_hook_list_init (dm_object->show_hooks, sizeof (GHook));
 	
 	return dm_object;
 }
@@ -1202,7 +1235,7 @@ deskmenu_show (DeskmenuObject *dm_object,
 {
 	GSList *list = NULL, *iterator = NULL;
 	list = dm_object->pin_items;
-
+    g_hook_list_invoke (dm_object->show_hooks, FALSE);
 	if (deskmenu->pinnable)
 	{
 		for (iterator = list; iterator; iterator = iterator->next) {
