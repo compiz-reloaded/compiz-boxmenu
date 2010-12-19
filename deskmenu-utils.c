@@ -33,28 +33,37 @@ gchar *get_file_path (const gchar *file)
 	if (!file)
 		return NULL;
 	regex = g_regex_new("^file:///", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	f = g_strstrip(g_regex_replace_literal(regex, file, -1, 0, "/", 0, NULL));
+	f = g_strstrip(special_to_actual_chars(g_regex_replace_literal(regex, file, -1, 0, "/", 0, NULL)));
 	
 	g_regex_unref(regex);
 
 	return f;
 }
 
+gchar *special_to_actual_chars (const gchar *file) {
+	GRegex *regex;
+	gchar *f;
+	
+	if (!file)
+		return NULL;
+	regex = g_regex_new("%20", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
+	f = g_strstrip(g_regex_replace_literal(regex, file, -1, 0, " ", 0, NULL));
+	
+	return f;
+}
+
 gchar *grab_only_path (const gchar *file)
 {
-	GRegex *regex, *regex2;
+	GRegex *regex;
 	gchar *f;
 
 	if (!file)
 		return NULL;
 	regex = g_regex_new(" .*", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	regex2 = g_regex_new("%20", G_REGEX_MULTILINE | G_REGEX_RAW, 0, NULL);
-	f = g_strstrip(g_regex_replace_literal(regex, 
-		g_regex_replace_literal(regex, get_file_path(file), -1, 0, "", 0, NULL),
-		-1, 0, " ", 0, NULL));
+	
+	f = g_strstrip(special_to_actual_chars(g_regex_replace_literal(regex, get_file_path(file), -1, 0, "", 0, NULL)));
 
 	g_regex_unref(regex);
-	g_regex_unref(regex2);
 	return f;
 }
 
