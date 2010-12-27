@@ -161,9 +161,15 @@ pipe_menu_recreate (GtkWidget *item,
 				0, dm_object, NULL);
 			g_markup_parse_context_parse (context, stdout, strlen(stdout), &error);
 			g_markup_parse_context_free (context);
-			if (error && dm_object->current_item)
+			if (error)
 			{
-				deskmenu_free_item(dm_object);
+				g_print(error->message); //spit out the message manually
+				if (dm_object->current_item)
+				{
+					//force reset
+					deskmenu_free_item(dm_object);
+				}
+				g_error_free (error);
 			}
 			g_free(stdout);
 			dm_object->make_from_pipe = FALSE;
@@ -1250,20 +1256,20 @@ deskmenu_show (DeskmenuObject *dm_object,
     g_hook_list_invoke (dm_object->show_hooks, FALSE);
 	if (deskmenu->pinnable)
 	{
+		gtk_menu_set_tearoff_state (GTK_MENU (dm_object->menu), TRUE); 
 		for (iterator = list; iterator; iterator = iterator->next) {
 			gtk_widget_show (iterator->data);
 			gtk_widget_set_no_show_all (iterator->data, FALSE);
 		}
-		gtk_menu_set_tearoff_state (GTK_MENU (dm_object->menu), TRUE); 
 	}
 	else {
-		for (iterator = list; iterator; iterator = iterator->next) {
-			gtk_widget_hide (iterator->data);
-			gtk_widget_set_no_show_all (iterator->data, TRUE);
-		}
 		gtk_menu_popup (GTK_MENU (dm_object->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
+        for (iterator = list; iterator; iterator = iterator->next) {
+			gtk_widget_hide (iterator->data);
+			gtk_widget_set_no_show_all (iterator->data, TRUE);
+		}
 	}
 }
 
