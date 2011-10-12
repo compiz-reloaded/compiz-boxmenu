@@ -591,7 +591,9 @@ class Launcher(Item):
 
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
@@ -723,7 +725,9 @@ class Windowlist(Item):
 
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
@@ -892,7 +896,9 @@ class Viewportlist(Item):
 
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
@@ -1094,7 +1100,9 @@ class Documents(Item):
 
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
@@ -1208,7 +1216,9 @@ class Reload(Item):
 
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
@@ -1333,7 +1343,9 @@ class Separator(object):
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
 		dialog.set_defaults(widget.props.text)
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
@@ -1469,7 +1481,9 @@ class Menu(object):
 
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
@@ -1477,7 +1491,9 @@ class Menu(object):
 
 	def get_icon_name(self, widget, icon_pos, event):
 		dialog=IcoBrowse()
-		response_id=dialog.show()
+		if widget.props.text != "":
+			dialog.set_defaults(widget.props.text)
+		dialog.show()
 		gtk.main()
 		if dialog.selected_icon != "":
 			widget.props.text=dialog.selected_icon
