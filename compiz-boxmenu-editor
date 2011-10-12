@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 #TODO: An actual icon dialog and editing non-default files
 import sys
-import gtk, os, dbus
+import gtk, os, dbus, glib
 from lxml import etree
 from xdg import BaseDirectory
 import re #This is to autoset file mode for *.desktop icons
 import ConfigParser
+from pyicon_browser import *
 
 class DeskmenuEditor(gtk.Window):
 
@@ -117,8 +118,12 @@ class DeskmenuEditor(gtk.Window):
 		if icon is not None:
 			if icon_mode is not None:
 				w = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
-				cell.set_property('pixbuf', gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(icon), w[0], w[0]))
-				cell.set_property('icon-name', None) #possibly reduntant safety measure
+				try:
+					cell.set_property('pixbuf', gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(icon), w[0], w[0]))
+					cell.set_property('icon-name', None) #possibly reduntant safety measure
+				except glib.GError:
+					cell.set_property('icon-name', None)
+					cell.set_property('pixbuf', None)
 			else:
 				cell.set_property('icon-name', icon)
 				cell.set_property('pixbuf', None) #possibly reduntant safety measure
@@ -520,6 +525,9 @@ class Launcher(Item):
 			icon = ''
 		widget.props.text = icon
 		widget.connect('changed', self.on_subnode_changed, 'icon')
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
 
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
@@ -580,6 +588,14 @@ class Launcher(Item):
 		retlist.append(widget)
 
 		return retlist
+
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
 
 	def on_subnode_changed(self, widget, tag):
 		text = widget.props.text
@@ -678,6 +694,10 @@ class Windowlist(Item):
 			icon = ''
 		widget.props.text = icon
 		widget.connect('changed', self.on_subnode_changed, 'icon')
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
+
 
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
@@ -700,6 +720,14 @@ class Windowlist(Item):
 		retlist.append(hbox)
 
 		return retlist
+
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
 
 	def on_subnode_changed(self, widget, tag):
 		text = widget.props.text
@@ -799,6 +827,9 @@ class Viewportlist(Item):
 			icon = ''
 		widget.props.text = icon
 		widget.connect('changed', self.on_subnode_changed, 'icon')
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
 
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
@@ -833,6 +864,9 @@ class Viewportlist(Item):
 			icon = ''
 		widget.props.text = icon
 		widget.connect('changed', self.on_subnode_changed, 'vpicon')
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
 
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
@@ -855,6 +889,14 @@ class Viewportlist(Item):
 		retlist.append(hbox)
 		
 		return retlist
+
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
 
 	def get_wrap(self):
 		if self.wrap is not None:
@@ -960,6 +1002,10 @@ class Documents(Item):
 			icon = ''
 		widget.props.text = icon
 		widget.connect('changed', self.on_subnode_changed, 'icon')
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
+
 
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
@@ -1046,6 +1092,14 @@ class Documents(Item):
 		
 		return retlist
 
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
+
 	def on_subnode_changed(self, widget, tag):
 		text = widget.props.text
 		subnode = self.node.find(tag)
@@ -1125,6 +1179,9 @@ class Reload(Item):
 			icon = ''
 		widget.props.text = icon
 		widget.connect('changed', self.on_subnode_changed, 'icon')
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
 
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
@@ -1147,6 +1204,15 @@ class Reload(Item):
 		retlist.append(hbox)
 
 		return retlist
+
+
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
 
 	def on_subnode_changed(self, widget, tag):
 		text = widget.props.text
@@ -1238,6 +1304,9 @@ class Separator(object):
 		else:
 			widget.props.text = ''
 		widget.connect('changed', self.on_icon_changed)
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
 		
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
@@ -1260,6 +1329,15 @@ class Separator(object):
 		retlist.append(hbox)
 
 		return retlist
+
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		dialog.set_defaults(widget.props.text)
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
 
 	def on_name_changed(self, widget):
 		if widget.props.text != '':
@@ -1364,7 +1442,9 @@ class Menu(object):
 			widget.props.text = ''
 		#widget.props.text = self.node.attrib.get('icon')
 		widget.connect('changed', self.on_icon_changed)
-		
+		widget.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
+		widget.connect('icon-release',self.get_icon_name)
+		widget.set_icon_tooltip_text(gtk.ENTRY_ICON_SECONDARY, "Search your icon theme for icons")
 		hbox = gtk.HBox()
 		hbox.pack_start(label)
 		hbox.pack_start(widget, True, True)
@@ -1387,6 +1467,21 @@ class Menu(object):
 
 		return retlist
 
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
+
+	def get_icon_name(self, widget, icon_pos, event):
+		dialog=IcoBrowse()
+		response_id=dialog.show()
+		gtk.main()
+		if dialog.selected_icon != "":
+			widget.props.text=dialog.selected_icon
+		dialog.destroy()
 	def on_name_changed(self, widget):
 		self.node.attrib['name'] = widget.props.text
 	def on_name_mode_changed(self, widget): #EDIT THIS
