@@ -43,8 +43,6 @@ class CBEditor(gtk.Window):
 			delete_button.set_menu(self.make_delete_menu())
 			delete_button.connect('clicked', self.delete_item)
 
-			#undo_button = gtk.ToolButton(gtk.STOCK_UNDO)
-			#redo_button = gtk.ToolButton(gtk.STOCK_REDO)
 			reload_button = gtk.ToolButton(gtk.STOCK_REFRESH)
 			settings_button = gtk.ToolButton(gtk.STOCK_PREFERENCES)
 			about_button = gtk.ToolButton(gtk.STOCK_ABOUT)

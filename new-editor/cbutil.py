@@ -187,6 +187,7 @@ class IconSelector(gtk.HBox):
 		text=""
 		if self.combobox.get_active_text() == "Normal":
 			dialog=IcoBrowse()
+			dialog.set_defaults(self.text)
 			response = dialog.run()
 			if response == gtk.RESPONSE_ACCEPT:
 				text=dialog.get_icon_name(None)
@@ -210,7 +211,7 @@ class IconSelector(gtk.HBox):
 			if response == gtk.RESPONSE_ACCEPT:
 				text=dialog.get_filename()
 			dialog.destroy()
-		if text != self.text and (text != "" or text != None):
+		if text != self.text and (text != "" and text != None):
 			self.text = text
 			self._change_image(self.combobox.get_active_text())
 			self.emit('text-changed', text)
