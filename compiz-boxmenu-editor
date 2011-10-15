@@ -1587,6 +1587,7 @@ if __name__ == '__main__':
 	else:
 		filename = BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
 		print 'Loading default file, %s' % filename
+		#bug: it does not auto save in home config
 	menufile = etree.parse(filename)
 	root = menufile.getroot()
 	menu = Menu(root)

@@ -7,20 +7,15 @@ import gtk, gobject, re
 class IcoBrowse(gtk.Dialog):
 	def __init__(self, message="", default_text='', modal=True):
 		gtk.Dialog.__init__(self)
-		self.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+		self.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CLOSE,
 		      gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
 		#self.set_title("Icon search")
-		#self.connect("delete-event", self.quit)
 		if modal:
 			self.set_modal(True)
-		self.connect('response', self.get_icon_name)
-		self.connect("destroy", self.quit)
-		self.connect("delete_event", self.quit)
 		self.set_border_width(5)
 		self.set_size_request(400, 300)
 		self.combobox=gtk.combo_box_new_text()
 		self.combobox.set_size_request(200, 20)
-		self.selected_icon=""
 		hbox=gtk.HBox(False,2)
 		
 		#format: actual icon, name, context
@@ -32,7 +27,6 @@ class IcoBrowse(gtk.Dialog):
 		self.iconview.set_pixbuf_column(0)
 		self.iconview.set_text_column(1)
 		self.iconview.set_selection_mode(gtk.SELECTION_SINGLE)
-		#self.iconview.set_columns(4)
 		self.iconview.set_item_width(72)
 		self.iconview.set_size_request(200, 220)
 		defaulttheme=gtk.icon_theme_get_default()
@@ -66,11 +60,9 @@ class IcoBrowse(gtk.Dialog):
 		self.vbox.add(scrolled)
 		self.combobox.set_active(0)
 		
-		scrolled.show()
-		self.iconview.show()
-		self.combobox.show()
-		self.refine.show()
-		hbox.show()
+		self.iconview.connect('selection-changed', self.get_icon_name)
+		
+		self.vbox.show_all()
 
 	def set_defaults(self, icon_name):
 		if icon_name != "" and icon_name != None:
@@ -85,17 +77,10 @@ class IcoBrowse(gtk.Dialog):
 							break
 					break
 
-	def get_icon_name(self, widget, response_id):
-		if response_id == gtk.RESPONSE_ACCEPT:
-			path=self.iconview.get_selected_items()
-			if len(path) > 0:
-				self.selected_icon=self.modelfilter[path[0]][1]
-		self.quit()
-
-	def quit(self, w=None, event=None):
-		self.hide()
-		self.destroy()
-		gtk.main_quit()
+	def get_icon_name(self, widget):
+		path=self.iconview.get_selected_items()
+		if len(path) > 0:
+			return self.modelfilter[path[0]][1]
 
 	def category_changed(self, widget):
 		self.modelfilter.refilter()
@@ -109,9 +94,3 @@ class IcoBrowse(gtk.Dialog):
 			return False
 		else:
 			return False
-
-if __name__ == "__main__":
-	here=IcoBrowse()
-	here.show_all()
-	gtk.main()
-
