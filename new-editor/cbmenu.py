@@ -173,7 +173,6 @@ class MenuFile(gtk.ScrolledWindow):
 		data = selection.data
 
 		drop_info = treeview.get_dest_row_at_pos(x, y)
-
 		if selection.type == 'deskmenu-element':
 			source = model[data][0]
 			if drop_info:
@@ -211,9 +210,10 @@ class MenuFile(gtk.ScrolledWindow):
 					context.finish(True, True, etime)
 
 		elif selection.type == 'text/uri-list':
+			print selection.data
 			if drop_info:
 				path, position = drop_info
-				uri = selection.data.replace('file:///', '/').strip()
+				uri = selection.data.replace('file:///', '/').replace("%20"," ").strip()
 				entry = ConfigParser.ConfigParser()
 				entry.read(uri)
 				launcher = Launcher()
