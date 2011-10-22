@@ -159,7 +159,7 @@ pipe_menu_recreate (GtkWidget *item, gchar *command)
 			}
 			GMarkupParseContext *context = g_markup_parse_context_new (&parser,
 				0, dm_object, NULL);
-			g_markup_parse_context_parse (context, stdout, strlen(stdout), &error);
+			g_markup_parse_context_parse (context, stdout, strlen((const char *)stdout), &error);
 			g_markup_parse_context_free (context);
 			if (error)
 			{
@@ -702,7 +702,7 @@ start_element (GMarkupParseContext *context,
                 }
 				if (decorate)
 				{
-					GtkHBox *box = gtk_hbox_new (FALSE, 3);
+					GtkWidget *box = gtk_hbox_new (FALSE, 3);
 					gtk_container_add (GTK_CONTAINER(item), GTK_WIDGET(box));
 					if (name_exec)
 					{
