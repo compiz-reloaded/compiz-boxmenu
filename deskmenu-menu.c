@@ -14,7 +14,7 @@
  *
  * Copyright 2008 Christopher Williams <christopherw@verizon.net>
  */
- 
+
  /*
 Roadmap:
 Necessary:
@@ -30,6 +30,7 @@ TODO: Add ability to call up menus from the menu.xml file by name, if this is re
 #include <string.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <gtk/gtk.h>
+#include <glib/gprintf.h>
 
 #define HAVE_WNCK 1
 
@@ -117,7 +118,7 @@ recent_activated (GtkRecentChooser *chooser,
 	gchar *full_command, *file;
 	file = gtk_recent_chooser_get_current_uri (chooser);
 	full_command = get_full_command(command, file);
-	
+
 	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(full_command), &error))
     {
         deskmenu_widget_error(error);
@@ -127,8 +128,7 @@ recent_activated (GtkRecentChooser *chooser,
 /* prototype code for pipemenu */
 
 static void
-pipe_menu_recreate (GtkWidget *item,
-					gchar *command) 
+pipe_menu_recreate (GtkWidget *item, gchar *command)
 {
 	gchar *stdout;
 	gchar *cache_entries = g_object_get_data (G_OBJECT(item), "cached");
@@ -154,7 +154,7 @@ pipe_menu_recreate (GtkWidget *item,
 			dm_object->make_from_pipe = TRUE;
 			if (gtk_menu_get_tearoff_state (GTK_MENU(dm_object->menu)))
 			{
-				gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), 
+				gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
 					gtk_tearoff_menu_item_new());
 			}
 			GMarkupParseContext *context = g_markup_parse_context_new (&parser,
@@ -197,7 +197,7 @@ launcher_name_exec_update (GtkWidget *label)
     g_free (stdout);
 }
 
-static 
+static
 GtkWidget *make_recent_documents_list (gboolean images, gchar *command, int limit, int age, gchar *sort_type)
 {
 	GtkWidget *widget = gtk_recent_chooser_menu_new ();
@@ -252,7 +252,7 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             {
                 GtkWidget *label;
                 GHook *hook;
-                
+
                 name = g_strstrip (item->name->str);
 
                 menu_item = gtk_image_menu_item_new ();
@@ -275,7 +275,7 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
                     name = "";
 
                 menu_item = gtk_image_menu_item_new_with_mnemonic (name);
-				
+
             }
             if (item->icon)
             {
@@ -302,7 +302,7 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
 					g_object_set_data(G_OBJECT(menu_item), "cached", g_strdup("no"));
 				}
 				g_object_set_data(G_OBJECT(menu_item), "menu", dm_object);
-				g_signal_connect (G_OBJECT (menu_item), "activate", 
+				g_signal_connect (G_OBJECT (menu_item), "activate",
 					G_CALLBACK (pipe_menu_recreate), g_strdup(command));
 				submenu = gtk_menu_new();
 				gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
@@ -346,7 +346,7 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
                 && strcmp (g_strstrip (item->mini_only->str), "true") == 0)
                 mini_only = TRUE;
             g_object_set_data(G_OBJECT(menu_item), "windowlist", deskmenu_windowlist_initialize (images, this_vp, mini_only));
-            g_signal_connect (G_OBJECT (menu_item), "activate", 
+            g_signal_connect (G_OBJECT (menu_item), "activate",
 					G_CALLBACK (refresh_windowlist_item), NULL);
 			submenu = gtk_menu_new();
 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
@@ -384,8 +384,12 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
 					file = TRUE;
 				}
             }
+            else
+	    {
+	       vpicon = "";
+	    }
             g_object_set_data(G_OBJECT(menu_item), "vplist", deskmenu_vplist_initialize (wrap, images, file, vpicon));
-            g_signal_connect (G_OBJECT (menu_item), "activate", 
+            g_signal_connect (G_OBJECT (menu_item), "activate",
 					G_CALLBACK (refresh_viewportlist_item), NULL);
 			submenu = gtk_menu_new();
 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
@@ -409,8 +413,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 				}
             }
-            g_signal_connect (G_OBJECT (menu_item), "activate", 
-                G_CALLBACK (quit), NULL); 
+            g_signal_connect (G_OBJECT (menu_item), "activate",
+                G_CALLBACK (quit), NULL);
             gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
                 menu_item);
             break;
@@ -420,6 +424,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
 			gint limit, age;
 			gchar *sort_type;
 			images = FALSE;
+			sort_type = "least used";
+			age = 25;
             if (item->icon)
             {
 				images = TRUE;
@@ -584,15 +590,15 @@ start_element (GMarkupParseContext *context,
 				{
 					GtkWidget *label;
 					GHook *hook;
-	
+
 					item = gtk_image_menu_item_new ();
 					label = gtk_label_new_with_mnemonic (NULL);
 					gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-	
+
 					g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
 					gtk_container_add (GTK_CONTAINER (item), label);
 					hook = g_hook_alloc (dm_object->show_hooks);
-	
+
 					hook->data = (gpointer) label;
 					hook->func = (GHookFunc *) launcher_name_exec_update;
 					g_hook_append (dm_object->show_hooks, hook);
@@ -627,7 +633,7 @@ start_element (GMarkupParseContext *context,
                 if (!dm_object->make_from_pipe)
 				{
 					GtkWidget *pin = gtk_tearoff_menu_item_new();
-					gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), 
+					gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
 						pin); //add a pin menu item
 					dm_object->pin_items = g_slist_prepend (dm_object->pin_items, pin);
 				}
@@ -636,11 +642,11 @@ start_element (GMarkupParseContext *context,
 					if (gtk_menu_get_tearoff_state (GTK_MENU(dm_object->menu)))
 					{
 						GtkWidget *pin = gtk_tearoff_menu_item_new();
-						gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), 
+						gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
 							pin); //add a pin menu item
 					}
 				}
-				
+
                 g_free (name);
                 g_free (icon);
             }
@@ -702,16 +708,16 @@ start_element (GMarkupParseContext *context,
 					{
 						GtkWidget *label;
 						GHook *hook;
-		
+
 						label = gtk_label_new_with_mnemonic (NULL);
-		
+
 						g_object_set_data (G_OBJECT (label), "exec", g_strdup (name));
 						gtk_box_pack_end (GTK_BOX(box), label,
 															TRUE,
 															FALSE,
 															0);
 						hook = g_hook_alloc (dm_object->show_hooks);
-		
+
 						hook->data = (gpointer) label;
 						hook->func = (GHookFunc *) launcher_name_exec_update;
 						g_hook_append (dm_object->show_hooks, hook);
@@ -978,7 +984,7 @@ end_element (GMarkupParseContext *context,
 }
 
 /* Class init */
-static void 
+static void
 deskmenu_class_init (DeskmenuClass *deskmenu_class)
 {
     dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (deskmenu_class),
@@ -986,10 +992,10 @@ deskmenu_class_init (DeskmenuClass *deskmenu_class)
 }
 
 
-/* Instance init, matches up words to types, 
+/* Instance init, matches up words to types,
 note how there's no handler for pipe since it's
 replaced in its own chunk */
-static void 
+static void
 deskmenu_init (Deskmenu *deskmenu)
 {
     deskmenu->pinnable = FALSE;
@@ -1017,32 +1023,32 @@ set_up_item_hash (void) {
 static void
 set_up_element_hash (void) {
 	element_hash = g_hash_table_new (g_str_hash, g_str_equal);
-    
-    g_hash_table_insert (element_hash, "menu", 
+
+    g_hash_table_insert (element_hash, "menu",
         GINT_TO_POINTER (DESKMENU_ELEMENT_MENU));
     g_hash_table_insert (element_hash, "separator",
         GINT_TO_POINTER (DESKMENU_ELEMENT_SEPARATOR));
-    g_hash_table_insert (element_hash, "item", 
+    g_hash_table_insert (element_hash, "item",
         GINT_TO_POINTER (DESKMENU_ELEMENT_ITEM));
-    g_hash_table_insert (element_hash, "name", 
+    g_hash_table_insert (element_hash, "name",
         GINT_TO_POINTER (DESKMENU_ELEMENT_NAME));
-    g_hash_table_insert (element_hash, "icon", 
+    g_hash_table_insert (element_hash, "icon",
         GINT_TO_POINTER (DESKMENU_ELEMENT_ICON));
-    g_hash_table_insert (element_hash, "vpicon", 
+    g_hash_table_insert (element_hash, "vpicon",
         GINT_TO_POINTER (DESKMENU_ELEMENT_VPICON));
-    g_hash_table_insert (element_hash, "command", 
+    g_hash_table_insert (element_hash, "command",
         GINT_TO_POINTER (DESKMENU_ELEMENT_COMMAND));
-    g_hash_table_insert (element_hash, "thisvp", 
+    g_hash_table_insert (element_hash, "thisvp",
         GINT_TO_POINTER (DESKMENU_ELEMENT_THISVP));
-    g_hash_table_insert (element_hash, "minionly", 
+    g_hash_table_insert (element_hash, "minionly",
         GINT_TO_POINTER (DESKMENU_ELEMENT_MINIONLY));
-    g_hash_table_insert (element_hash, "wrap", 
+    g_hash_table_insert (element_hash, "wrap",
         GINT_TO_POINTER (DESKMENU_ELEMENT_WRAP));
-    g_hash_table_insert (element_hash, "sort", 
+    g_hash_table_insert (element_hash, "sort",
         GINT_TO_POINTER (DESKMENU_ELEMENT_SORT));
-    g_hash_table_insert (element_hash, "quantity", 
+    g_hash_table_insert (element_hash, "quantity",
         GINT_TO_POINTER (DESKMENU_ELEMENT_QUANTITY));
-    g_hash_table_insert (element_hash, "age", 
+    g_hash_table_insert (element_hash, "age",
         GINT_TO_POINTER (DESKMENU_ELEMENT_AGE));
 }
 
@@ -1058,7 +1064,7 @@ static DeskmenuObject
 	dm_object->show_hooks = g_slice_new0 (GHookList);
 
     g_hook_list_init (dm_object->show_hooks, sizeof (GHook));
-	
+
 	return dm_object;
 }
 
@@ -1069,12 +1075,12 @@ static DeskmenuObject
 	DeskmenuObject *dm_object = deskmenu_object_init();
     GMarkupParseContext *context = g_markup_parse_context_new (&parser,
         0, dm_object, NULL);
-	
+
 	gchar *text;
     gsize length;
 
     g_file_get_contents (filename, &text, &length, NULL); //cache already handled file existence check
-	
+
 	if (!g_markup_parse_context_parse (context, text, strlen(text), &error)
         || !g_markup_parse_context_end_parse (context, &error))
     {
@@ -1091,7 +1097,7 @@ static DeskmenuObject
 }
 
 
-static DeskmenuObject 
+static DeskmenuObject
 *check_file_cache (Deskmenu *deskmenu, gchar *filename) {
 	DeskmenuObject *dm_object;
 	gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir (),
@@ -1099,9 +1105,9 @@ static DeskmenuObject
 									"boxmenu",
 									"menu.xml",
 									NULL);
-	
+
 	//TODO: add a size column to cache for possible autorefresh
-		g_print("Checking cache...\n");	
+		g_print("Checking cache...\n");
 	if (strlen(filename) == 0)
     filename = g_build_path (G_DIR_SEPARATOR_S,
                                g_get_user_config_dir (),
@@ -1129,7 +1135,7 @@ static DeskmenuObject
 											"boxmenu",
 											"menu.xml",
 											NULL);
-			
+
 					if (g_file_test(filename, G_FILE_TEST_EXISTS))
 					{
 						if (g_hash_table_lookup(deskmenu->file_cache, filename) == NULL)
@@ -1167,7 +1173,7 @@ static DeskmenuObject
 		if (!success)
 		{
 			g_printerr ("Couldn't find a menu file...\n");
-			exit (1);		
+			exit (1);
 		}
 	}
 	else {
@@ -1191,20 +1197,20 @@ static DeskmenuObject
 				}
 		}
 	}
-	
+
 	dm_object = g_hash_table_lookup (deskmenu->file_cache, filename);
-	
+
 	g_printf("Done loading %s!\n", filename);
-	
+
 	return dm_object;
 }
 
 #if HAVE_WNCK
 gboolean
 deskmenu_vplist (Deskmenu *deskmenu,
-				gboolean toggle_wrap, 
-				gboolean toggle_images, 
-				gboolean toggle_file, 
+				gboolean toggle_wrap,
+				gboolean toggle_images,
+				gboolean toggle_file,
 				gchar *viewport_icon) {
 	DeskmenuVplist *vplist = deskmenu_vplist_initialize(toggle_wrap, toggle_images, toggle_file, g_strstrip(viewport_icon));
 	deskmenu_vplist_new (vplist);
@@ -1216,7 +1222,7 @@ deskmenu_vplist (Deskmenu *deskmenu,
 }
 
 gboolean
-deskmenu_windowlist (Deskmenu *deskmenu, 
+deskmenu_windowlist (Deskmenu *deskmenu,
 					 gboolean images,
 					 gboolean thisvp,
 					 gboolean mini_only) {
@@ -1231,14 +1237,14 @@ deskmenu_windowlist (Deskmenu *deskmenu,
 #endif
 
 gboolean
-deskmenu_documentlist (Deskmenu *deskmenu, 
-					   gboolean images, 
-					   gchar *command, 
-					   int limit, 
-					   int age, 
+deskmenu_documentlist (Deskmenu *deskmenu,
+					   gboolean images,
+					   gchar *command,
+					   int limit,
+					   int age,
 					   gchar *sort_type) {
 	GtkWidget *menu = make_recent_documents_list (images, g_strdup(command), limit, age, g_strstrip(sort_type));
-	
+
     gtk_menu_popup (GTK_MENU (menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
@@ -1256,7 +1262,7 @@ deskmenu_show (DeskmenuObject *dm_object,
     g_hook_list_invoke (dm_object->show_hooks, FALSE);
 	if (deskmenu->pinnable)
 	{
-		gtk_menu_set_tearoff_state (GTK_MENU (dm_object->menu), TRUE); 
+		gtk_menu_set_tearoff_state (GTK_MENU (dm_object->menu), TRUE);
 		for (iterator = list; iterator; iterator = iterator->next) {
 			gtk_widget_show (iterator->data);
 			gtk_widget_set_no_show_all (iterator->data, FALSE);
@@ -1305,10 +1311,10 @@ deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 {
 	GError *error = NULL;
 	GKeyFile *config = g_key_file_new ();
-	int i;
-	
- 	(void *)check_file_cache(deskmenu, ""); //always cache default menu
-	
+	int i = 0;
+
+	(void *)check_file_cache(deskmenu, ""); //always cache default menu
+
 	g_print("Attempting to precache files in config...");
 	if (!filename)
 	{
@@ -1327,8 +1333,8 @@ deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 	{
 		g_print("Configuration found! Starting precache...");
 		gchar **files = g_key_file_get_keys (config, "Files", NULL, &error);
-		gchar *feed;
-		
+		gchar *feed = "";
+
 		while (files[i])
 		{
 			feed = g_key_file_get_string (config, "Files", files[i], &error);
@@ -1350,7 +1356,7 @@ main (int    argc,
     GObject *deskmenu;
 
     g_type_init ();
- 
+
     connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
     if (connection == NULL)
     {
@@ -1388,7 +1394,7 @@ main (int    argc,
 #endif
 
     gtk_init (&argc, &argv);
-	
+
     deskmenu = g_object_new (DESKMENU_TYPE, NULL);
 
     dbus_g_connection_register_g_object (connection, DESKMENU_PATH_DBUS, deskmenu);
@@ -1398,7 +1404,7 @@ main (int    argc,
                                 DBUS_NAME_FLAG_REPLACE_EXISTING,
 						        NULL))
         return 1;
-	
+
 	set_up_element_hash();
 	set_up_item_hash();
 	deskmenu_precache(DESKMENU(deskmenu), file);
