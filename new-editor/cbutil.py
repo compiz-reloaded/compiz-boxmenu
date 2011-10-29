@@ -47,27 +47,12 @@ class CommandText(gtk.HBox):
 
 			self.entry=gtk.Entry()
 			self.entry.props.text=text
-			completion = gtk.EntryCompletion()
-			self.entry.set_completion(completion)
-
-			possibility_store = gtk.ListStore(str)
-
-			for i in os.path.expandvars("$PATH").split(":"):
-				try:
-					print "Looking in %s" %i
-					for j in os.listdir(i):
-						possibility_store.append([j])
-				except OSError:
-					print "Skipping non-existent path"
-					continue
-			completion.set_model(possibility_store)
-			completion.set_text_column(0)
 
 			self.button=gtk.Button()
 			image=gtk.image_new_from_icon_name("gtk-execute",gtk.ICON_SIZE_LARGE_TOOLBAR)
 			self.button.set_image(image)
 			#known bug
-			self.button.set_tooltip_markup("See the output this command generates\nPlease <b><i>do not click</i></b> this if the mode is normal and you see it...")
+			self.button.set_tooltip_markup("See the output this command generates")
 
 			self.combobox=gtk.combo_box_new_text()
 			self.combobox.append_text("Normal")
@@ -85,18 +70,29 @@ class CommandText(gtk.HBox):
 
 			self.show_all()
 
-			text=self.combobox.get_active_text()
-			if text == "Normal":
-				self.button.hide()
+			get_mode=self.combobox.get_active_text()
+			if get_mode == "Normal":
+				self.button.props.sensitive=0
 			else:
-				self.button.show()
+				self.button.props.sensitive=1
+
+			if alternate_mode != "Command" or get_mode != "Normal":
+				completion = gtk.EntryCompletion()
+				self.entry.set_completion(completion)
+				completion.set_model(possibility_store)
+				completion.set_text_column(0)
 
 	def _emit_mode_signal(self, widget):
 		text=self.combobox.get_active_text()
 		if text == "Normal":
-			self.button.hide()
+			self.entry.set_completion(None)
+			self.button.props.sensitive=0
 		else:
-			self.button.show()
+			completion = gtk.EntryCompletion()
+			self.entry.set_completion(completion)
+			completion.set_model(possibility_store)
+			completion.set_text_column(0)
+			self.button.props.sensitive=1
 		self.emit('mode-changed', text)
 
 	def _emit_text_signal(self, widget):
@@ -106,7 +102,8 @@ class CommandText(gtk.HBox):
 		print "Generating preview, please wait..."
 		buffer=gtk.TextBuffer()
 		buffer_errors=gtk.TextBuffer()
-		cmd=subprocess.Popen(shlex.split(os.path.expanduser(self.entry.props.text)),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		full_text=' '.join(['/usr/bin/env',os.path.expanduser(self.entry.props.text)])
+		cmd=subprocess.Popen(shlex.split(full_text),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		text,errors=cmd.communicate()
 		if text != None:
 			buffer.set_text(text)
@@ -242,4 +239,17 @@ def set_up():
 	gobject.signal_new("text-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
 	gobject.signal_new("mode-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
 
+def completion_setup():
+	print "Setting up command auto completion for best experience"
+	for i in os.path.expandvars("$PATH").split(":"):
+		if os.path.exists(i):
+			print "Looking in %s" %i
+			for j in os.listdir(i):
+				path="%s/%s" %(i,j)
+				if not os.path.isdir(path) and \
+				os.access(path, os.X_OK):
+					possibility_store.append([j])
+
+possibility_store = gtk.ListStore(str)
 set_up()
+completion_setup()

@@ -294,8 +294,12 @@ class CBEditor(gtk.Window):
 					widget.currently_editing.show()
 
 	def open_menu_file(self,treeview, path, view_column):
-		menufile=MenuFile(self.menu_list[path[0]][2])
+		for i in xrange(self.tabs.get_n_pages()):
+			widget=self.tabs.get_nth_page(i)
+			if self.menu_list[path[0]][2] == widget.filename:
+				return
 
+		menufile=MenuFile(self.menu_list[path[0]][2])
 		hbox=TabButton(self.menu_list[path[0]][1])
 		hbox.btn.connect('clicked', self.on_closetab_button_clicked, hbox.label)
 
@@ -319,11 +323,22 @@ class CBEditor(gtk.Window):
 
 	def update_cache(self, widget, path):
 		self.menu_list[path][0] = not self.menu_list[path][0]
+		parser.remove_section("Files")
+		parser.add_section("Files")
+		j=0
+		for i in self.menu_list:
+			if i[1] == "menu.xml":
+				print "Compiz Boxmenu caches menu.xml by default"
+				continue
+			if i[0]:
+				parser.set("Files", "file_%s" % j, i[2])
+				j=j+1
+		parser.write(open(cache_file, 'w'))
 
 	def reload_menu(self, widget):
 		if bus is not None:
 			try:
-				bus.get_object('org.compiz_fusion.boxmenu',
+				bus.get_object('org.compiz_fusion.boxmenu', \
 				'/org/compiz_fusion/boxmenu/menu').reload()
 			except dbus.DBusException:
 				return
@@ -373,13 +388,13 @@ if __name__ == '__main__':
 		from shutil import copyfile
 		copyfile(starting_file, menu_path+"/menu.xml")
 	try:
+		cache_file=menu_path+"/precache.ini"
 		parser=ConfigParser.SafeConfigParser()
-		parser.readfp(open(menu_path+"/precache.ini"))
+		parser.readfp(open(cache_file))
 		cache=parser.items("Files")
 		allnotcache=False
 	except IOError:
 		allnotcache=True
-	#filename = BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
-	#configdir = BaseDirectory.save_config_path('compiz/boxmenu')
+
 	CBEditor()
 	gtk.main()
