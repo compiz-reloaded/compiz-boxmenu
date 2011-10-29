@@ -16,14 +16,14 @@ class TabButton(gtk.HBox):
 			#get a stock close button image
 			close_image = gtk.image_new_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
 			image_w, image_h = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
-			
+
 			#make the close button
 			self.btn = gtk.Button()
 			self.btn.set_relief(gtk.RELIEF_NONE)
 			self.btn.set_focus_on_click(False)
 			self.btn.add(close_image)
 			self.pack_start(self.btn, False, False)
-		
+
 			#this reduces the size of the button
 			style = gtk.RcStyle()
 			style.xthickness = 0
@@ -44,32 +44,47 @@ class CommandText(gtk.HBox):
 			gtk.HBox.__init__(self)
 
 			label=gtk.Label(label_text)
-			
+
 			self.entry=gtk.Entry()
 			self.entry.props.text=text
-			
+			completion = gtk.EntryCompletion()
+			self.entry.set_completion(completion)
+
+			possibility_store = gtk.ListStore(str)
+
+			for i in os.path.expandvars("$PATH").split(":"):
+				try:
+					print "Looking in %s" %i
+					for j in os.listdir(i):
+						possibility_store.append([j])
+				except OSError:
+					print "Skipping non-existent path"
+					continue
+			completion.set_model(possibility_store)
+			completion.set_text_column(0)
+
 			self.button=gtk.Button()
 			image=gtk.image_new_from_icon_name("gtk-execute",gtk.ICON_SIZE_LARGE_TOOLBAR)
 			self.button.set_image(image)
 			#known bug
 			self.button.set_tooltip_markup("See the output this command generates\nPlease <b><i>do not click</i></b> this if the mode is normal and you see it...")
-			
+
 			self.combobox=gtk.combo_box_new_text()
 			self.combobox.append_text("Normal")
 			self.combobox.append_text(alternate_mode)
 			self.combobox.props.active = mode != "Normal"
-			
+
 			self.add(label)
 			self.add(self.entry)
 			self.add(self.button)
 			self.add(self.combobox)
-			
-			self.combobox.connect('changed', self._emit_mode_signal)    
+
+			self.combobox.connect('changed', self._emit_mode_signal)
 			self.entry.connect('changed', self._emit_text_signal)
 			self.button.connect('pressed', self._preview_text)
 
 			self.show_all()
-			
+
 			text=self.combobox.get_active_text()
 			if text == "Normal":
 				self.button.hide()
@@ -86,7 +101,7 @@ class CommandText(gtk.HBox):
 
 	def _emit_text_signal(self, widget):
 		self.emit('text-changed', widget.props.text)
-	
+
 	def _preview_text(self, widget):
 		print "Generating preview, please wait..."
 		buffer=gtk.TextBuffer()
@@ -103,7 +118,7 @@ class CommandText(gtk.HBox):
 		else:
 			buffer_errors.set_text("")
 
-		dialog=gtk.Dialog(title="Preview o %sf" %(self.entry.props.text), \
+		dialog=gtk.Dialog(title="Preview of %s" %(self.entry.props.text), \
 			buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
 
 		tabs=gtk.Notebook()
@@ -111,7 +126,7 @@ class CommandText(gtk.HBox):
 
 		scrolled=gtk.ScrolledWindow()
 		scrolled.add(gtk.TextView(buffer))
-		
+
 		scrolled_errors=gtk.ScrolledWindow()
 		scrolled_errors.add(gtk.TextView(buffer_errors))
 
@@ -133,7 +148,7 @@ class CommandText(gtk.HBox):
 class IconSelector(gtk.HBox):
 	def __init__(self, label_text="Icon", mode="Normal", text=""):
 			gtk.HBox.__init__(self)
-			
+
 			label=gtk.Label(label_text)
 			self.text=text
 
@@ -143,7 +158,7 @@ class IconSelector(gtk.HBox):
 			self.combobox.props.active = mode != "Normal"
 			self.button=gtk.Button()
 			self.image=gtk.Image()
-			
+
 			self.add(label)
 			self.add(self.button)
 			self.add(self.combobox)
@@ -164,7 +179,7 @@ class IconSelector(gtk.HBox):
 				self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
 
 			self.show_all()
-	
+
 	def _change_image(self, mode):
 		if mode == "File path":
 			size=gtk.icon_size_lookup(gtk.ICON_SIZE_LARGE_TOOLBAR)[0]

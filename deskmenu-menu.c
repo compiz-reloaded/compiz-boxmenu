@@ -159,7 +159,7 @@ pipe_menu_recreate (GtkWidget *item, gchar *command)
 			}
 			GMarkupParseContext *context = g_markup_parse_context_new (&parser,
 				0, dm_object, NULL);
-			g_markup_parse_context_parse (context, stdout, strlen((const char *)stdout), &error);
+			g_markup_parse_context_parse (context, (const gchar *)stdout, strlen((const char *)stdout), &error);
 			g_markup_parse_context_free (context);
 			if (error)
 			{
@@ -191,7 +191,7 @@ launcher_name_exec_update (GtkWidget *label)
     gchar *exec, *stdout;
     exec = g_object_get_data (G_OBJECT (label), "exec");
     if (g_spawn_command_line_sync (exec, &stdout, NULL, NULL, NULL))
-        gtk_label_set_text (GTK_LABEL (label), g_strstrip(stdout));
+        gtk_label_set_text (GTK_LABEL (label), g_strstrip((gchar *)stdout));
     else
         gtk_label_set_text (GTK_LABEL (label), "execution error");
     g_free (stdout);

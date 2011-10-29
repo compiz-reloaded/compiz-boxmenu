@@ -3,23 +3,23 @@
 import gtk, gobject, re
 from cb_itemtypes import *
 from cbmenu import *
-from cbutil import TabButton
+from cbutil import TabButton, CommandText
 from lxml import etree
 from xdg import BaseDirectory
 import os,re
 import ConfigParser
+import shlex
 
 try:
-    import dbus
+	 import dbus
 except ImportError:
-    dbus = None
+	 dbus = None
 
 class CBEditor(gtk.Window):
 	def __init__(self):
 			gtk.Window.__init__(self)
 			self.set_title("Compiz Boxmenu Editor")
 			self.props.icon_name='cb-menu'
-			#self.connect("delete-event", self.quit)
 			self.set_border_width(5)
 			self.set_size_request(600, 400)
 			self.vbox=gtk.VBox(False, 2)
@@ -27,25 +27,31 @@ class CBEditor(gtk.Window):
 			hbox_main=gtk.HBox(False, 2)
 
 			toolbar=gtk.Toolbar()
-			
+
 			new_button = gtk.MenuToolButton(gtk.STOCK_NEW)
 			new_button.set_menu(self.make_new_menu())
 
-			edit_button = gtk.ToolButton(gtk.STOCK_EDIT)
+			edit_button = gtk.ToolButton(gtk.STOCK_EDIT) # necessary?
 
 			save_button = gtk.MenuToolButton(gtk.STOCK_SAVE)
 			#save_button.set_menu(self.make_save_menu())
 			save_button.connect('clicked', self.save_one)
 
 			generate_button = gtk.ToolButton(gtk.STOCK_CONVERT)
+			generate_button.connect('clicked', self.generated_item)
 
 			delete_button = gtk.MenuToolButton(gtk.STOCK_DELETE)
 			delete_button.set_menu(self.make_delete_menu())
 			delete_button.connect('clicked', self.delete_item)
 
 			reload_button = gtk.ToolButton(gtk.STOCK_REFRESH)
+			reload_button.connect('clicked', self.reload_menu)
+
 			settings_button = gtk.ToolButton(gtk.STOCK_PREFERENCES)
+
 			about_button = gtk.ToolButton(gtk.STOCK_ABOUT)
+			about_button.connect('clicked', self.show_about_dialog)
+
 			sep=gtk.SeparatorToolItem()
 			sep2=gtk.SeparatorToolItem()
 			sep.set_draw(False)
@@ -66,7 +72,7 @@ class CBEditor(gtk.Window):
 			toolbar.insert(about_button, 9)
 
 			self.vbox.add(toolbar)
-			
+
 			listview=gtk.TreeView()
 			self.list_menus()
 			listview.set_model(self.menu_list)
@@ -74,16 +80,18 @@ class CBEditor(gtk.Window):
 			scrolled=gtk.ScrolledWindow()
 			scrolled.add(listview)
 			hbox_main.add(scrolled)
-			
+
 			name = gtk.TreeViewColumn('Menu')
 			listview.append_column(name)
 			cell = gtk.CellRendererToggle()
 			cell.set_activatable(True)
+			cell.connect('toggled', self.update_cache)
 			name.pack_start(cell)
+			name.add_attribute(cell, "active", 0)
 			cell = gtk.CellRendererText()
 			name.pack_start(cell)
-			name.add_attribute(cell,"text", 0)
-			
+			name.add_attribute(cell,"text", 1)
+
 			self.tabs=gtk.Notebook()
 			self.tabs.set_size_request(340,240)
 			self.tabs.set_scrollable(True)
@@ -91,8 +99,6 @@ class CBEditor(gtk.Window):
 			hbox_main.add(self.tabs)
 			self.tabs.set_show_tabs(True)
 			self.tabs.set_tab_pos(gtk.POS_TOP)
-			
-			#self.tabs.append_page(child, tab_label=None) #signal for open or new
 
 			self.hbox_item=gtk.HBox(False, 2)
 
@@ -114,34 +120,88 @@ class CBEditor(gtk.Window):
 
 	def make_delete_menu(self):
 		delete_menu=gtk.Menu()
-		
+
 		delete_item=gtk.ImageMenuItem("Current Item")
 		delete_item.connect('activate', self.delete_item)
 		delete_menu.append(delete_item)
-		
+
 		delete_item=gtk.ImageMenuItem("Current Menu")
 		delete_item.connect('activate', self.delete_menu)
 		delete_menu.append(delete_item)
-		
+
 		delete_menu.show_all()
 		return delete_menu
 
 	def delete_menu(self, widget):
-		print "TODO"
+		dialog = gtk.MessageDialog(self,  gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, \
+					  gtk.BUTTONS_NONE, \
+					  "Are you sure you want to delete the current menu? You cannot recover it after you do this!")
+		dialog.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_DELETE, gtk.RESPONSE_ACCEPT)
+		response = dialog.run()
+		dialog.destroy()
+		if response == gtk.RESPONSE_ACCEPT:
+			idx=self.tabs.get_current_page()
+			menu=self.tabs.get_nth_page(idx)
+			j=0
+			for i in self.menu_list:
+				if i[2]==menu.filename:
+					break
+				j=j+1
+			iter=self.menu_list.get_iter(j)
+			self.menu_list.remove(iter)
+			os.remove(menu.filename)
+			self.tabs.remove_page(idx)
 
 	def delete_item(self, widget):
 		idx=self.tabs.get_current_page()
 		menu=self.tabs.get_nth_page(idx)
-		menu.on_delete_clicked(self, widget)
+		menu.on_delete_clicked(self)
 
-	def make_new_item(self, widget, element_type):
+	def recursive_generate(self, widget, tree, pt=None):
+		for element in tree.getchildren():
+			print "Processing %s" % etree.tostring(element)
+			if element.tag=='menu':
+				new_row=self.make_new_item(widget, "Menu", nd=element, parent=pt)
+				self.recursive_generate(widget, element, pt=new_row)
+			elif element.tag=='separator':
+				self.make_new_item(widget, "Separator", nd=element, parent=pt)
+			else:
+				if element.attrib['type']=='windowlist':
+					self.make_new_item(widget, "Window List", nd=element, parent=pt)
+				elif element.attrib['type']=='viewportlist':
+					self.make_new_item(widget, "Viewport List", nd=element, parent=pt)
+				elif element.attrib['type']=='documents':
+					self.make_new_item(widget, "Recent Documents", nd=element, parent=pt)
+				else:
+					self.make_new_item(widget, element.attrib['type'].title(), nd=element, parent=pt)
+
+	def generated_item(self, widget):
+		dialog=gtk.Dialog("Add a new file", self, gtk.DIALOG_MODAL, \
+		buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
+		input=CommandText(label_text="Command", mode="Pipe Menu" , alternate_mode="Pipe Menu")
+		dialog.vbox.add(input)
+		dialog.vbox.show_all()
+		input.combobox.hide()
+		response=dialog.run()
+		if response==gtk.RESPONSE_ACCEPT:
+			process=subprocess.Popen(shlex.split(os.path.expanduser(input.entry.props.text)), \
+				stdout=subprocess.PIPE)
+			dummy_menu=etree.fromstring("<menu name='Dummy'>%s</menu>" % process.communicate()[0])
+			self.recursive_generate(widget, dummy_menu)
+		dialog.destroy()
+
+	def make_new_item(self, widget, element_type, nd=None, parent=None):
 		if element_type != 'Menu File':
 			idx=self.tabs.get_current_page()
 			widget=self.tabs.get_nth_page(idx)
 			model=widget.treeview.get_model()
 			m, r = widget.treeview.get_selection().get_selected()
-			parent = sibling = None
-			if r:
+			sibling = None
+			if parent is not None:
+				current = model[parent][0]
+				if current.node.tag != 'menu':
+					sibling = parent
+			elif r:
 				current = model[r][0]
 				if current.node.tag == 'menu':
 					parent = r
@@ -155,28 +215,48 @@ class CBEditor(gtk.Window):
 			else:
 				parentelement = widget.menu
 
-			element = elementsbyname[element_type]()
+			element = elementsbyname[element_type](node=nd)
 			if sibling:
 				position = parentelement.node.index(current.node) + 1
 				parentelement.node.insert(position, element.node)
-				model.insert_after(parent, sibling, row=(element,))
+				new_row=model.insert_after(parent, sibling, row=(element,))
 			else:
-				model.append(parent, row=(element,))
+				new_row=model.append(parent, row=(element,))
 				parentelement.node.append(element.node)
+			print "New %s created" % element_type
+			return new_row
 		else:
-			print "I am a pickle"
-		print "New %s created" % element_type
+			menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
+			dialog=gtk.Dialog("Add a new file", self, gtk.DIALOG_MODAL, \
+			buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
+			input=gtk.Entry()
+			dialog.vbox.add(gtk.Label("Name of the new menu to be created, with .xml at the end:"))
+			dialog.vbox.add(input)
+			dialog.vbox.show_all()
+			response=dialog.run()
+			if response != gtk.RESPONSE_ACCEPT or \
+				input.props.text == "" or \
+				not input.props.text.endswith(".xml"):
+				dialog.destroy()
+				return
+			path="%s/%s" %(menu_path, input.props.text)
+			f = open(path, "w")
+			f.write("<menu></menu>")
+			f.close()
+			self.menu_list.append([False,input.props.text, path])
+			dialog.destroy()
+			print "New %s created" % element_type
 
 	def save_one(self, widget):
 		idx=self.tabs.get_current_page()
-		#ignore if tab isn't flagged 
+		#ignore if tab isn't flagged
 		#or if undo stack and redo stoack is empty
 		widget=self.tabs.get_nth_page(idx)
 		widget.write_menu()
 		label=self.tabs.get_tab_label(widget)
 		current_text=label.label.get_text()
 		label.label.set_text(current_text.replace("*",""))
-	
+
 	def save_all(self, widget):
 		for i in xrange(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
@@ -195,10 +275,12 @@ class CBEditor(gtk.Window):
 					widget.currently_editing.show()
 
 	def change_tab_title_del(self, path, a, label):
-		label.set_text("*"+label.get_text())
+		if not re.match("\*",label.get_text()):
+			label.set_text("*"+label.get_text())
 
 	def change_tab_title(self, path, iter, a, label):
-		label.set_text("*"+label.get_text())
+		if not re.match("\*",label.get_text()):
+			label.set_text("*"+label.get_text())
 
 	def get_edit_panel(self, treeview, path, view_column, menufile):
 		self.vbox.add(menufile.currently_editing)
@@ -212,42 +294,92 @@ class CBEditor(gtk.Window):
 					widget.currently_editing.show()
 
 	def open_menu_file(self,treeview, path, view_column):
-		menufile=MenuFile(self.menu_list[path[0]][1])
-		
-		hbox=TabButton(self.menu_list[path[0]][0])
+		menufile=MenuFile(self.menu_list[path[0]][2])
+
+		hbox=TabButton(self.menu_list[path[0]][1])
 		hbox.btn.connect('clicked', self.on_closetab_button_clicked, hbox.label)
-		
+
 		self.tabs.append_page(menufile, hbox)
 		menufile.model.connect('row-changed',self.change_tab_title, hbox.label)
 		menufile.model.connect('row-deleted',self.change_tab_title_del, hbox.label)
 		menufile.model.connect('row-inserted',self.change_tab_title, hbox.label)
 		menufile.treeview.connect('row-activated',self.get_edit_panel, menufile)
-	
+
 	def on_closetab_button_clicked(self, sender, widget):
 		pagenum = self.tabs.page_num(widget)
-		#if code for tab title
-		
+		if re.match("\*",widget.get_text()):
+			menu=self.tabs.get_nth_page(pagenum)
+			warning = gtk.MessageDialog(self, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_NONE, 'Close %s with unsaved changes?' % os.path.basename(menu.filename))
+			warning.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
+			if warning.run() != gtk.RESPONSE_ACCEPT:
+				warning.destroy()
+				return
+			warning.destroy()
 		self.tabs.remove_page(pagenum)
 
+	def update_cache(self, widget, path):
+		self.menu_list[path][0] = not self.menu_list[path][0]
+
+	def reload_menu(self, widget):
+		if bus is not None:
+			try:
+				bus.get_object('org.compiz_fusion.boxmenu',
+				'/org/compiz_fusion/boxmenu/menu').reload()
+			except dbus.DBusException:
+				return
+
+	def show_about_dialog(self, widget):
+		dialog=gtk.AboutDialog()
+		dialog.set_name("Compiz Boxmenu Editor")
+		dialog.set_version("1.0.9")
+		dialog.set_authors(["ShadowKyogre","crdlb"])
+		dialog.set_comments("A specialized editor for Compiz Boxmenu's menu files")
+		dialog.run()
+		dialog.destroy()
+
+	def check_cache(self, path):
+		for i in cache:
+			if os.path.expanduser(i[1]) == path:
+				return True
+		return False
+
 	def list_menus(self):
-		self.menu_list=gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING)
+		self.menu_list=gtk.ListStore(gobject.TYPE_BOOLEAN, \
+				gobject.TYPE_STRING, \
+				gobject.TYPE_STRING)
 		menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
 		for checking in os.listdir(menu_path):
 			path="%s/%s" %(menu_path, checking)
 			if checking.endswith(".xml"):
-				self.menu_list.append([checking, path])
+				if allnotcache:
+					self.menu_list.append([False,checking, path])
+				else:
+					self.menu_list.append([self.check_cache(path),checking, path])
 
 if __name__ == '__main__':
 
-    #if dbus:
-		#try:
-		    #bus = dbus.SessionBus()
-		#except dbus.DBusException:
-		    #bus = None
-    #else:
-		#bus = None
-
-    #filename = BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
-    #configdir = BaseDirectory.save_config_path('compiz/boxmenu')
-    CBEditor()
-    gtk.main()
+	if dbus:
+		try:
+			 bus = dbus.SessionBus()
+		except dbus.DBusException:
+			 bus = None
+	else:
+		bus = None
+	menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
+	if not os.path.exists(menu_path):
+		os.mkdir(menu_path)
+	elif not os.path.exists(menu_path+"/menu.xml"):
+		starting_file=BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
+		from shutil import copyfile
+		copyfile(starting_file, menu_path+"/menu.xml")
+	try:
+		parser=ConfigParser.SafeConfigParser()
+		parser.readfp(open(menu_path+"/precache.ini"))
+		cache=parser.items("Files")
+		allnotcache=False
+	except IOError:
+		allnotcache=True
+	#filename = BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
+	#configdir = BaseDirectory.save_config_path('compiz/boxmenu')
+	CBEditor()
+	gtk.main()

@@ -75,7 +75,7 @@ class MenuFile(gtk.ScrolledWindow):
 		self.popup.show_all()
 
 		self.show_all()
-	
+
 	def add_menu_file(self, filename):
 		self.menufile = etree.parse(filename)
 		self.menu = Menu(self.menufile.getroot())
@@ -128,7 +128,7 @@ class MenuFile(gtk.ScrolledWindow):
 		model=self.selection.get_selected()[0]
 		iter=self.selection.get_selected()[1]
 		self.currently_editing=EditItemPanel(model,iter)
-		
+
 	def on_delete_clicked(self, widget):
 
 		model, row = self.selection.get_selected()
@@ -138,7 +138,9 @@ class MenuFile(gtk.ScrolledWindow):
 			current = model[row][0].node
 
 			if current.tag == 'menu' and len(current):
-				warning = gtk.MessageDialog(self, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_NONE, 'Delete menu element with %s children?' %len(current))
+				warning = gtk.MessageDialog(self.get_toplevel(), \
+				gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_NONE, \
+				'Delete menu element with %s children?' %len(current))
 				warning.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_DELETE, gtk.RESPONSE_ACCEPT)
 				if warning.run() != gtk.RESPONSE_ACCEPT:
 					warning.destroy()
@@ -164,7 +166,7 @@ class MenuFile(gtk.ScrolledWindow):
 		treeselection = treeview.get_selection()
 		model, iter = treeselection.get_selected()
 		data = model.get_string_from_iter(iter)
-		
+
 		selection.set(selection.target, 8, data)
 
 	def on_drag_data_received(self, treeview, context, x, y, selection,
@@ -193,7 +195,7 @@ class MenuFile(gtk.ScrolledWindow):
 					fiter = model.append(diter, row=(source,))
 				else:
 					i = dest.node.getparent().index(dest.node)
-					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE, 
+					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
 						gtk.TREE_VIEW_DROP_BEFORE):
 						dest.node.getparent().insert(i, source.node)
 						fiter = model.insert_before(None, diter, row=(source,))
@@ -236,7 +238,7 @@ class MenuFile(gtk.ScrolledWindow):
 					fiter = model.append(diter, row=(launcher,))
 				else:
 					i = dest.node.getparent().index(dest.node)
-					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE, 
+					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
 						gtk.TREE_VIEW_DROP_BEFORE):
 						dest.node.getparent().insert(i, launcher.node)
 						fiter = model.insert_before(None, diter, row=(launcher,))
@@ -253,7 +255,7 @@ class MenuFile(gtk.ScrolledWindow):
 	def on_selection_changed(self, selection):
 
 		model, row = selection.get_selected()
- 
+
 		sensitive = row and model.get_value(row, 0).editable
 
 		self.edit_menu.props.sensitive = sensitive
@@ -266,7 +268,7 @@ class MenuFile(gtk.ScrolledWindow):
 			self.currently_editing.destroy()
 		self.currently_editing=EditItemPanel(model, model.get_iter(path))
 		#change this to actually fill out item panel
-		
+
 	def on_treeview_button_press_event(self, treeview, event):
 		if event.button == 3:
 			pthinfo = self.treeview.get_path_at_pos(int(event.x), int(event.y))
@@ -323,9 +325,9 @@ class EditItemPanel(gtk.HBox):
 
 		if not element.editable:
 			return
-		
+
 		icons,widgets=element.get_options()
-		
+
 		for icon in icons:
 			self.vbox_image_grid.add(icon)
 
