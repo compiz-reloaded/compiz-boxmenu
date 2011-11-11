@@ -76,7 +76,7 @@ class CommandText(gtk.HBox):
 			else:
 				self.button.props.sensitive=1
 
-			if alternate_mode != "Command" or get_mode != "Normal":
+			if alternate_mode != "Execute" or get_mode != "Normal":
 				completion = gtk.EntryCompletion()
 				self.entry.set_completion(completion)
 				completion.set_model(possibility_store)

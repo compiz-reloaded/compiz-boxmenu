@@ -102,6 +102,7 @@ class MenuFile(gtk.ScrolledWindow):
 	def get_icon(self, column, cell, model, iter):
 		icon = model.get_value(iter, 0).get_icon()
 		icon_mode = model.get_value(iter, 0).get_icon_mode()
+		#somehow does not set icon until selection change with things that don't have icons originally!
 		if icon is not None:
 			if icon_mode is not None:
 				w = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
@@ -117,10 +118,6 @@ class MenuFile(gtk.ScrolledWindow):
 		else:
 			cell.set_property('icon-name', None)
 			cell.set_property('pixbuf', None)
-
-	def on_new_clicked(self, widget):
-
-		NewItemDialog(*self.selection.get_selected())
 
 	def on_edit_clicked(self, widget):
 		if hasattr(self, 'currently_editing'):
@@ -247,8 +244,6 @@ class MenuFile(gtk.ScrolledWindow):
 						fiter = model.insert_after(None, diter, row=(launcher,))
 				if context.action == gtk.gdk.ACTION_MOVE:
 					context.finish(True, True, etime)
-
-		#self.write_menu()
 
 		return
 

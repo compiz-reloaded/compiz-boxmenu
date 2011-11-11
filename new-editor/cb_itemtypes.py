@@ -3,7 +3,7 @@ from lxml import etree
 from cbutil import *
 
 class Item(object):
-	
+
 	def __init__(self, node=None, parent=None, type=None):
 
 		self.editable = False
@@ -12,7 +12,7 @@ class Item(object):
 			self.node = etree.Element('item')
 			if type is not None:
 				self.node.attrib['type'] = type
-		
+
 		else:
 			self.node = node
 
@@ -29,14 +29,14 @@ class Item(object):
 		return None
 
 class Launcher(Item):
-	
+
 	def __init__(self, node=None):
 
 		Item.__init__(self, node)
 
 		if node is None:
-			self.node = etree.Element('item', type='launcher') 
-		
+			self.node = etree.Element('item', type='launcher')
+
 		self.editable = True
 
 	def get_name(self):
@@ -89,7 +89,7 @@ class Launcher(Item):
 		widget.connect('mode-changed', self.on_name_mode_changed)
 
 		retlist.append(widget)
-		
+
 		iconnode = self.node.find('icon')
 		if iconnode is not None:
 			icon = iconnode.text
@@ -179,13 +179,13 @@ class Launcher(Item):
 			del commandnode.attrib['cache']
 
 class Windowlist(Item):
-	
+
 	def __init__(self, node=None):
 		Item.__init__(self, node, type='windowlist')
 		self.editable = True
 		self.thisvp = self.node.find('thisvp')
 		self.minionly = self.node.find('minionly')
-	
+
 	def get_icon(self):
 		iconnode = self.node.find('icon')
 		if iconnode is not None:
@@ -285,7 +285,7 @@ class Windowlist(Item):
 		return 'Windows list'
 
 class Viewportlist(Item):
-	
+
 	def __init__(self, node=None): #change to be an attribute of viewportlist
 		Item.__init__(self, node, type='viewportlist')
 		self.editable = True
@@ -293,7 +293,7 @@ class Viewportlist(Item):
 
 	def get_type(self):
 		return 'Viewports list'
-	
+
 	def get_icon(self):
 		iconnode = self.node.find('icon')
 		if iconnode is not None:
@@ -352,7 +352,7 @@ class Viewportlist(Item):
 		widget.connect('mode-changed', self.on_vpicon_mode_changed)
 
 		icons.append(widget)
-		
+
 		return icons,retlist
 
 	def get_wrap(self):
@@ -398,14 +398,14 @@ class Viewportlist(Item):
 		self.wrap.text = text
 
 class Documents(Item):
-	
+
 	def __init__(self, node=None): #change to be an attribute of viewportlist
 		Item.__init__(self, node, type='documents')
 		self.editable = True
 
 	def get_type(self):
 		return 'Recent Documents list'
-	
+
 	def get_icon(self):
 		iconnode = self.node.find('icon')
 		if iconnode is not None:
@@ -468,7 +468,7 @@ class Documents(Item):
 		sgroup.add_widget(label)
 		label.set_markup('<b>Days from today:</b>')
 		widget = gtk.Entry()
-		
+
 		agenode = self.node.find('age')
 		if agenode is not None:
 			age = agenode.text
@@ -487,7 +487,7 @@ class Documents(Item):
 		sgroup.add_widget(label)
 		label.set_markup('<b>Items to display:</b>')
 		widget = gtk.Entry()
-		
+
 		quantitynode = self.node.find('quantity')
 		if quantitynode is not None:
 			quantity = quantitynode.text
@@ -500,9 +500,9 @@ class Documents(Item):
 		hbox.pack_start(label)
 		hbox.pack_start(widget, True, True)
 		retlist.append(hbox)
-		
+
 		sortnode = self.node.find('sort')
-		
+
 		label = gtk.Label()
 		label.set_alignment(0, 0.5)
 		sgroup.add_widget(label)
@@ -525,7 +525,7 @@ class Documents(Item):
 		hbox.pack_start(label)
 		hbox.pack_start(widget, True, True)
 		retlist.append(hbox)
-		
+
 		return icons,retlist
 
 	def on_subnode_changed(self, widget, text, tag):
@@ -569,11 +569,11 @@ class Documents(Item):
 				self.node.remove(sortnode)
 
 class Reload(Item):
-	
+
 	def __init__(self, node=None):
 		Item.__init__(self, node, type='reload')
 		self.editable = True
-	
+
 	def get_icon(self):
 		iconnode = self.node.find('icon')
 		if iconnode is not None:
@@ -592,7 +592,7 @@ class Reload(Item):
 	def get_options(self):
 		icons = []
 		retlist = []
-		
+
 		iconnode = self.node.find('icon')
 		if iconnode is not None:
 			icon = iconnode.text
@@ -636,7 +636,7 @@ class Reload(Item):
 		return 'Reload'
 
 class Separator(object):
-	
+
 	def __init__(self, node=None, parent=None):
 		self.node = node
 		self.editable = True
@@ -738,7 +738,7 @@ class Menu(object):
 				self.children.append(self.make_child(child))
 			except KeyError:
 				pass
-		
+
 
 	def make_child(self, child):
 		return elements[child.tag](child)
