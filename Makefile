@@ -30,12 +30,16 @@ deskmenu-glue.h: deskmenu-service.xml
 
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin/
+	mkdir -p $(DESTDIR)$(PREFIX)/share/icons
+	mkdir -p $(DESTDIR)$(PREFIX)/share/cb-editor
 	install compiz-boxmenu $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-dlist $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-vplist $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-wlist $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-daemon $(DESTDIR)$(PREFIX)/bin/
 	install compiz-boxmenu-editor $(DESTDIR)$(PREFIX)/bin/
+	install new-editor/* $(DESTDIR)$(PREFIX)/share/cb-editor
+	cp -r hicolor $(DESTDIR)$(PREFIX)/share/icons
 	mkdir -p $(DESTDIR)/etc/xdg/compiz/boxmenu/
 	install menu.xml $(DESTDIR)/etc/xdg/compiz/boxmenu/
 	install precache.ini $(DESTDIR)/etc/xdg/compiz/boxmenu/
