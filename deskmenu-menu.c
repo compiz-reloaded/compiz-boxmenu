@@ -1179,22 +1179,23 @@ static DeskmenuObject
 	else {
 		if (g_hash_table_lookup(deskmenu->file_cache, filename) == NULL) {
 			if (g_file_test(filename, G_FILE_TEST_EXISTS))
+			{
+				g_print("Preparing new non-default menu...\n");
+				g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), deskmenu_parse_file(filename));
+			}
+			else 
+			{
+				if (g_hash_table_lookup(deskmenu->file_cache, user_default) != NULL)
 				{
-					g_print("Preparing new non-default menu...\n");
-					g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), deskmenu_parse_file(filename));
+					g_print("Couldn't find specified file, loading default...\n");
+					filename = user_default;
 				}
-				else {
-					if (g_hash_table_lookup(deskmenu->file_cache, user_default) != NULL)
-					{
-						g_print("Couldn't find specified file, loading default...\n");
-						filename = user_default;
-					}
-					else
-					{
-						g_printerr ("Couldn't find a menu file...\n");
-						exit (1);
-					}
+				else
+				{
+					g_printerr ("Couldn't find a menu file...\n");
+					exit (1);
 				}
+			}
 		}
 	}
 
@@ -1311,7 +1312,8 @@ deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 {
 	GError *error = NULL;
 	GKeyFile *config = g_key_file_new ();
-	int i = 0;
+	guint i = 0;
+	gsize total = 0;
 
 	(void *)check_file_cache(deskmenu, ""); //always cache default menu
 
@@ -1332,17 +1334,18 @@ deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 	else
 	{
 		g_print("Configuration found! Starting precache...");
-		gchar **files = g_key_file_get_keys (config, "Files", NULL, &error);
+		gchar **files = g_key_file_get_keys (config, "Files", &total, &error);
 		gchar *feed = "";
-
-		while (files[i])
+		for (;i < total;i++)
 		{
 			feed = g_key_file_get_string (config, "Files", files[i], &error);
 			(void *)check_file_cache(deskmenu, parse_expand_tilde(feed));
-			i++;
 		}
 		g_strfreev(files);
-		g_free(feed);
+		if (feed != "")
+		{
+			g_free(feed);
+		}
 	}
 	g_key_file_free (config);
 }
