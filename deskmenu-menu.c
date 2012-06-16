@@ -102,8 +102,9 @@ launcher_activated (GtkWidget *widget,
                     gchar     *command)
 {
     GError *error = NULL;
+	GAppInfo *app = g_app_info_create_from_commandline  (parse_expand_tilde(command), NULL, 0, &error);
 
-	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(command), &error))
+	if (!g_app_info_launch(app, NULL, NULL, &error))
     {
         deskmenu_widget_error(error);
     }
@@ -115,11 +116,16 @@ recent_activated (GtkRecentChooser *chooser,
                   gchar     *command)
 {
     GError *error = NULL;
-	gchar *full_command, *file;
+	gchar /* *full_command, */ *file;
 	file = gtk_recent_chooser_get_current_uri (chooser);
-	full_command = get_full_command(command, file);
+	//full_command = get_full_command(command, file);
+	GList *files = NULL;
+	files = g_list_append(files, file);
 
-	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(full_command), &error))
+	//GdkScreen *screen = gdk_screen_get_default ();
+	GAppInfo *app = g_app_info_create_from_commandline  (parse_expand_tilde(command), NULL, 0, &error);
+
+	if (!g_app_info_launch_uris(app, files, NULL, &error))
     {
         deskmenu_widget_error(error);
     }
@@ -702,7 +708,7 @@ start_element (GMarkupParseContext *context,
                 }
 				if (decorate)
 				{
-					GtkWidget *box = gtk_hbox_new (FALSE, 3);
+					GtkWidget *box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
 					gtk_container_add (GTK_CONTAINER(item), GTK_WIDGET(box));
 					if (name_exec)
 					{
@@ -1183,7 +1189,7 @@ static DeskmenuObject
 				g_print("Preparing new non-default menu...\n");
 				g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), deskmenu_parse_file(filename));
 			}
-			else 
+			else
 			{
 				if (g_hash_table_lookup(deskmenu->file_cache, user_default) != NULL)
 				{

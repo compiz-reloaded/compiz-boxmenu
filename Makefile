@@ -1,10 +1,10 @@
 PREFIX := /usr
 
-CPPFLAGS := `pkg-config --cflags dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
+CPPFLAGS := `pkg-config --cflags dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
 CPPFLAGS_CLIENT := `pkg-config --cflags dbus-glib-1`
 WARNINGS := -Wall -Wextra -Wno-unused-parameter
 CFLAGS := -O2 -g $(WARNINGS)
-LDFLAGS := `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
+LDFLAGS := `pkg-config --libs dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
 LDFLAGS_CLIENT := `pkg-config --libs dbus-glib-1`
 
 all: compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist

@@ -1,4 +1,4 @@
-import gtk
+from gi.repository import Gtk as gtk
 from lxml import etree
 from cbutil import *
 
@@ -143,7 +143,7 @@ class Launcher(Item):
 
 	def on_name_mode_changed(self, widget, text):
 		namenode = self.node.find('name')
-		print text
+		print(text)
 		if text == "Execute":
 			if namenode is None:
 				namenode = etree.SubElement(self.node, 'name')
@@ -425,7 +425,7 @@ class Documents(Item):
 	def get_options(self):
 		retlist = []
 		icons = []
-		sgroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sgroup = gtk.SizeGroup(gtk.SizeGroupMode.HORIZONTAL)
 
 		label = gtk.Label()
 		label.set_alignment(0, 0.5)
@@ -442,8 +442,8 @@ class Documents(Item):
 		widget.connect('changed', self.on_subnode_changed, 'command')
 
 		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox.pack_start(label, True, True, True)
+		hbox.pack_start(widget, True, True, True)
 		retlist.append(hbox)
 
 		iconnode = self.node.find('icon')
@@ -478,8 +478,8 @@ class Documents(Item):
 		widget.connect('changed', self.on_subnode_changed, 'age')
 
 		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox.pack_start(label, True, True, True)
+		hbox.pack_start(widget, True, True, True)
 		retlist.append(hbox)
 
 		label = gtk.Label()
@@ -497,8 +497,8 @@ class Documents(Item):
 		widget.connect('changed', self.on_subnode_changed, 'quantity')
 
 		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox.pack_start(label, True, True, True)
+		hbox.pack_start(widget, True, True, True)
 		retlist.append(hbox)
 
 		sortnode = self.node.find('sort')
@@ -507,7 +507,7 @@ class Documents(Item):
 		label.set_alignment(0, 0.5)
 		sgroup.add_widget(label)
 		label.set_markup('<b>Sort mode:</b>')
-		widget = gtk.combo_box_new_text()
+		widget = gtk.ComboBoxText()
 		widget.append_text('None')
 		widget.append_text('Most Used')
 		widget.append_text('Least Used')
@@ -522,8 +522,8 @@ class Documents(Item):
 		widget.connect('changed', self.on_sort_mode_changed)
 
 		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox.pack_start(label, True, True, True)
+		hbox.pack_start(widget, True, True, True)
 		retlist.append(hbox)
 
 		return icons,retlist
@@ -557,7 +557,7 @@ class Documents(Item):
 		sortnode = self.node.find('sort')
 		sorttype = widget.get_active_text()
 		if sorttype != 'None':
-			print sorttype
+			print(sorttype)
 			if sortnode is None:
 				sortnode = etree.SubElement(self.node, 'sort')
 			if sorttype == 'Most Used':

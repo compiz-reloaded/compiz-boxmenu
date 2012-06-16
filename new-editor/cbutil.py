@@ -1,7 +1,10 @@
 #!/usr/bin/python
-import os, gtk, glib
+import os
+from gi.repository import GdkPixbuf as gdkpixbuf
+from gi.repository import Gtk as gtk
+from gi.repository import GLib as glib
+from gi.repository import GObject as gobject
 from pyicon_browser import *
-import gobject
 import subprocess
 import shlex
 import os
@@ -11,24 +14,26 @@ class TabButton(gtk.HBox):
 			gtk.HBox.__init__(self)
 			#http://www.eurion.net/python-snippets/snippet/Notebook%20close%20button.html
 			self.label = gtk.Label(text)
-			self.pack_start(self.label)
+			self.pack_start(self.label, True, True, True)
 
 			#get a stock close button image
-			close_image = gtk.image_new_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
-			image_w, image_h = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
+			default = gtk.IconTheme.get_default()
+			#_,image_w, image_h = gtk.icon_size_lookup(gtk.IconSize.MENU)
+			close_image = gtk.Image.new_from_icon_name(gtk.STOCK_CLOSE, gtk.IconSize.MENU)
+			#image_w, image_h = gtk.icon_size_lookup(gtk.IconSize.MENU)
 
 			#make the close button
 			self.btn = gtk.Button()
-			self.btn.set_relief(gtk.RELIEF_NONE)
+			self.btn.set_relief(gtk.ReliefStyle.NONE)
 			self.btn.set_focus_on_click(False)
 			self.btn.add(close_image)
-			self.pack_start(self.btn, False, False)
+			self.pack_start(self.btn, False, False, True)
 
 			#this reduces the size of the button
-			style = gtk.RcStyle()
-			style.xthickness = 0
-			style.ythickness = 0
-			self.btn.modify_style(style)
+			style = self.btn.get_style()
+			style.set_data('xthickness', 0)
+			style.set_data('ythickness', 0)
+			self.btn.set_style(style)
 
 			self.show_all()
 
@@ -49,12 +54,12 @@ class CommandText(gtk.HBox):
 			self.entry.props.text=text
 
 			self.button=gtk.Button()
-			image=gtk.image_new_from_icon_name("gtk-execute",gtk.ICON_SIZE_LARGE_TOOLBAR)
+			image=gtk.Image.new_from_icon_name("gtk-execute",gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_image(image)
 			#known bug
 			self.button.set_tooltip_markup("See the output this command generates")
 
-			self.combobox=gtk.combo_box_new_text()
+			self.combobox=gtk.ComboBoxText()
 			self.combobox.append_text("Normal")
 			self.combobox.append_text(alternate_mode)
 			self.combobox.props.active = mode != "Normal"
@@ -99,7 +104,7 @@ class CommandText(gtk.HBox):
 		self.emit('text-changed', widget.props.text)
 
 	def _preview_text(self, widget):
-		print "Generating preview, please wait..."
+		print("Generating preview, please wait...")
 		buffer=gtk.TextBuffer()
 		buffer_errors=gtk.TextBuffer()
 		full_text=' '.join(['/usr/bin/env',os.path.expanduser(self.entry.props.text)])
@@ -116,7 +121,7 @@ class CommandText(gtk.HBox):
 			buffer_errors.set_text("")
 
 		dialog=gtk.Dialog(title="Preview of %s" %(self.entry.props.text), \
-			buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+			buttons=(gtk.STOCK_OK, gtk.ResponseType.ACCEPT))
 
 		tabs=gtk.Notebook()
 		tabs.set_scrollable(True)
@@ -149,7 +154,7 @@ class IconSelector(gtk.HBox):
 			label=gtk.Label(label_text)
 			self.text=text
 
-			self.combobox=gtk.combo_box_new_text()
+			self.combobox=gtk.ComboBoxText()
 			self.combobox.append_text("Normal")
 			self.combobox.append_text("File path")
 			self.combobox.props.active = mode != "Normal"
@@ -165,29 +170,29 @@ class IconSelector(gtk.HBox):
 			self.button.connect('pressed', self._emit_text_signal)
 
 			if mode == "File path":
-				size=gtk.icon_size_lookup(gtk.ICON_SIZE_LARGE_TOOLBAR)[0]
+				_,_,size=gtk.icon_size_lookup(gtk.IconSize.LARGE_TOOLBAR)
 				try:
-					pixbuf=gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(self.text), size, size)
+					pixbuf=gdkpixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
 					self.image.set_from_pixbuf(pixbuf)
 				except glib.GError:
 					self.image.set_from_pixbuf(None)
-					print "Couldn't set icon from file: %s" %(self.text)
+					print("Couldn't set icon from file: %s" %(self.text))
 			else:
-				self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
+				self.image.set_from_icon_name(self.text,gtk.IconSize.LARGE_TOOLBAR)
 
 			self.show_all()
 
 	def _change_image(self, mode):
 		if mode == "File path":
-			size=gtk.icon_size_lookup(gtk.ICON_SIZE_LARGE_TOOLBAR)[0]
+			_,_,size=gtk.icon_size_lookup(gtk.IconSize.LARGE_TOOLBAR)
 			try:
-				pixbuf=gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(self.text), size, size)
+				pixbuf=gdkpixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
 				self.image.set_from_pixbuf(pixbuf)
 			except glib.GError:
 				self.image.set_from_pixbuf(None)
-				print "Couldn't set icon from file: %s" %(self.text)
+				print("Couldn't set icon from file: %s" %(self.text))
 		else:
-			self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
+			self.image.set_from_icon_name(self.text,gtk.IconSize.LARGE_TOOLBAR)
 		self.emit('image-changed', mode)
 
 	def _emit_mode_signal(self, widget):
@@ -201,11 +206,11 @@ class IconSelector(gtk.HBox):
 			dialog=IcoBrowse()
 			dialog.set_defaults(self.text)
 			response = dialog.run()
-			if response == gtk.RESPONSE_ACCEPT:
+			if response == gtk.ResponseType.ACCEPT:
 				text=dialog.get_icon_name(None)
 			dialog.destroy()
 		else:
-			btns=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_ACCEPT)
+			btns=(gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL, gtk.STOCK_OPEN, gtk.ResponseType.ACCEPT)
 			dialog=gtk.FileChooserDialog(title="Select Icon", buttons=btns)
 			dialog.set_filename(text)
 			filter = gtk.FileFilter()
@@ -220,7 +225,7 @@ class IconSelector(gtk.HBox):
 			filter.add_pattern("*.xpm")
 			dialog.add_filter(filter)
 			response = dialog.run()
-			if response == gtk.RESPONSE_ACCEPT:
+			if response == gtk.ResponseType.ACCEPT:
 				text=dialog.get_filename()
 			dialog.destroy()
 		if text != self.text and (text != "" and text != None):
@@ -240,10 +245,10 @@ def set_up():
 	gobject.signal_new("mode-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
 
 def completion_setup():
-	print "Setting up command auto completion for best experience"
+	print("Setting up command auto completion for best experience")
 	for i in os.path.expandvars("$PATH").split(":"):
 		if os.path.exists(i):
-			print "Looking in %s" %i
+			print("Looking in %s" %i)
 			for j in os.listdir(i):
 				path="%s/%s" %(i,j)
 				if not os.path.isdir(path) and \

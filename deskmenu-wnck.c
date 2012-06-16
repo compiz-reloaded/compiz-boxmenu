@@ -4,7 +4,7 @@
 
 #include "deskmenu-wnck.h"
 
-void 
+void
 refresh_viewportlist_item (GtkWidget *item, gpointer data) {
 	DeskmenuVplist *vplist = g_object_get_data(G_OBJECT(item), "vplist");
 	deskmenu_vplist_new(vplist);
@@ -32,7 +32,7 @@ wnck_selector_dimm_icon (GdkPixbuf *pixbuf)
   w = gdk_pixbuf_get_width (pixbuf);
   h = gdk_pixbuf_get_height (pixbuf);
 
-  if (gdk_pixbuf_get_has_alpha (pixbuf)) 
+  if (gdk_pixbuf_get_has_alpha (pixbuf))
     dimmed = gdk_pixbuf_copy (pixbuf);
   else
     dimmed = gdk_pixbuf_add_alpha (pixbuf, FALSE, 0, 0, 0);
@@ -69,11 +69,13 @@ wnck_selector_get_width (GtkWidget  *widget,
   gint max_width;
   gint screen_width;
   gint width;
+  GtkStyle *style;
 
   gtk_widget_ensure_style (widget);
 
   context = gtk_widget_get_pango_context (widget);
-  metrics = pango_context_get_metrics (context, widget->style->font_desc,
+  style = gtk_widget_get_style (widget);
+  metrics = pango_context_get_metrics (context, style->font_desc,
                                        pango_context_get_language (context));
   char_width = pango_font_metrics_get_approximate_char_width (metrics);
   pango_font_metrics_unref (metrics);
@@ -110,7 +112,7 @@ dmwin_set_decoration (WnckWindow *window, DeskmenuWindowlist *windowlist, GtkWid
     gchar *namecpy, *mnemonic, *decorated_name, *unescaped;
     guint i, n;
     name = g_string_new (wnck_window_get_name (window));
-    
+
     namecpy = g_strdup (name->str);
 
     n = 0;
@@ -173,13 +175,13 @@ window_name_changed (WnckWindow *window, GtkWidget *label, DeskmenuWindowlist *w
 }
 
 static void
-window_icon_changed (WnckWindow *window, 
+window_icon_changed (WnckWindow *window,
                      GtkWidget *image)
 {
     GdkPixbuf *pixbuf;
     gboolean free_pixbuf;
-	pixbuf = wnck_window_get_mini_icon (window); 
-	free_pixbuf = FALSE;    
+	pixbuf = wnck_window_get_mini_icon (window);
+	free_pixbuf = FALSE;
 	if (wnck_window_is_minimized (window))
 	{
 		pixbuf = wnck_selector_dimm_icon (pixbuf);
@@ -187,7 +189,7 @@ window_icon_changed (WnckWindow *window,
 	}
 
 	gtk_image_set_from_pixbuf (GTK_IMAGE (image), pixbuf);
-	
+
 	if (free_pixbuf)
 		g_object_unref (pixbuf);
 }
@@ -198,12 +200,12 @@ deskmenu_windowlist_window_new (WnckWindow *window,
 {
     GtkWidget *item = gtk_image_menu_item_new ();
     GtkWidget *label = gtk_label_new (NULL);
-	
+
 	gtk_container_add (GTK_CONTAINER (item), label);
     gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
     gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
-	
-    g_signal_connect (G_OBJECT (item), "activate", 
+
+    g_signal_connect (G_OBJECT (item), "activate",
         G_CALLBACK (activate_window), window);
 
     window_name_changed (window, label, windowlist);
@@ -226,7 +228,7 @@ deskmenu_windowlist_window_new (WnckWindow *window,
 
 void
 deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
-{	
+{
 	if (!wnck_screen_get_default ())
 	{
 		while (gtk_events_pending ())
@@ -259,7 +261,7 @@ deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
 				{
 					continue;
 				}
-				if (!wnck_window_is_in_viewport (iterator->data, 
+				if (!wnck_window_is_in_viewport (iterator->data,
 						wnck_screen_get_workspace (windowlist->screen,0)) &&
 					windowlist->this_viewport)
 				{
@@ -298,7 +300,7 @@ deskmenu_vplist_goto (GtkWidget      *widget,
                       DeskmenuVplist *vplist)
 {
     guint viewport;
-    viewport = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (widget), 
+    viewport = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (widget),
         "viewport"));
     guint column, row, i;
 
@@ -329,7 +331,7 @@ deskmenu_vplist_go_direction (GtkWidget      *widget,
                               DeskmenuVplist *vplist)
 {
     WnckMotionDirection direction;
-    direction = (WnckMotionDirection) GPOINTER_TO_UINT (g_object_get_data 
+    direction = (WnckMotionDirection) GPOINTER_TO_UINT (g_object_get_data
         (G_OBJECT (widget), "direction"));
 
     guint x = vplist->x, y = vplist->y;
@@ -416,10 +418,10 @@ deskmenu_vplist_make_go_item (DeskmenuVplist      *vplist,
 		gtk_image_new_from_stock (stock_id, GTK_ICON_SIZE_MENU));
     g_object_set_data (G_OBJECT (item), "direction",
         GINT_TO_POINTER (direction));
-    g_signal_connect (G_OBJECT (item), "activate", 
+    g_signal_connect (G_OBJECT (item), "activate",
         G_CALLBACK (deskmenu_vplist_go_direction), vplist);
     gtk_menu_shell_append (GTK_MENU_SHELL (vplist->menu), item);
-    
+
     return item;
 }
 
@@ -429,7 +431,7 @@ deskmenu_vplist_get_vpid (DeskmenuVplist *vplist)
     guint column, row;
     column = vplist->x / vplist->screen_width;
     row = vplist->y / vplist->screen_height;
-    
+
     return (row * vplist->hsize + column + 1);
 }
 
@@ -442,7 +444,7 @@ deskmenu_vplist_update (WnckScreen *screen, DeskmenuVplist *vplist)
 		while (gtk_events_pending ())
 			gtk_main_iteration (); //wait until we get a workspace
 	}
-	
+
     /* get dimensions */
     vplist->workspace = wnck_screen_get_workspace
         (vplist->screen, 0);
@@ -480,7 +482,7 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
         text = g_strdup_printf ("Viewport _%i", i + 1);
         item = gtk_image_menu_item_new_with_mnemonic (text);
 
-        if (vplist->images) 
+        if (vplist->images)
         {
         	if (vplist->icon){
 	        	if (vplist->file) {
@@ -507,12 +509,12 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
             G_CALLBACK (deskmenu_vplist_goto), vplist);
         gtk_menu_shell_append (GTK_MENU_SHELL (vplist->menu), item);
         g_free (text);
-    }   
+    }
 }
 
 void
 deskmenu_vplist_new (DeskmenuVplist *vplist)
-{	
+{
     vplist->screen = wnck_screen_get_default ();
 
 	if (vplist->menu)
@@ -523,7 +525,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
     vplist->menu = gtk_menu_new ();
 
 	deskmenu_vplist_update(vplist->screen, vplist);
-	
+
 	if (deskmenu_vplist_can_move (vplist, WNCK_MOTION_LEFT))
 	{
 		if (vplist->images)
@@ -549,7 +551,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 			vplist->go_right = deskmenu_vplist_make_go_item (vplist, WNCK_MOTION_RIGHT,
 				"Viewport _Right", "");
 		}
-		
+
 	}
 	if (deskmenu_vplist_can_move (vplist, WNCK_MOTION_UP))
 	{
@@ -563,7 +565,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 			vplist->go_up = deskmenu_vplist_make_go_item (vplist, WNCK_MOTION_UP,
 				"Viewport _Up", "");
 		}
-		
+
 	}
 	if (deskmenu_vplist_can_move (vplist, WNCK_MOTION_DOWN))
 	{
@@ -581,7 +583,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 
 	if (vplist->go_right || vplist->go_left || vplist->go_up || vplist->go_down)
 	{
-		gtk_menu_shell_append (GTK_MENU_SHELL (vplist->menu), 
+		gtk_menu_shell_append (GTK_MENU_SHELL (vplist->menu),
 			gtk_separator_menu_item_new ());
 	}
 

@@ -1,3 +1,5 @@
+06.15.2012
+	* Ported to GTK3
 12.17.2010
 	* Pipeitems are now replaced by pipemenus
 	* Pipemenus are launchers with command mode set to "pipe"

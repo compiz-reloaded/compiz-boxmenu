@@ -2,8 +2,8 @@
 
 === Requirements ===
 
- * A recent version of GLib 2.x and GTK+ 2.x
- * libwnck (2.20 is probably best, but not strictly required)
+ * A recent version of GLib 2.x and GTK+ 3.x
+ * libwnck 3.x
  * dbus (you must have a running session bus) and dbus-glib (for dbus version)
 
 It does not strictly require compiz (but it does need a recent version of the

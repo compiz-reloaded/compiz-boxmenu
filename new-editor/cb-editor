@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-import gtk, gobject, re
+from gi.repository import Gtk as gtk
+from gi.repository import GObject as gobject
+import re
 from cb_itemtypes import *
 from cbmenu import *
 from cbutil import TabButton, CommandText
 from lxml import etree
-from xdg import BaseDirectory
+from XyneXDG import BaseDirectory
 import os,re
-import ConfigParser
+import configparser
 import shlex
 
 try:
@@ -94,13 +96,13 @@ class CBEditor(gtk.Window):
 			cell = gtk.CellRendererToggle()
 			cell.set_activatable(True)
 			cell.connect('toggled', self.update_cache)
-			cached.pack_start(cell)
+			cached.pack_start(cell,True)
 			cached.add_attribute(cell, "active", 0)
 
 			name = gtk.TreeViewColumn('Menu')
 			listview.append_column(name)
 			cell = gtk.CellRendererText()
-			name.pack_start(cell)
+			name.pack_start(cell,True)
 			name.add_attribute(cell,"text", 1)
 
 			self.tabs=gtk.Notebook()
@@ -109,7 +111,7 @@ class CBEditor(gtk.Window):
 			self.tabs.connect('switch-page', self.get_current_menu)
 			hbox_main.add(self.tabs)
 			self.tabs.set_show_tabs(True)
-			self.tabs.set_tab_pos(gtk.POS_TOP)
+			self.tabs.set_tab_pos(gtk.PositionType.TOP)
 
 			self.hbox_item=gtk.HBox(False, 2)
 
@@ -121,7 +123,7 @@ class CBEditor(gtk.Window):
 	def make_new_menu(self):
 		new_menu=gtk.Menu()
 		for i in elementlist:
-			new_item = gtk.ImageMenuItem(i, gtk.STOCK_NEW)
+			new_item = gtk.ImageMenuItem.new_from_stock(gtk.STOCK_NEW,None)
 			new_item.connect('activate', self.make_new_item, i)
 			new_menu.append(new_item)
 		new_menu.show_all()
@@ -219,8 +221,8 @@ class CBEditor(gtk.Window):
 
 		scroll = gtk.ScrolledWindow()
 		scroll.add(treeview)
-		scroll.props.hscrollbar_policy = gtk.POLICY_NEVER
-		scroll.props.vscrollbar_policy = gtk.POLICY_AUTOMATIC
+		scroll.props.hscrollbar_policy = gtk.PolicyType.NEVER
+		scroll.props.vscrollbar_policy = gtk.PolicyType.AUTOMATIC
 		dialog.vbox.pack_start(scroll, True, True)
 
 		dialog.action_area.props.border_width = 0
@@ -288,10 +290,10 @@ class CBEditor(gtk.Window):
 			else:
 				new_row=model.append(parent, row=(element,))
 				parentelement.node.append(element.node)
-			print "New %s created" % element_type
+			print("New %s created" % element_type)
 			return new_row
 		else:
-			menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
+			menu_path=BaseDirectory.get_config_home("compiz/boxmenu")
 			dialog=gtk.Dialog("Add a new file", self, gtk.DIALOG_MODAL, \
 			buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
 			input=gtk.Entry()
@@ -310,7 +312,7 @@ class CBEditor(gtk.Window):
 			f.close()
 			self.menu_list.append([False,input.props.text, path])
 			dialog.destroy()
-			print "New %s created" % element_type
+			print("New %s created" % element_type)
 
 	def save_one(self, widget):
 		idx=self.tabs.get_current_page()
@@ -323,7 +325,7 @@ class CBEditor(gtk.Window):
 		label.label.set_text(current_text.replace("*",""))
 
 	def save_all(self, widget):
-		for i in xrange(self.tabs.get_n_pages()):
+		for i in range(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
 			widget.write_menu()
 			label=self.tabs.get_tab_label(widget)
@@ -331,7 +333,7 @@ class CBEditor(gtk.Window):
 			label.label.set_text(current_text.replace("*",""))
 
 	def get_current_menu(self, notebook, page, page_num):
-		for i in xrange(self.tabs.get_n_pages()):
+		for i in range(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
 			if hasattr(widget, 'currently_editing'):
 				if i != page_num:
@@ -350,7 +352,7 @@ class CBEditor(gtk.Window):
 	def get_edit_panel(self, treeview, path, view_column, menufile):
 		self.vbox.add(menufile.currently_editing)
 		page_num=self.tabs.get_current_page()
-		for i in xrange(self.tabs.get_n_pages()):
+		for i in range(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
 			if hasattr(widget, 'currently_editing'):
 				if i != page_num:
@@ -359,13 +361,14 @@ class CBEditor(gtk.Window):
 					widget.currently_editing.show()
 
 	def open_menu_file(self,treeview, path, view_column):
-		for i in xrange(self.tabs.get_n_pages()):
+		for i in range(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
-			if self.menu_list[path[0]][2] == widget.filename:
+			p=path.get_indices()
+			if self.menu_list[p[0]][2] == widget.filename:
 				return
-
-		menufile=MenuFile(self.menu_list[path[0]][2])
-		hbox=TabButton(self.menu_list[path[0]][1])
+		p=path.get_indices()
+		menufile=MenuFile(self.menu_list[p[0]][2])
+		hbox=TabButton(self.menu_list[p[0]][1])
 		hbox.btn.connect('clicked', self.on_closetab_button_clicked, hbox.label, menufile)
 
 		self.tabs.append_page(menufile, hbox)
@@ -395,7 +398,7 @@ class CBEditor(gtk.Window):
 		j=0
 		for i in self.menu_list:
 			if i[1] == "menu.xml":
-				print "Compiz Boxmenu caches menu.xml by default"
+				print("Compiz Boxmenu caches menu.xml by default")
 				continue
 			if i[0]:
 				parser.set("Files", "file_%s" % j, i[2])
@@ -429,7 +432,7 @@ class CBEditor(gtk.Window):
 		self.menu_list=gtk.ListStore(gobject.TYPE_BOOLEAN, \
 				gobject.TYPE_STRING, \
 				gobject.TYPE_STRING)
-		menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
+		menu_path=BaseDirectory.get_config_home("compiz/boxmenu")
 		for checking in os.listdir(menu_path):
 			path="%s/%s" %(menu_path, checking)
 			if checking.endswith(".xml"):
@@ -447,16 +450,16 @@ if __name__ == '__main__':
 			 bus = None
 	else:
 		bus = None
-	menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
+	menu_path=BaseDirectory.get_config_home("compiz/boxmenu")
 	if not os.path.exists(menu_path):
 		os.mkdir(menu_path)
-	elif not os.path.exists(menu_path+"/menu.xml"):
+	elif not os.path.exists(os.path.join(menu_path,"menu.xml")):
 		starting_file=BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
 		from shutil import copyfile
 		copyfile(starting_file, menu_path+"/menu.xml")
 	try:
 		cache_file=menu_path+"/precache.ini"
-		parser=ConfigParser.SafeConfigParser()
+		parser=configparser.SafeConfigParser()
 		parser.readfp(open(cache_file))
 		cache=parser.items("Files")
 		allnotcache=False

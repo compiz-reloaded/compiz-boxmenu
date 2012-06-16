@@ -1,9 +1,12 @@
-import gtk
+from gi.repository import Gdk as gdk
+from gi.repository import Gtk as gtk
+from gi.repository import GdkPixbuf as gdkpixbuf
+
 import os
-import glib
-from xdg import BaseDirectory
+from gi.repository import GLib as glib
+from XyneXDG import BaseDirectory
 import re #This is to autoset file mode for *.desktop icons
-import ConfigParser
+import configparser
 from lxml import etree
 from cb_itemtypes import *
 
@@ -24,8 +27,8 @@ class MenuFile(gtk.ScrolledWindow):
 		self.add_menu_file(filename)
 		self.filename=filename
 
-		self.props.hscrollbar_policy = gtk.POLICY_AUTOMATIC #because you really might want to read some of the stuff hanging off
-		self.props.vscrollbar_policy = gtk.POLICY_AUTOMATIC
+		self.props.hscrollbar_policy = gtk.PolicyType.AUTOMATIC #because you really might want to read some of the stuff hanging off
+		self.props.vscrollbar_policy = gtk.PolicyType.AUTOMATIC
 		self.treeview = gtk.TreeView(self.model)
 		self.treeview.set_reorderable(True)
 		cell = gtk.CellRendererText()
@@ -40,19 +43,21 @@ class MenuFile(gtk.ScrolledWindow):
 		name.set_cell_data_func(cell, self.get_icon)
 
 		cell = gtk.CellRendererText()
-		name.pack_start(cell)
+		name.pack_start(cell, True)
 		name.set_cell_data_func(cell, self.get_name)
 
 		self.treeview.append_column(name)
 		self.add(self.treeview)
 		targets = [
-			('deskmenu-element', gtk.TARGET_SAME_WIDGET, 0),
+			#gtk.TargetFlags.OTHER_WIDGET?
+			('deskmenu-element', gtk.TargetFlags.SAME_WIDGET, 0),
 			#('deskmenu-element', gtk.TARGET_SAME_APP, 0),
 			#('deskmenu-element', gtk.TREE_VIEW_ITEM, 0),
 			('text/uri-list', 0, 1),
 		]
-		self.treeview.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, targets, gtk.gdk.ACTION_DEFAULT|gtk.gdk.ACTION_MOVE)
-		self.treeview.enable_model_drag_dest(targets, gtk.gdk.ACTION_MOVE)
+		self.treeview.enable_model_drag_source(gdk.ModifierType.BUTTON1_MASK,
+											targets, gdk.DragAction.DEFAULT|gdk.DragAction.MOVE)
+		self.treeview.enable_model_drag_dest(targets, gdk.DragAction.MOVE)
 
 		self.treeview.connect('drag-data-get', self.on_drag_data_get)
 		self.treeview.connect('drag-data-received', self.on_drag_data_received)
@@ -66,10 +71,10 @@ class MenuFile(gtk.ScrolledWindow):
 		self.selection.connect('changed', self.on_selection_changed)
 
 		self.popup = gtk.Menu()
-		self.edit_menu = gtk.ImageMenuItem(stock_id=gtk.STOCK_EDIT)
+		self.edit_menu = gtk.ImageMenuItem.new_from_stock(gtk.STOCK_EDIT,None)
 		self.edit_menu.connect('activate', self.on_edit_clicked)
 		self.popup.append(self.edit_menu)
-		self.delete_menu = gtk.ImageMenuItem(stock_id=gtk.STOCK_DELETE)
+		self.delete_menu = gtk.ImageMenuItem.new_from_stock(gtk.STOCK_DELETE,None)
 		self.delete_menu.connect('activate', self.on_delete_clicked)
 		self.popup.append(self.delete_menu)
 		self.popup.show_all()
@@ -87,34 +92,34 @@ class MenuFile(gtk.ScrolledWindow):
 			if item.node.tag == 'menu':
 				self.add_menu(item, iter)
 
-	def get_name(self, column, cell, model, iter):
+	def get_name(self, column, cell, model, iter, blah):
 		name = model.get_value(iter, 0).get_name()
 		if name is None:
 			name = ''
 		cell.set_property('text', name)
 
-	def get_type(self, column, cell, model, iter):
+	def get_type(self, column, cell, model, iter, blah):
 		typ = model.get_value(iter, 0).get_type()
 		if typ is None:
 			typ = ''
 		cell.set_property('text', typ)
 
-	def get_icon(self, column, cell, model, iter):
+	def get_icon(self, column, cell, model, iter, blah):
 		icon = model.get_value(iter, 0).get_icon()
 		icon_mode = model.get_value(iter, 0).get_icon_mode()
 		#somehow does not set icon until selection change with things that don't have icons originally!
 		if icon is not None:
 			if icon_mode is not None:
-				w = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
+				_,_,w = gtk.icon_size_lookup(gtk.IconSize.MENU)
 				try:
-					cell.set_property('pixbuf', gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(icon), w[0], w[0]))
-					cell.set_property('icon-name', None) #possibly reduntant safety measure
+					cell.set_property('pixbuf', gdkpixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(icon), w, w))
+					#cell.set_property('icon-name', None) #possibly reduntant safety measure
 				except glib.GError:
-					cell.set_property('icon-name', None)
+					#cell.set_property('icon-name', None)
 					cell.set_property('pixbuf', None)
 			else:
 				cell.set_property('icon-name', icon)
-				cell.set_property('pixbuf', None) #possibly reduntant safety measure
+				#cell.set_property('pixbuf', None) #possibly reduntant safety measure
 		else:
 			cell.set_property('icon-name', None)
 			cell.set_property('pixbuf', None)
@@ -183,17 +188,17 @@ class MenuFile(gtk.ScrolledWindow):
 					return
 
 				dest = model[path][0]
-				if context.action == gtk.gdk.ACTION_MOVE:
+				if context.action == gdk.DragAction.MOVE:
 					source.node.getparent().remove(source.node)
 
-				if dest.node.tag == 'menu' and position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-					gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
+				if dest.node.tag == 'menu' and position in (gtk.TreeViewDropPosition.INTO_OR_BEFORE,
+				gtk.TreeViewDropPosition.INTO_OR_AFTER):
 					dest.node.append(source.node)
 					fiter = model.append(diter, row=(source,))
 				else:
 					i = dest.node.getparent().index(dest.node)
-					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-						gtk.TREE_VIEW_DROP_BEFORE):
+					if position in (gtk.TreeViewDropPosition.INTO_OR_BEFORE,
+					gtk.TreeViewDropPosition.BEFORE):
 						dest.node.getparent().insert(i, source.node)
 						fiter = model.insert_before(None, diter, row=(source,))
 					else:
@@ -205,15 +210,15 @@ class MenuFile(gtk.ScrolledWindow):
 					while citer is not None:
 						model.append(fiter, row=(model[citer][0],))
 						citer = model.iter_next(citer)
-				if context.action == gtk.gdk.ACTION_MOVE:
+				if context.action == gdk.DragAction.MOVE:
 					context.finish(True, True, etime)
 
 		elif selection.type == 'text/uri-list':
-			print selection.data
+			print(selection.data)
 			if drop_info:
 				path, position = drop_info
 				uri = selection.data.replace('file:///', '/').replace("%20"," ").strip()
-				entry = ConfigParser.ConfigParser()
+				entry = configparser.ConfigParser()
 				entry.read(uri)
 				launcher = Launcher()
 				launcher.name = etree.SubElement(launcher.node, 'name')
@@ -225,7 +230,7 @@ class MenuFile(gtk.ScrolledWindow):
 						launcher.icon.attrib['mode1'] = 'file'
 					launcher.icon.text = entry.get('Desktop Entry', 'Icon')
 					launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
-				except ConfigParser.Error:
+				except configparser.Error:
 					return
 				dest = model[path][0]
 				diter = model.get_iter(path)
@@ -242,7 +247,7 @@ class MenuFile(gtk.ScrolledWindow):
 					else:
 						dest.node.getparent().insert(i+1, launcher.node)
 						fiter = model.insert_after(None, diter, row=(launcher,))
-				if context.action == gtk.gdk.ACTION_MOVE:
+				if context.action == gdk.DragAction.MOVE:
 					context.finish(True, True, etime)
 
 		return
