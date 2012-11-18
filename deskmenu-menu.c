@@ -163,7 +163,7 @@ pipe_menu_recreate (GtkWidget *item, gchar *command)
 			g_markup_parse_context_free (context);
 			if (error)
 			{
-				g_print(error->message); //spit out the message manually
+				g_print("%s", error->message); //spit out the message manually
 				if (dm_object->current_item)
 				{
 					//force reset
@@ -1300,10 +1300,12 @@ deskmenu_reload (Deskmenu *deskmenu,
 gboolean
 deskmenu_control (Deskmenu *deskmenu, gchar *filename, gchar *workingd, GError  **error)
 {
-	chdir (workingd);
-	DeskmenuObject *dm_object = check_file_cache (deskmenu, g_strstrip(filename));
-	deskmenu_show(dm_object, deskmenu, error);
-	return TRUE;
+	if(chdir (workingd) == 0) {
+		DeskmenuObject *dm_object = check_file_cache (deskmenu, g_strstrip(filename));
+		deskmenu_show(dm_object, deskmenu, error);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 //precache backend, currently needs GUI
@@ -1315,7 +1317,7 @@ deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 	guint i = 0;
 	gsize total = 0;
 
-	(void *)check_file_cache(deskmenu, ""); //always cache default menu
+	check_file_cache(deskmenu, ""); //always cache default menu
 
 	g_print("Attempting to precache files in config...");
 	if (!filename)
@@ -1335,17 +1337,16 @@ deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 	{
 		g_print("Configuration found! Starting precache...");
 		gchar **files = g_key_file_get_keys (config, "Files", &total, &error);
-		gchar *feed = "";
-		for (;i < total;i++)
+		gchar *feed = NULL;
+		for (i = 0;i < total;i++)
 		{
 			feed = g_key_file_get_string (config, "Files", files[i], &error);
-			(void *)check_file_cache(deskmenu, parse_expand_tilde(feed));
+			if (feed) {
+				check_file_cache(deskmenu, parse_expand_tilde(feed));
+				g_free(feed);
+			}
 		}
 		g_strfreev(files);
-		if (feed != "")
-		{
-			g_free(feed);
-		}
 	}
 	g_key_file_free (config);
 }
