@@ -1,3 +1,6 @@
+1.4.2013
+	* Avoid GNU Makeisms in the Makefile
+	* stdout -> stdout_for_cmd in deskmenu-menu.c for BSD portability
 12.17.2010
 	* Pipeitems are now replaced by pipemenus
 	* Pipemenus are launchers with command mode set to "pipe"
