@@ -7,26 +7,26 @@ CFLAGS := -O2 -g $(WARNINGS)
 LDFLAGS := `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
 LDFLAGS_CLIENT := `pkg-config --libs dbus-glib-1`
 
-all: compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist
+all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist
 
-compiz-boxmenu: deskmenu.c deskmenu-common.h
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ $< $(LDFLAGS_CLIENT)  
+compiz-boxmenu: 
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT)  
 
-compiz-boxmenu-dlist: deskmenu-documentlist-client.c deskmenu-common.h
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ $< $(LDFLAGS_CLIENT)  
+compiz-boxmenu-dlist:
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-documentlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
 
-compiz-boxmenu-vplist: deskmenu-vplist-client.c deskmenu-common.h
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ $< $(LDFLAGS_CLIENT)  
+compiz-boxmenu-vplist:
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-vplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
 
-compiz-boxmenu-wlist: deskmenu-windowlist-client.c deskmenu-common.h
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ $< $(LDFLAGS_CLIENT)  
+compiz-boxmenu-wlist:
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-windowlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
 
-compiz-boxmenu-daemon: deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c deskmenu-utils.h deskmenu-wnck.h deskmenu-glue.h deskmenu-common.h deskmenu-menu.h
+compiz-boxmenu-daemon:
 
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c  $(LDFLAGS)  
 
-deskmenu-glue.h: deskmenu-service.xml
-	dbus-binding-tool --mode=glib-server --prefix=deskmenu --output=$@ $^
+deskmenu-glue.h:
+	dbus-binding-tool --mode=glib-server --prefix=deskmenu --output=$@ deskmenu-service.xml
 
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin/
