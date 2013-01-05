@@ -1,3 +1,9 @@
+1.4.2013
+	* Avoid GNU Makeisms in the Makefile
+	* stdout -> stdout_for_cmd in deskmenu-menu.c for BSD portability
+	* Have the shellscript check for the minimum version of python supported and run that
+	* Make said shellscript not have the PREFIX hardcoded
+	* remove executable flag from files that didn't really need it
 06.15.2012
 	* Ported to GTK3
 12.17.2010

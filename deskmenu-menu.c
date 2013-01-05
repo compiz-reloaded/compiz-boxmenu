@@ -136,7 +136,7 @@ recent_activated (GtkRecentChooser *chooser,
 static void
 pipe_menu_recreate (GtkWidget *item, gchar *command)
 {
-	gchar *stdout;
+	gchar *stdout_for_cmd;
 	gchar *cache_entries = g_object_get_data (G_OBJECT(item), "cached");
 	GtkWidget *submenu;
 	submenu = gtk_menu_item_get_submenu (GTK_MENU_ITEM(item));
@@ -152,7 +152,7 @@ pipe_menu_recreate (GtkWidget *item, gchar *command)
 	if (!submenu)
 	{
 		submenu = gtk_menu_new();
-		if (g_spawn_command_line_sync (parse_expand_tilde(command), &stdout, NULL, NULL, NULL))
+		if (g_spawn_command_line_sync (parse_expand_tilde(command), &stdout_for_cmd, NULL, NULL, NULL))
 		{
 			GError *error = NULL;
 			DeskmenuObject *dm_object = g_object_get_data (G_OBJECT(item), "menu");
@@ -165,7 +165,7 @@ pipe_menu_recreate (GtkWidget *item, gchar *command)
 			}
 			GMarkupParseContext *context = g_markup_parse_context_new (&parser,
 				0, dm_object, NULL);
-			g_markup_parse_context_parse (context, (const gchar *)stdout, strlen((const char *)stdout), &error);
+			g_markup_parse_context_parse (context, (const gchar *)stdout_for_cmd, strlen((const char *)stdout_for_cmd), &error);
 			g_markup_parse_context_free (context);
 			if (error)
 			{
@@ -177,7 +177,7 @@ pipe_menu_recreate (GtkWidget *item, gchar *command)
 				}
 				g_error_free (error);
 			}
-			g_free(stdout);
+			g_free(stdout_for_cmd);
 			dm_object->make_from_pipe = FALSE;
 		}
 		else
@@ -194,13 +194,13 @@ pipe_menu_recreate (GtkWidget *item, gchar *command)
 static void
 launcher_name_exec_update (GtkWidget *label)
 {
-    gchar *exec, *stdout;
+    gchar *exec, *stdout_for_cmd;
     exec = g_object_get_data (G_OBJECT (label), "exec");
-    if (g_spawn_command_line_sync (exec, &stdout, NULL, NULL, NULL))
-        gtk_label_set_text (GTK_LABEL (label), g_strstrip((gchar *)stdout));
+    if (g_spawn_command_line_sync (exec, &stdout_for_cmd, NULL, NULL, NULL))
+        gtk_label_set_text (GTK_LABEL (label), g_strstrip((gchar *)stdout_for_cmd));
     else
         gtk_label_set_text (GTK_LABEL (label), "execution error");
-    g_free (stdout);
+    g_free (stdout_for_cmd);
 }
 
 static
