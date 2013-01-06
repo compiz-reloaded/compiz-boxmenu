@@ -10,7 +10,7 @@ PYTHONBIN?=$(shell which python$(shell pkg-config --modversion python-2.7 2> /de
 PYTHONBIN?=$(shell which python2.6)
 PYTHONBIN?=$(shell which python2)
 
-ifeq ($(PYTHONBIN), "")
+ifeq ("$(PYTHONBIN)", "")
 $(error Python not found. Version >= 2.7 or 2.6 is required.)
 endif
 
@@ -55,19 +55,19 @@ install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin/
 	mkdir -p $(DESTDIR)$(PREFIX)/share/icons
 	mkdir -p $(DESTDIR)$(PREFIX)/share/cb-editor
-	install -Dm755 compiz-boxmenu $(DESTDIR)$(PREFIX)/bin/
-	install -Dm755 compiz-boxmenu-dlist $(DESTDIR)$(PREFIX)/bin/
-	install -Dm755 compiz-boxmenu-vplist $(DESTDIR)$(PREFIX)/bin/
-	install -Dm755 compiz-boxmenu-wlist $(DESTDIR)$(PREFIX)/bin/
-	install -Dm755 compiz-boxmenu-daemon $(DESTDIR)$(PREFIX)/bin/
-	install -Dm755 compiz-boxmenu-editor $(DESTDIR)$(PREFIX)/bin/
-	install -Dm644 new-editor/* $(DESTDIR)$(PREFIX)/share/cb-editor
+	install -m755 compiz-boxmenu $(DESTDIR)$(PREFIX)/bin/
+	install -m755 compiz-boxmenu-dlist $(DESTDIR)$(PREFIX)/bin/
+	install -m755 compiz-boxmenu-vplist $(DESTDIR)$(PREFIX)/bin/
+	install -m755 compiz-boxmenu-wlist $(DESTDIR)$(PREFIX)/bin/
+	install -m755 compiz-boxmenu-daemon $(DESTDIR)$(PREFIX)/bin/
+	install -m755 compiz-boxmenu-editor $(DESTDIR)$(PREFIX)/bin/
+	install -m644 new-editor/* $(DESTDIR)$(PREFIX)/share/cb-editor
 	cp -r hicolor $(DESTDIR)$(PREFIX)/share/icons
 	mkdir -p $(DESTDIR)$(LOCALBASE)/etc/xdg/compiz/boxmenu/
-	install -Dm644 menu.xml $(DESTDIR)$(LOCALBASE)/etc/xdg/compiz/boxmenu/
-	install -Dm644 precache.ini $(DESTDIR)$(LOCALBASE)/etc/xdg/compiz/boxmenu/
+	install -m644 menu.xml $(DESTDIR)$(LOCALBASE)/etc/xdg/compiz/boxmenu/
+	install -m644 precache.ini $(DESTDIR)$(LOCALBASE)/etc/xdg/compiz/boxmenu/
 	mkdir -p $(DESTDIR)$(PREFIX)/share/dbus-1/services/
-	install -Dm644 org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
+	install -m644 org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 
 clean:
 	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor
