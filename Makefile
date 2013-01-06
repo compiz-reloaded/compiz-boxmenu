@@ -9,7 +9,6 @@ endif
 PYTHONBIN?=$(shell which python$(shell pkg-config --modversion python-2.7 2> /dev/null))
 PYTHONBIN?=$(shell which python$(shell pkg-config --modversion python-2.6 2> /dev/null))
 PYTHONBIN?=$(shell which python2)
-PYTHONBIN?=$(shell which python)
 
 ifeq ($(PYTHONBIN), "")
 $(error Install at python 2.6 or python 2.7 please)
