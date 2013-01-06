@@ -1,16 +1,2 @@
 #!/bin/sh
-
-for i in 6 7;do
-		if test -f $(which "python2.$i")
-		then
-			exec  "python2.$i" LOOK_HERE/cb-editor
-		fi
-done
-
-if $(python2 --version|grep -q '^Python 2.[67]');
-	exec python LOOK_HERE/cb-editor
-fi
-
-if $(python --version|grep -q '^Python 2.[67]');
-	exec python2 LOOK_HERE/cb-editor
-fi
+exec PYTHONBIN LOOK_HERE/cb-editor

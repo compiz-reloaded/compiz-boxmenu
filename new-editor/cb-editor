@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import gtk, gobject, re
 from cb_itemtypes import *
 from cbmenu import *

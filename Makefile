@@ -1,15 +1,33 @@
+# PREFIX fixing
 ifdef ($(LOCALBASE))
 	PREFIX=$(LOCALBASE)
 else
 	PREFIX?=/usr
 endif
 
+# checking for python
+PYTHONBIN?=$(shell which python$(shell pkg-config --modversion python-2.7 2> /dev/null))
+PYTHONBIN?=$(shell which python$(shell pkg-config --modversion python-2.6 2> /dev/null))
+PYTHONBIN?=$(shell which python2)
+PYTHONBIN?=$(shell which python)
+
+ifeq ($(PYTHONBIN), "")
+$(error Install at python 2.6 or python 2.7 please)
+endif
+
+# Set up compile flags
 CPPFLAGS := `pkg-config --cflags dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
 CPPFLAGS_CLIENT := `pkg-config --cflags dbus-glib-1`
 WARNINGS := -Wall -Wextra -Wno-unused-parameter
-CFLAGS := -O2 -g $(WARNINGS)
+ifdef ($(DEBUG))
+	CFLAGS := -O2 -g $(WARNINGS)
+else
+	CFLAGS := $(WARNINGS)
+endif
 LDFLAGS := `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
 LDFLAGS_CLIENT := `pkg-config --libs dbus-glib-1`
+
+# Targets
 
 all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-editor
 
@@ -29,7 +47,7 @@ compiz-boxmenu-daemon:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c  $(LDFLAGS) 
 
 compiz-boxmenu-editor:
-	m4 -DLOOK_HERE=$(PREFIX)/share/cb-editor $@.in >$@
+	m4 -DLOOK_HERE=$(PREFIX)/share/cb-editor -DPYTHONBIN=$(PYTHONBIN) $@.in >$@
 
 deskmenu-glue.h:
 	dbus-binding-tool --mode=glib-server --prefix=deskmenu --output=$@ deskmenu-service.xml
@@ -53,5 +71,4 @@ install: all
 	install org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 
 clean:
-	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h
-
+	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor

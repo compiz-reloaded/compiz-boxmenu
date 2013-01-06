@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import gtk, gobject, re
 
 #http://developer.gnome.org/pygtk/2.22/class-gtkicontheme.html#method-gtkicontheme--list-contexts
