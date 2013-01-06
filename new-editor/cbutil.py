@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import os, gtk, glib
 from pyicon_browser import *
 import gobject
