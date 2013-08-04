@@ -1,4 +1,6 @@
 import gtk, gobject, re
+from glib import GError
+from sys import stderr
 
 #http://developer.gnome.org/pygtk/2.22/class-gtkicontheme.html#method-gtkicontheme--list-contexts
 
@@ -39,9 +41,11 @@ class IcoBrowse(gtk.Dialog):
 			list2+=set(current)
 			self.combobox.append_text(c)
 			for i in current:
-				self.model.append([defaulttheme.load_icon(i, 32,
+				try:
+					self.model.append([defaulttheme.load_icon(i, 32,
 									  gtk.ICON_LOOKUP_USE_BUILTIN),
 									  i,c])
+				except GError as err: stderr.write('Error loading "%s": %s\n' % (i, err.args[0]))
 		other=list(set(defaulttheme.list_icons())-(set(list2)))
 		for i in other:
 			self.model.append([defaulttheme.load_icon(i, 32,
