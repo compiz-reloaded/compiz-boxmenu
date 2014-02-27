@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
-
+#include <dbus/dbus-glib.h>
 #include "deskmenu-wnck.h"
 
 void 
@@ -459,6 +459,9 @@ deskmenu_vplist_update (WnckScreen *screen, DeskmenuVplist *vplist)
     vplist->xmax = vplist->workspace_width - vplist->screen_width;
     vplist->ymax = vplist->workspace_height - vplist->screen_height;
     vplist->hsize = vplist->workspace_width / vplist->screen_width;
+	//g_printf("wsw: %i, sw: %i\n", 
+	//	vplist->workspace_width,
+	//	vplist->screen_width);
 
     vplist->vsize = vplist->workspace_height / vplist->screen_height;
 }
@@ -473,11 +476,52 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
     new_count = vplist->hsize * vplist->vsize;
     gchar *text;
 
+	DBusGConnection *connection;
+	GError *error;
+	DBusGProxy *proxy;
+    gchar **viewport_names;
+	gboolean get_vp_names = TRUE;
+
+    error = NULL;
+    connection = dbus_g_bus_get (DBUS_BUS_SESSION,
+                               &error);
+    if (connection == NULL)
+    {
+        g_printerr ("Failed to open connection to bus: %s\n",
+                  error->message);
+        g_error_free (error);
+		get_vp_names=FALSE;
+    }
+
+	if (get_vp_names) {
+		int screen_n = wnck_screen_get_number(vplist->screen);
+		gchar* screen_path = g_strdup_printf("/org/freedesktop/compiz/workspacenames/screen%i/names",screen_n);
+		proxy = dbus_g_proxy_new_for_name (connection,
+                                       "org.freedesktop.compiz",
+                                       screen_path,
+                                       "org.freedesktop.compiz");
+		error = NULL;
+		get_vp_names=dbus_g_proxy_call (proxy, "get", &error, 
+        G_TYPE_INVALID, G_TYPE_STRV, &viewport_names, G_TYPE_INVALID);
+		g_free(screen_path);
+	}
+	if (!get_vp_names) {
+		g_printerr ("Ignoring viewport names: %s\n",
+        error->message);
+		g_error_free(error);
+	}
+
     gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
+ 
 
     for (i = 0; i < new_count; i++)
     {
-        text = g_strdup_printf ("Viewport _%i", i + 1);
+		if (!get_vp_names) {
+	        text = g_strdup_printf ("Viewport _%i", i + 1);
+		}
+		else {
+			text=g_strdup(viewport_names[i]);
+		}
         item = gtk_image_menu_item_new_with_mnemonic (text);
 
         if (vplist->images) 
@@ -507,6 +551,7 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
             G_CALLBACK (deskmenu_vplist_goto), vplist);
         gtk_menu_shell_append (GTK_MENU_SHELL (vplist->menu), item);
         g_free (text);
+		//g_strfreev(viewport_names); //idk why it decides to make the names blank if I free these afterward
     }   
 }
 
