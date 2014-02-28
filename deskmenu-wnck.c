@@ -295,7 +295,8 @@ deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
 					continue;
 				}
 				if (!wnck_window_is_in_viewport (iterator->data, 
-						wnck_screen_get_workspace (windowlist->screen,0)) &&
+						wnck_screen_get_workspace (windowlist->screen, 
+						wnck_screen_get_active_workspace (windowlist->screen))) &&
 					windowlist->this_viewport)
 				{
 					continue;
