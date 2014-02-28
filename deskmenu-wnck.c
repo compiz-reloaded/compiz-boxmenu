@@ -285,6 +285,14 @@ deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
 
 	list = wnck_screen_get_windows (windowlist->screen);
 
+	if (!wnck_screen_get_active_workspace (windowlist->screen))
+	{
+		while (gtk_events_pending ())
+			gtk_main_iteration (); //wait until we get a screen
+	}
+
+	WnckWorkspace *where_we_are = wnck_screen_get_active_workspace (windowlist->screen);
+
 	if (list)
 	{
 		for (iterator = list; iterator; iterator = iterator->next) {
@@ -294,9 +302,7 @@ deskmenu_windowlist_new (DeskmenuWindowlist *windowlist)
 				{
 					continue;
 				}
-				if (!wnck_window_is_in_viewport (iterator->data, 
-						wnck_screen_get_workspace (windowlist->screen, 
-						wnck_screen_get_active_workspace (windowlist->screen))) &&
+				if (!wnck_window_is_in_viewport (iterator->data, where_we_are) &&
 					windowlist->this_viewport)
 				{
 					continue;
