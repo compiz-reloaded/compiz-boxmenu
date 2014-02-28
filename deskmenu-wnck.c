@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 #include <dbus/dbus-glib.h>
 #include "deskmenu-wnck.h"
 
@@ -10,6 +11,14 @@ refresh_viewportlist_item (GtkWidget *item, gpointer data) {
 	deskmenu_vplist_new(vplist);
 	g_object_set_data(G_OBJECT(item), "vplist", vplist);
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), vplist->menu);
+}
+
+void 
+refresh_desktoplist_item (GtkWidget *item, gpointer data) {
+	DeskmenuDplist *dplist = g_object_get_data(G_OBJECT(item), "dplist");
+	deskmenu_dplist_new(dplist);
+	g_object_set_data(G_OBJECT(item), "dplist", dplist);
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), dplist->menu);
 }
 
 void
@@ -155,6 +164,32 @@ activate_window (GtkWidget  *widget,
     timestamp = gtk_get_current_event_time ();
 
     wnck_window_activate (window, timestamp);
+}
+
+static void
+activate_desktop (GtkWidget  *widget,
+                 WnckWorkspace *wksp)
+{
+    guint32 timestamp;
+
+    timestamp = gtk_get_current_event_time ();
+
+    wnck_workspace_activate (wksp, timestamp);
+	/*
+	 * it'd be nice if we could get the  pinned menu that
+	 * the dplist is attached to to move too
+	GdkWindow *gwin;
+	GtkWidget *parent;
+	parent = gtk_widget_get_parent(gtk_widget_get_parent(widget));
+	gwin = gtk_widget_get_window(parent);
+	WnckWindow *menu_window=wnck_window_get(GDK_WINDOW_XID(gwin));
+	g_printf("XID: %i, %i\n", GDK_WINDOW_XID(gwin), menu_window != NULL);
+	if (menu_window != NULL)
+	{
+			g_printf("I moved!\n");
+			wnck_window_move_to_workspace (menu_window, wksp);
+	}
+	*/
 }
 
 static void
@@ -467,6 +502,60 @@ deskmenu_vplist_update (WnckScreen *screen, DeskmenuVplist *vplist)
 }
 
 static void
+deskmenu_dplist_make_goto_desktop (WnckWorkspace *wksp, DeskmenuDplist *dplist, gint w, gint h) {
+        GtkWidget *item;
+		item = gtk_image_menu_item_new_with_mnemonic (wnck_workspace_get_name(wksp));
+
+        if (dplist->images) 
+        {
+        	if (dplist->icon){
+	        	if (dplist->file) {
+	            	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
+				  	 (item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (dplist->icon, w, h, NULL)));
+	        	}
+	        	else {
+	            	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
+						gtk_image_new_from_icon_name (dplist->icon, GTK_ICON_SIZE_MENU));
+				}
+			}
+	        else {
+        	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
+					gtk_image_new_from_icon_name ("user-desktop", GTK_ICON_SIZE_MENU));
+			}
+		}
+        if (wnck_screen_get_active_workspace (dplist->screen) == wksp)
+		{
+			gtk_widget_set_sensitive (item, FALSE);
+		}
+        g_signal_connect (G_OBJECT (item), "activate",
+            G_CALLBACK (activate_desktop), wksp);
+        gtk_menu_shell_append (GTK_MENU_SHELL (dplist->menu), item);
+}
+
+static void
+deskmenu_dplist_update (WnckScreen *screen, DeskmenuDplist *dplist)
+{
+	if (!wnck_screen_get_workspace
+        (dplist->screen, 0))
+	{
+		while (gtk_events_pending ())
+			gtk_main_iteration (); //wait until we get a workspace
+	}
+	
+	gint w, h;
+	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
+    GList *list, *elem;
+    WnckWorkspace *wksp;
+	list = wnck_screen_get_workspaces (dplist->screen);
+	for(elem = list; elem; elem = elem->next) {
+        wksp = elem->data;
+		deskmenu_dplist_make_goto_desktop(wksp,dplist,w,h);
+    }
+}
+
+
+
+static void
 deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
 {
 	GtkWidget *item;
@@ -551,8 +640,8 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
             G_CALLBACK (deskmenu_vplist_goto), vplist);
         gtk_menu_shell_append (GTK_MENU_SHELL (vplist->menu), item);
         g_free (text);
-		//g_strfreev(viewport_names); //idk why it decides to make the names blank if I free these afterward
     }   
+	g_strfreev(viewport_names); //idk why it decides to make the names blank if I free these afterward
 }
 
 void
@@ -635,6 +724,22 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 	gtk_widget_show_all (vplist->menu);
 }
 
+
+void
+deskmenu_dplist_new (DeskmenuDplist *dplist)
+{	
+    dplist->screen = wnck_screen_get_default ();
+
+	if (dplist->menu)
+	{
+		gtk_widget_destroy(dplist->menu);
+	}
+
+    dplist->menu = gtk_menu_new ();
+	deskmenu_dplist_update(dplist->screen, dplist);
+	gtk_widget_show_all (dplist->menu);
+}
+
 DeskmenuVplist*
 deskmenu_vplist_initialize(gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon) {
 	DeskmenuVplist *vplist;
@@ -646,4 +751,16 @@ deskmenu_vplist_initialize(gboolean toggle_wrap, gboolean toggle_images, gboolea
 	vplist->file = toggle_file;
 
 	return vplist;
+}
+
+DeskmenuDplist*
+deskmenu_dplist_initialize(gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon) {
+	DeskmenuDplist *dplist;
+    dplist = g_slice_new0 (DeskmenuDplist);
+
+	dplist->icon = viewport_icon;
+	dplist->images = toggle_images;
+	dplist->file = toggle_file;
+
+	return dplist;
 }

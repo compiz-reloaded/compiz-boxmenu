@@ -354,9 +354,49 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
                 menu_item);
             break;
 
+
+        case DESKMENU_ITEM_DESKTOPLIST:
+            menu_item = gtk_image_menu_item_new_with_mnemonic ("_Desktops");
+            gboolean file;
+            images = FALSE;
+            file = FALSE;
+            if (item->icon)
+            {
+				images = TRUE;
+                icon = g_strstrip (item->icon->str);
+                if (item->icon_file) {
+					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
+                	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
+					   (menu_item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
+				}
+				else {
+					gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menu_item),
+						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
+				}
+            }
+            if (item->vpicon)
+            {
+                vpicon = g_strstrip (parse_expand_tilde(item->vpicon->str));
+                if (item->vpicon_file) {
+					file = TRUE;
+				}
+            }
+            else
+	    {
+	       vpicon = "";
+	    }
+            g_object_set_data(G_OBJECT(menu_item), "dplist", deskmenu_dplist_initialize (images, file, vpicon));
+            g_signal_connect (G_OBJECT (menu_item), "activate",
+					G_CALLBACK (refresh_desktoplist_item), NULL);
+			submenu = gtk_menu_new();
+			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
+            gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu),
+                menu_item);
+            break;
+
         case DESKMENU_ITEM_VIEWPORTLIST:
             menu_item = gtk_image_menu_item_new_with_mnemonic ("_Viewports");
-            gboolean wrap, file;
+            gboolean wrap;
             wrap = FALSE;
             images = FALSE;
             file = FALSE;
@@ -1011,6 +1051,8 @@ set_up_item_hash (void) {
 #if HAVE_WNCK
     g_hash_table_insert (item_hash, "windowlist",
         GINT_TO_POINTER (DESKMENU_ITEM_WINDOWLIST));
+    g_hash_table_insert (item_hash, "desktoplist",
+        GINT_TO_POINTER (DESKMENU_ITEM_DESKTOPLIST));
     g_hash_table_insert (item_hash, "viewportlist",
         GINT_TO_POINTER (DESKMENU_ITEM_VIEWPORTLIST));
 #endif
@@ -1217,6 +1259,20 @@ deskmenu_vplist (Deskmenu *deskmenu,
 	deskmenu_vplist_new (vplist);
 
     gtk_menu_popup (GTK_MENU (vplist->menu),
+                    NULL, NULL, NULL, NULL,
+                    0, 0);
+	return TRUE;
+}
+
+gboolean
+deskmenu_dplist (Deskmenu *deskmenu,
+				gboolean toggle_images,
+				gboolean toggle_file,
+				gchar *viewport_icon) {
+	DeskmenuDplist *dplist = deskmenu_dplist_initialize(toggle_images, toggle_file, g_strstrip(viewport_icon));
+	deskmenu_dplist_new (dplist);
+
+    gtk_menu_popup (GTK_MENU (dplist->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
 	return TRUE;

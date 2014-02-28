@@ -397,6 +397,99 @@ class Viewportlist(Item):
 			text = 'false'
 		self.wrap.text = text
 
+class Desktoplist(Item):
+
+	def __init__(self, node=None): #change to be an attribute of viewportlist
+		Item.__init__(self, node, type='desktoplist')
+		self.editable = True
+
+	def get_type(self):
+		return 'Desktops list'
+
+	def get_icon(self):
+		iconnode = self.node.find('icon')
+		if iconnode is not None:
+			return iconnode.text
+		else:
+			return None
+
+	def get_icon_mode(self):
+		iconnode = self.node.find('icon')
+		if iconnode is not None:
+			if iconnode.attrib.get('mode1') == 'file':
+				return iconnode.attrib.get('mode1')
+		else:
+			return None
+
+
+	def get_options(self):
+		retlist = []
+		icons = []
+
+		iconnode = self.node.find('icon')
+		if iconnode is not None:
+			icon = iconnode.text
+			if iconnode.attrib.get('mode1') == 'file':
+				icon_mode = "File path"
+			else:
+				icon_mode="Normal"
+		else:
+			icon = ''
+			icon_mode="Normal"
+		widget = IconSelector(mode=icon_mode,text=icon)
+
+		widget.connect('text-changed', self.on_subnode_changed, 'icon')
+		widget.connect('mode-changed', self.on_icon_mode_changed)
+
+		icons.append(widget)
+
+		vpiconnode = self.node.find('vpicon')
+		if vpiconnode is not None:
+			vpicon = vpiconnode.text
+			if vpiconnode.attrib.get('mode1') == 'file':
+				vpicon_mode = "File path"
+			else:
+				vpicon_mode="Normal"
+		else:
+			vpicon = ''
+			vpicon_mode="Normal"
+		widget = IconSelector(label_text="Desktop Icon",mode=vpicon_mode,text=vpicon)
+
+		widget.connect('text-changed', self.on_subnode_changed, 'vpicon')
+		widget.connect('mode-changed', self.on_vpicon_mode_changed)
+
+		icons.append(widget)
+
+		return icons,retlist
+
+	def on_icon_mode_changed(self, widget, text):
+		iconnode = self.node.find('icon')
+		if text == "File path":
+			if iconnode is None:
+				iconnode = etree.SubElement(self.node, 'icon')
+			iconnode.attrib['mode1'] = 'file'
+		elif 'mode1' in iconnode.attrib:
+			del iconnode.attrib['mode1']
+
+	def on_vpicon_mode_changed(self, widget, text):
+		iconnode = self.node.find('vpicon')
+		if text == "File path":
+			if iconnode is None:
+				iconnode = etree.SubElement(self.node, 'vpicon')
+			iconnode.attrib['mode1'] = 'file'
+		elif 'mode1' in iconnode.attrib:
+			del iconnode.attrib['mode1']
+
+	def on_subnode_changed(self, widget, text, tag):
+		subnode = self.node.find(tag)
+		if text:
+			if subnode is None:
+				subnode = etree.SubElement(self.node, tag)
+			subnode.text = text
+		else:
+			if subnode is not None:
+				self.node.remove(subnode)
+
 class Documents(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
@@ -825,6 +918,7 @@ itemtypes = {
 	'launcher': Launcher,
 	'windowlist': Windowlist,
 	'viewportlist': Viewportlist,
+        'desktoplist': Desktoplist,
 	'documents': Documents,
 	'reload': Reload,
 }
@@ -840,6 +934,7 @@ elements = {'menu': Menu, 'item': make_item, 'separator': Separator}
 elementsbyname = {
 	'Launcher': Launcher,
 	'Windows List': Windowlist,
+        'Desktops List': Desktoplist,
 	'Viewports List': Viewportlist,
 	'Recent Documents': Documents,
 	'Reload': Reload,

@@ -28,6 +28,7 @@ typedef enum
     DESKMENU_ITEM_NONE = 0,
     DESKMENU_ITEM_LAUNCHER,
     DESKMENU_ITEM_WINDOWLIST,
+	DESKMENU_ITEM_DESKTOPLIST,
     DESKMENU_ITEM_VIEWPORTLIST,
     DESKMENU_ITEM_RELOAD,
     DESKMENU_ITEM_DOCUMENTS //use native GTK+ support for recent documents
@@ -119,4 +120,5 @@ gboolean deskmenu_control (Deskmenu *deskmenu, gchar *filename, gchar *workingd,
 gboolean deskmenu_pin (Deskmenu *deskmenu, gboolean pin);
 gboolean deskmenu_windowlist (Deskmenu *deskmenu, gboolean images, gboolean thisvp, gboolean mini_only);
 gboolean deskmenu_vplist (Deskmenu *deskmenu, gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);
+gboolean deskmenu_dplist (Deskmenu *deskmenu, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);
 gboolean deskmenu_documentlist (Deskmenu *deskmenu, gboolean images, gchar *command, int limit, int age, gchar *sort_type);

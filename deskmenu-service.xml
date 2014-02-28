@@ -15,6 +15,11 @@
       <arg type="b" name="thisvp" direction="in" />
       <arg type="b" name="mini_only" direction="in" />
     </method>
+    <method name="dplist">
+	  <arg type="b" name="toggle_images" direction="in" />
+	  <arg type="b" name="toggle_file" direction="in" />
+	  <arg type="s" name="viewport_icon" direction="in" />
+    </method>
     <method name="vplist">
 	  <arg type="b" name="toggle_wrap" direction="in" />
 	  <arg type="b" name="toggle_images" direction="in" />

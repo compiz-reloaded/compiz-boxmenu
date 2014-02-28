@@ -189,7 +189,9 @@ class CBEditor(gtk.Window):
 				if element.attrib['type']=='windowlist':
 					self.make_new_item(widget, "Window List", nd=element, parent=pt)
 				elif element.attrib['type']=='viewportlist':
-					self.make_new_item(widget, "Viewport List", nd=element, parent=pt)
+					self.make_new_item(widget, "Viewports List", nd=element, parent=pt)
+				elif element.attrib['type']=='desktoplist':
+					self.make_new_item(widget, "Desktops List", nd=element, parent=pt)
 				elif element.attrib['type']=='documents':
 					self.make_new_item(widget, "Recent Documents", nd=element, parent=pt)
 				else:
@@ -461,6 +463,7 @@ if __name__ == '__main__':
 	except IOError:
 		allnotcache=True
 	elementlist = ['Launcher', 'Menu', 'Separator', 'Windows List',
-		'Viewports List', 'Recent Documents', 'Reload', 'Menu File']
+	               'Desktops List','Viewports List', 'Recent Documents', 
+				   'Reload', 'Menu File']
 	CBEditor()
 	gtk.main()

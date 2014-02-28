@@ -1,5 +1,5 @@
 # PREFIX fixing
-ifdef ($(LOCALBASE))
+ifneq ($(LOCALBASE),"")
 	PREFIX=$(LOCALBASE)
 else
 	PREFIX?=/usr
@@ -18,7 +18,7 @@ endif
 CPPFLAGS := `pkg-config --cflags dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
 CPPFLAGS_CLIENT := `pkg-config --cflags dbus-glib-1`
 WARNINGS := -Wall -Wextra -Wno-unused-parameter
-ifdef ($(DEBUG))
+ifneq ("$(DEBUG)","")
 	CFLAGS := -O2 -g $(WARNINGS)
 else
 	CFLAGS := $(WARNINGS)
@@ -28,7 +28,7 @@ LDFLAGS_CLIENT := `pkg-config --libs dbus-glib-1`
 
 # Targets
 
-all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-editor
+all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-dplist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-editor
 
 compiz-boxmenu: 
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT)  
@@ -38,6 +38,9 @@ compiz-boxmenu-dlist:
 
 compiz-boxmenu-vplist:
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-vplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+
+compiz-boxmenu-dplist:
+	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-dplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
 
 compiz-boxmenu-wlist:
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-windowlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
@@ -70,4 +73,4 @@ install: all
 	install -m644 org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 
 clean:
-	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor
+	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-dplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor

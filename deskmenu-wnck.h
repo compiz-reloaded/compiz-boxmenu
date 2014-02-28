@@ -11,6 +11,15 @@ typedef struct DeskmenuWindowlist
     gboolean iconified_only;
 } DeskmenuWindowlist;
 
+typedef struct DeskmenuDplist
+{
+    WnckScreen *screen;
+	gboolean images;
+	gboolean file;
+	gchar *icon;
+	GtkWidget *menu;
+} DeskmenuDplist;
+
 typedef struct DeskmenuVplist
 {
     WnckScreen *screen;
@@ -37,9 +46,12 @@ typedef struct DeskmenuVplist
     gchar *icon; /* stores viewport icon of choice */
 } DeskmenuVplist;
 
+void refresh_desktoplist_item (GtkWidget *item, gpointer data);
 void refresh_viewportlist_item (GtkWidget *item, gpointer data);
 void refresh_windowlist_item (GtkWidget *item, gpointer data);
 void deskmenu_windowlist_new (DeskmenuWindowlist *windowlist);
 void deskmenu_vplist_new (DeskmenuVplist *vplist);
+void deskmenu_dplist_new (DeskmenuDplist *dplist);
 DeskmenuVplist* deskmenu_vplist_initialize (gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);
+DeskmenuDplist* deskmenu_dplist_initialize (gboolean toggle_images, gboolean toggle_file, gchar *desktop_icon);
 DeskmenuWindowlist* deskmenu_windowlist_initialize (gboolean images, gboolean this_viewport, gboolean iconified_only);
