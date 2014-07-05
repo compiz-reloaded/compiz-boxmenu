@@ -647,8 +647,10 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
             G_CALLBACK (deskmenu_vplist_goto), vplist);
         gtk_menu_shell_append (GTK_MENU_SHELL (vplist->menu), item);
         g_free (text);
-    }   
-	g_strfreev(viewport_names); //idk why it decides to make the names blank if I free these afterward
+    }
+    if(get_vp_names) {
+		g_strfreev(viewport_names); //idk why it decides to make the names blank if I free these afterward
+	}
 }
 
 void
