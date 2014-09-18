@@ -96,3 +96,9 @@ class IcoBrowse(gtk.Dialog):
 			return False
 		else:
 			return False
+
+if __name__ == '__main__':
+	icobrowse = IcoBrowse()
+	icobrowse.connect('destroy', gtk.main_quit)
+	icobrowse.run()
+	gtk.main()
