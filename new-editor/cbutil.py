@@ -58,10 +58,10 @@ class CommandText(gtk.HBox):
 			self.combobox.append_text(alternate_mode)
 			self.combobox.props.active = mode != "Normal"
 
-			self.add(label)
-			self.add(self.entry)
-			self.add(self.button)
-			self.add(self.combobox)
+			self.pack_start(label,expand=False)
+			self.pack_start(self.entry)
+			self.pack_end(self.button,expand=False)
+			self.pack_end(self.combobox)
 
 			self.combobox.connect('changed', self._emit_mode_signal)
 			self.entry.connect('changed', self._emit_text_signal)
@@ -155,9 +155,9 @@ class IconSelector(gtk.HBox):
 			self.button=gtk.Button()
 			self.image=gtk.Image()
 
-			self.add(label)
-			self.add(self.button)
-			self.add(self.combobox)
+			self.pack_start(label, expand=False)
+			self.pack_start(self.button,expand=False)
+			self.pack_end(self.combobox, expand=True)
 			self.button.set_image(self.image)
 
 			self.combobox.connect('changed', self._emit_mode_signal)

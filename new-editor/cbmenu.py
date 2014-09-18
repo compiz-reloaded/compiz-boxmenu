@@ -305,11 +305,11 @@ class EditItemPanel(gtk.HBox):
 
 	def __init__(self, model=None, row=None, element=None):
 		gtk.HBox.__init__(self)
-		self.vbox_image_grid=gtk.VBox(True, 2)
-		self.vbox_other_options=gtk.VBox(True, 2)
+		self.vbox_image_grid=gtk.VBox(False, 2)
+		self.vbox_other_options=gtk.VBox(False, 2)
 
-		self.add(self.vbox_image_grid)
-		self.add(self.vbox_other_options)
+		self.pack_start(self.vbox_image_grid)
+		self.pack_end(self.vbox_other_options)
 
 		self.props.spacing = 6
 
@@ -324,9 +324,9 @@ class EditItemPanel(gtk.HBox):
 		icons,widgets=element.get_options()
 
 		for icon in icons:
-			self.vbox_image_grid.add(icon)
+			self.vbox_image_grid.pack_start(icon, fill=False)
 
 		for widget in widgets:
-			self.vbox_other_options.add(widget)
+			self.vbox_other_options.pack_start(widget, fill=False)
 
 		self.show_all()
