@@ -87,6 +87,7 @@ class CBEditor(gtk.Window):
 		scrolled.add(listview)
 
 		scrolled.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		scrolled.set_size_request(150,-1)
 
 		hbox_main.add(scrolled)
 
@@ -416,7 +417,7 @@ class CBEditor(gtk.Window):
 	def show_about_dialog(self, widget):
 		dialog=gtk.AboutDialog()
 		dialog.set_name("Compiz Boxmenu Editor")
-		dialog.set_version("1.1.1")
+		dialog.set_version("1.1.6")
 		dialog.set_authors(["ShadowKyogre","crdlb"])
 		dialog.set_comments("A specialized editor for Compiz Boxmenu's menu files")
 		dialog.run()

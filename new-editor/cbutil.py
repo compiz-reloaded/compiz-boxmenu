@@ -7,29 +7,29 @@ import os
 
 class TabButton(gtk.HBox):
 	def __init__(self, text):
-			gtk.HBox.__init__(self)
-			#http://www.eurion.net/python-snippets/snippet/Notebook%20close%20button.html
-			self.label = gtk.Label(text)
-			self.pack_start(self.label)
+		gtk.HBox.__init__(self)
+		#http://www.eurion.net/python-snippets/snippet/Notebook%20close%20button.html
+		self.label = gtk.Label(text)
+		self.pack_start(self.label)
 
-			#get a stock close button image
-			close_image = gtk.image_new_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
-			image_w, image_h = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
+		#get a stock close button image
+		close_image = gtk.image_new_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
+		image_w, image_h = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
 
-			#make the close button
-			self.btn = gtk.Button()
-			self.btn.set_relief(gtk.RELIEF_NONE)
-			self.btn.set_focus_on_click(False)
-			self.btn.add(close_image)
-			self.pack_start(self.btn, False, False)
+		#make the close button
+		self.btn = gtk.Button()
+		self.btn.set_relief(gtk.RELIEF_NONE)
+		self.btn.set_focus_on_click(False)
+		self.btn.add(close_image)
+		self.pack_start(self.btn, False, False)
 
-			#this reduces the size of the button
-			style = gtk.RcStyle()
-			style.xthickness = 0
-			style.ythickness = 0
-			self.btn.modify_style(style)
+		#this reduces the size of the button
+		style = gtk.RcStyle()
+		style.xthickness = 0
+		style.ythickness = 0
+		self.btn.modify_style(style)
 
-			self.show_all()
+		self.show_all()
 
 #test code
 #from cbutil import *
@@ -173,6 +173,7 @@ class IconSelector(gtk.HBox):
 					print "Couldn't set icon from file: %s" %(self.text)
 			else:
 				self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
+			self.button.set_tooltip_text(self.text)
 
 			self.show_all()
 
@@ -225,6 +226,7 @@ class IconSelector(gtk.HBox):
 		if text != self.text and (text != "" and text != None):
 			self.text = text
 			self._change_image(self.combobox.get_active_text())
+			self.button.set_tooltip_text(self.text)
 			self.emit('text-changed', text)
 
 def set_up():
