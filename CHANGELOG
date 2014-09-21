@@ -1,3 +1,8 @@
+9.21.2014
+	* Don't make the toolbar stretchy in the menu editor
+	* Add tooltips for the icon editor
+	* Allow the user to resize the area given to the menu lists and the panel holding the menu tabs
+	* Don't make the item edit panel squishy
 1.4.2013
 	* Avoid GNU Makeisms in the Makefile
 	* stdout -> stdout_for_cmd in deskmenu-menu.c for BSD portability
