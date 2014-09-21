@@ -1,5 +1,5 @@
 # PREFIX fixing
-ifneq ($(LOCALBASE),"")
+ifneq ("$(LOCALBASE)","")
 	PREFIX=$(LOCALBASE)
 else
 	PREFIX?=/usr
@@ -49,7 +49,7 @@ compiz-boxmenu-daemon:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c  $(LDFLAGS) 
 
 compiz-boxmenu-editor:
-	m4 -DLOOK_HERE=$(PREFIX)/share/cb-editor -DPYTHONBIN=$(PYTHONBIN) $@.in >$@
+	m4 -d -DLOOK_HERE=$(PREFIX)/share/cb-editor -DPYTHONBIN=$(PYTHONBIN) $@.in >$@
 
 deskmenu-glue.h:
 	dbus-binding-tool --mode=glib-server --prefix=deskmenu --output=$@ deskmenu-service.xml
