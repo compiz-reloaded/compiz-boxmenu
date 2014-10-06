@@ -212,7 +212,7 @@ class MenuFile(gtk.ScrolledWindow):
 			print selection.data
 			if drop_info:
 				path, position = drop_info
-				uri = selection.data.replace('file:///', '/').replace("%20"," ").strip()
+				uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
 				entry = ConfigParser.ConfigParser()
 				entry.read(uri)
 				launcher = Launcher()
