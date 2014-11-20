@@ -1,0 +1,11 @@
+[Desktop Entry]
+Exec=compiz-boxmenu-editor
+GenericName[en_US]=Edit your Compiz Boxmenu menus
+GenericName=Edit your Compiz Boxmenu menus
+Icon=cbmenu
+Name[en_US]=Compiz Boxmenu Editor
+Name=Compiz Boxmenu Editor
+StartupNotify=true
+Terminal=false
+Categories=Application;Accessories;System
+Type=Application
