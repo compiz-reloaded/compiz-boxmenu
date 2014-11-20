@@ -453,7 +453,7 @@ if __name__ == '__main__':
 		bus = None
 	menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
 	if not os.path.exists(menu_path):
-		os.mkdir(menu_path)
+		os.makedirs(menu_path)
 	elif not os.path.exists(menu_path+"/menu.xml"):
 		starting_file=BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
 		from shutil import copyfile
