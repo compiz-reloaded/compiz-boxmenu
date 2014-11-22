@@ -1,0 +1,47 @@
+.TH compiz-boxmenu-wlist 1 "Nov 22, 2014" "Compiz Boxmenu VERSION"
+.SH NAME
+compiz\-boxmenu-wlist \- tell compiz-boxmenu-daemon to display just a window list
+.SH SYNOPSIS
+.B compiz-boxmenu-wlist
+[ -h  ]
+[ 
+.B -i
+]
+[
+.B \-m
+]
+[ 
+.B -c
+]
+.
+.SH DESCRIPTION
+.B compiz-boxmenu-wlist
+is a D-Bus client for compiz-boxmenu-daemon that shows a list of all the windows.
+
+.SH OPTIONS
+If no options are given,
+.B compiz-boxmenu-wlist
+will just show a list of all the windows across all viewports without any icons.
+.TP
+.B \-h
+Show help options
+
+.TP
+.B \-i\fR, \fB--images\fR
+Use IMAGES in the window list
+
+.TP
+.B \-m\fR, \fB--minimized\fR
+Show only MINIMIZED windows in the window list
+
+.TP
+.B \-c\fR, \fB--current-viewport\fR
+Show only windows in CURRENT VIEWPORT in the window list
+
+.SH AUTHOR
+Written by ShadowKyogre
+.SH HISTORY
+.SH "SEE ALSO"
+compiz-boxmenu(1), compiz-boxmenu-daemon(1), compiz-boxmenu-editor(1), 
+.br
+compiz-boxmenu-dlist(1), compiz-boxmenu-dplist(1), compiz-boxmenu-vplist(1)

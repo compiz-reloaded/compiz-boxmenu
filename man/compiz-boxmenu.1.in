@@ -1,0 +1,46 @@
+.TH compiz-boxmenu 1 "Nov 22, 2014" "Compiz Boxmenu VERSION"
+.SH NAME
+compiz\-boxmenu \- control Compiz Boxmenu
+.SH SYNOPSIS
+.B compiz-boxmenu
+[ -h  ]
+[
+.B \-m 
+.I FILE
+]
+[
+.B \-p
+]
+.
+.SH DESCRIPTION
+.B compiz-boxmenu
+is the main D-Bus client for compiz-boxmenu-daemon. It shows different menus based
+on the 
+.I FILE
+specified. It can also make the menu a window that stays around after you 
+clicked a menu entry to launch a program.
+.
+.SH OPTIONS
+If no options are given,
+.B compiz-boxmenu
+will just show the menu stored in 
+\fI$HOME/.config/boxmenu/menu.xml\fR or \fI/etc/xdg/compiz/boxmenu/menu.xml\fR
+
+.TP
+.B \-h
+Show help options
+
+.TP
+.B -m \fIFILE\fR, \fB--menu\fR\fI[=FILE]\fR
+Use \fIFILE\fR instead of the default menu file
+
+.TP
+.B -p\fR, \fB--pin\fR
+PIN the root menu as soon as it's generated or retrieved
+.SH AUTHOR
+Written by ShadowKyogre
+.SH HISTORY
+.SH "SEE ALSO"
+compiz-boxmenu-daemon(1), compiz-boxmenu-editor(1), 
+.br
+compiz-boxmenu-dlist(1), compiz-boxmenu-dplist(1), compiz-boxmenu-vplist(1), compiz-boxmenu-wlist(1)

@@ -1,0 +1,69 @@
+.TH compiz-boxmenu-dlist 1 "Nov 22, 2014" "Compiz Boxmenu VERSION"
+.SH NAME
+compiz\-boxmenu-dlist \- tell compiz-boxmenu-daemon to display just a document list
+.SH SYNOPSIS
+.B compiz-boxmenu-dlist
+[ -h  ]
+[ 
+.B -i
+]
+[
+.B \-c
+.I COMMAND
+]
+[
+.B \-a
+.I AGE
+]
+[
+.B \-l
+.I LIMIT
+]
+[
+.B \-s
+.I SORT TYPE
+]
+.
+.SH DESCRIPTION
+.B compiz-boxmenu-dlist
+is a D-Bus client for compiz-boxmenu-daemon that shows a recently opened menu.
+
+.SH OPTIONS
+If no options are given,
+.B compiz-boxmenu-dlist
+will just show a recent documents menu with no icons in most recently used 
+order. I haven't done a precise item count on the defaults, but I'll write 
+that later.
+
+.TP
+.B \-h
+Show help options
+
+.TP
+.B \-i\fR, \fB--images\fR
+Use IMAGES in the document list
+
+.TP
+.B -c \fICOMMAND\fR, \fB--command\fR\fI[=COMMAND]\fR
+Use \fICOMMAND\fR instead of xdg-open to open recent documents
+
+.TP
+.B -a \fIAGE\fR, \fB--age\fR\fI[=AGE]\fR
+Limit documents to \fIAGE\fR number of days
+
+.TP
+.B -c \fILIMIT\fR, \fB--limit\fR\fI[=LIMIT]\fR
+Display up to \fILIMIT\fR items
+
+.TP
+.B -s \fISORT TYPE\fR, \fB--sort-type\fR\fI[=SORT TYPE]\fR
+Sort items according to \fISORT TYPE\fR. Valid sorting options are 
+\fImost used\fR and \fIleast used\fR
+
+.SH AUTHOR
+Written by ShadowKyogre
+.SH HISTORY
+.SH "SEE ALSO"
+compiz-boxmenu(1), compiz-boxmenu-daemon(1), compiz-boxmenu-editor(1), 
+.br
+compiz-boxmenu-dplist(1), compiz-boxmenu-vplist(1), compiz-boxmenu-wlist(1)

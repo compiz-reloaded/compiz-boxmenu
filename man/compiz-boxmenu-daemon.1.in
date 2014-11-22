@@ -1,0 +1,41 @@
+.TH compiz-boxmenu-daemon 1 "Nov 22, 2014" "Compiz Boxmenu VERSION"
+.SH NAME
+compiz\-boxmenu-daemon \- the daemon that holds Compiz Boxmenu's menus
+.SH SYNOPSIS
+.B compiz-boxmenu-daemon
+[ -h  ]
+[
+.B \-c
+.I FILE
+]
+[
+.B \-p
+]
+.
+.SH DESCRIPTION
+.B compiz-boxmenu-daemon
+is the D-Bus daemon for Compiz Boxmenu. It preloads the menus specified in
+.I FILE
+, if it's specified.
+
+.SH OPTIONS
+If no options are given,
+.B compiz-boxmenu-daemon
+will just show the menus listed in 
+\fI$HOME/.config/boxmenu/precache.ini\fR or \fI/etc/xdg/compiz/boxmenu/precache.ini\fR
+
+.TP
+.B \-h
+Show help options
+
+.TP
+.B -c \fIFILE\fR, \fB--config\fR\fI[=FILE]\fR
+Use \fIFILE\fR instead of the default daemon configuration
+
+.SH AUTHOR
+Written by ShadowKyogre
+.SH HISTORY
+.SH "SEE ALSO"
+compiz-boxmenu(1), compiz-boxmenu-editor(1), 
+.br
+compiz-boxmenu-dlist(1), compiz-boxmenu-dplist(1), compiz-boxmenu-vplist(1), compiz-boxmenu-wlist(1)

@@ -26,30 +26,45 @@ endif
 LDFLAGS := `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
 LDFLAGS_CLIENT := `pkg-config --libs dbus-glib-1`
 
+VERSION=1.1.12
+
 # Targets
 
 all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-dplist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-editor
 
-compiz-boxmenu: 
+#has manpage
+compiz-boxmenu:
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
+#has manpage
 compiz-boxmenu-dlist:
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-documentlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
+#has manpage
 compiz-boxmenu-vplist:
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-vplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
+#has manpage
 compiz-boxmenu-dplist:
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-dplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
+#has manpage
 compiz-boxmenu-wlist:
 	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-windowlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
+#has manpage
 compiz-boxmenu-daemon:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c  $(LDFLAGS) 
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 compiz-boxmenu-editor:
 	m4 -d -DLOOK_HERE=$(PREFIX)/share/cb-editor -DPYTHONBIN=$(PYTHONBIN) $@.in >$@
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 deskmenu-glue.h:
 	dbus-binding-tool --mode=glib-server --prefix=deskmenu --output=$@ deskmenu-service.xml
@@ -58,8 +73,10 @@ install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin/
 	mkdir -p $(DESTDIR)$(PREFIX)/share/icons
 	mkdir -p $(DESTDIR)$(PREFIX)/share/cb-editor
+	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m755 compiz-boxmenu $(DESTDIR)$(PREFIX)/bin/
 	install -m755 compiz-boxmenu-dlist $(DESTDIR)$(PREFIX)/bin/
+	install -m755 compiz-boxmenu-dplist $(DESTDIR)$(PREFIX)/bin/
 	install -m755 compiz-boxmenu-vplist $(DESTDIR)$(PREFIX)/bin/
 	install -m755 compiz-boxmenu-wlist $(DESTDIR)$(PREFIX)/bin/
 	install -m755 compiz-boxmenu-daemon $(DESTDIR)$(PREFIX)/bin/
@@ -71,6 +88,7 @@ install: all
 	install -m644 precache.ini $(DESTDIR)$(LOCALBASE)/etc/xdg/compiz/boxmenu/
 	mkdir -p $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 	install -m644 org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
+	install -m644 man/*.1 $(DESTDIR)$(PREFIX)/share/man/man1
 
 clean:
-	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-dplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor
+	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-dplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor man/*.1

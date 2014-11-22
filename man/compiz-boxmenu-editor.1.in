@@ -1,0 +1,19 @@
+.TH compiz-boxmenu-editor 1 "Nov 22, 2014" "Compiz Boxmenu VERSION"
+.SH NAME
+compiz\-boxmenu-editor \- edit compiz-boxmenu-daemon's menus.
+.SH SYNOPSIS
+.B compiz-boxmenu-editor
+.
+.SH DESCRIPTION
+.B compiz-boxmenu-editor
+is the built in editor for compiz-boxmenu-daemon's menus.
+
+.
+
+.SH AUTHOR
+Written by ShadowKyogre
+.SH HISTORY
+.SH "SEE ALSO"
+compiz-boxmenu-daemon(1), compiz-boxmenu-editor(1), 
+.br
+compiz-boxmenu-dlist(1), compiz-boxmenu-dplist(1), compiz-boxmenu-vplist(1), compiz-boxmenu-wlist(1)
