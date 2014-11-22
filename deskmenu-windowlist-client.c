@@ -36,17 +36,17 @@ int main (int argc, char *argv[])
     GOptionEntry entries[] =
     {
         { "images", 'i', 0, G_OPTION_ARG_NONE, &images,
-            "Use IMAGES in the windowlist", NULL },
+            "Use IMAGES in the window list", NULL },
         { "minimized", 'm', 0, G_OPTION_ARG_NONE, &mini_only,
-            "Show only MINIMIZED windows in the windowlist", NULL },
+            "Show only MINIMIZED windows in the window list", NULL },
         { "current-viewport", 'c', 0, G_OPTION_ARG_NONE, &thisvp,
-            "Show only windows in CURRENT VIEWPORT in the windowlist", NULL },
+            "Show only windows in CURRENT VIEWPORT in the window list", NULL },
         { NULL, 0, 0, 0, NULL, NULL, NULL }
     };
 
     context = g_option_context_new (NULL);
     g_option_context_add_main_entries (context, entries, NULL);
-    g_option_context_set_summary (context, "Calls the daemon to display just a windowlist");
+    g_option_context_set_summary (context, "Calls the daemon to display just a window list");
 
     error = NULL;
     connection = dbus_g_bus_get (DBUS_BUS_SESSION,
