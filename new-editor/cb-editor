@@ -362,6 +362,9 @@ class CBEditor(gtk.Window):
 				else:
 					widget.currently_editing.show()
 
+	def get_edit_panel_click(self, widget, menufile):
+		self.get_edit_panel(None, None, None, menufile)
+
 	def open_menu_file(self,treeview, path, view_column):
 		for i in xrange(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
@@ -377,6 +380,7 @@ class CBEditor(gtk.Window):
 		menufile.model.connect('row-deleted',self.change_tab_title_del, hbox.label)
 		menufile.model.connect('row-inserted',self.change_tab_title, hbox.label)
 		menufile.treeview.connect('row-activated',self.get_edit_panel, menufile)
+		menufile.edit_menu.connect('activate', self.get_edit_panel_click, menufile)
 
 	def on_closetab_button_clicked(self, sender, widget, menufile):
 		pagenum = self.tabs.page_num(menufile)
