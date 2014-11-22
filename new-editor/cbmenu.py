@@ -209,26 +209,28 @@ class MenuFile(gtk.ScrolledWindow):
 					context.finish(True, True, etime)
 
 		elif selection.type == 'text/uri-list':
-			print selection.data
+			print selection.data, drop_info
+			uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
+			print(selection.data.strip('\r\n\x00').split())
+			entry = ConfigParser.ConfigParser()
+			entry.read(uri)
+			launcher = Launcher()
+			launcher.name = etree.SubElement(launcher.node, 'name')
+			launcher.icon = etree.SubElement(launcher.node, 'icon')
+			launcher.command = etree.SubElement(launcher.node, 'command')
+			try:
+				launcher.name.text = entry.get('Desktop Entry', 'Name')
+				if re.search("/", entry.get('Desktop Entry', 'Icon')):
+					launcher.icon.attrib['mode1'] = 'file'
+				launcher.icon.text = entry.get('Desktop Entry', 'Icon')
+				launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
+			except ConfigParser.Error:
+				return
 			if drop_info:
 				path, position = drop_info
-				uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
-				entry = ConfigParser.ConfigParser()
-				entry.read(uri)
-				launcher = Launcher()
-				launcher.name = etree.SubElement(launcher.node, 'name')
-				launcher.icon = etree.SubElement(launcher.node, 'icon')
-				launcher.command = etree.SubElement(launcher.node, 'command')
-				try:
-					launcher.name.text = entry.get('Desktop Entry', 'Name')
-					if re.search("/", entry.get('Desktop Entry', 'Icon')):
-						launcher.icon.attrib['mode1'] = 'file'
-					launcher.icon.text = entry.get('Desktop Entry', 'Icon')
-					launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
-				except ConfigParser.Error:
-					return
 				dest = model[path][0]
 				diter = model.get_iter(path)
+				#print(dest.node, dest.node.getroot())
 				if dest.node.tag == 'menu' and position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
 					gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
 					dest.node.append(launcher.node)
@@ -244,7 +246,10 @@ class MenuFile(gtk.ScrolledWindow):
 						fiter = model.insert_after(None, diter, row=(launcher,))
 				if context.action == gtk.gdk.ACTION_MOVE:
 					context.finish(True, True, etime)
-
+			else:
+				self.menu.node.append(launcher.node)
+				fiter = model.append(None, row=(launcher,))
+				
 		return
 
 	def on_selection_changed(self, selection):
