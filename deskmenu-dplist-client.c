@@ -37,9 +37,9 @@ int main (int argc, char *argv[])
 	GOptionEntry entries[] =
 	{
 		{ "images", 'i', 0, G_OPTION_ARG_NONE, &images,
-			"Use IMAGES in the viewportlist. Change the viewport icon with '-v <ICON>.'", NULL },
-			{ "viewport-icon", 'v', 0, G_OPTION_ARG_STRING, &icon,
-				"Use ICON/FILENAME as the viewport icon.", "ICON" },
+			"Use IMAGES in the desktoplist. Change the desktop icon with '-d <ICON>.'", NULL },
+			{ "desktop-icon", 'd', 0, G_OPTION_ARG_STRING, &icon,
+				"Use ICON/FILENAME as the desktop icon.", "ICON" },
 				{ NULL, 0, 0, 0, NULL, NULL, NULL }
 	};
 	
