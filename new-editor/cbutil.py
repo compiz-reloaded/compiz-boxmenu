@@ -78,7 +78,7 @@ class CommandText(gtk.HBox):
 			if alternate_mode != "Execute" or get_mode != "Normal":
 				completion = gtk.EntryCompletion()
 				self.entry.set_completion(completion)
-				completion.set_model(possibility_store)
+				completion.set_model(POSSIBILITY_STORE)
 				completion.set_text_column(0)
 
 	def _emit_mode_signal(self, widget):
@@ -89,7 +89,7 @@ class CommandText(gtk.HBox):
 		else:
 			completion = gtk.EntryCompletion()
 			self.entry.set_completion(completion)
-			completion.set_model(possibility_store)
+			completion.set_model(POSSIBILITY_STORE)
 			completion.set_text_column(0)
 			self.button.props.sensitive=1
 		self.emit('mode-changed', text)
@@ -249,8 +249,8 @@ def completion_setup():
 				path="%s/%s" %(i,j)
 				if not os.path.isdir(path) and \
 				os.access(path, os.X_OK):
-					possibility_store.append([j])
+					POSSIBILITY_STORE.append([j])
 
-possibility_store = gtk.ListStore(str)
+POSSIBILITY_STORE = gtk.ListStore(str)
 set_up()
 completion_setup()
