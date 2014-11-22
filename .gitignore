@@ -1,2 +1,7 @@
 *.pyc
 *.swp
+compiz-boxmenu
+compiz-boxmenu-*list
+compiz-boxmenu-editor
+deskmenu-glue.h
+man/*.1
