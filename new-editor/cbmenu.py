@@ -210,22 +210,26 @@ class MenuFile(gtk.ScrolledWindow):
 
 		elif selection.type == 'text/uri-list':
 			print selection.data, drop_info
-			uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
-			print(selection.data.strip('\r\n\x00').split())
-			entry = ConfigParser.ConfigParser()
-			entry.read(uri)
-			launcher = Launcher()
-			launcher.name = etree.SubElement(launcher.node, 'name')
-			launcher.icon = etree.SubElement(launcher.node, 'icon')
-			launcher.command = etree.SubElement(launcher.node, 'command')
-			try:
-				launcher.name.text = entry.get('Desktop Entry', 'Name')
-				if re.search("/", entry.get('Desktop Entry', 'Icon')):
-					launcher.icon.attrib['mode1'] = 'file'
-				launcher.icon.text = entry.get('Desktop Entry', 'Icon')
-				launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
-			except ConfigParser.Error:
-				return
+			#uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
+			uris = selection.data.replace('file:///', '/').strip('\r\n\x00').split()
+			launchers = []
+			for uri in uris:
+				uri=uri.replace("%20", " ")
+				entry = ConfigParser.ConfigParser()
+				entry.read(uri)
+				launcher = Launcher()
+				launcher.name = etree.SubElement(launcher.node, 'name')
+				launcher.icon = etree.SubElement(launcher.node, 'icon')
+				launcher.command = etree.SubElement(launcher.node, 'command')
+				try:
+					launcher.name.text = entry.get('Desktop Entry', 'Name')
+					if re.search("/", entry.get('Desktop Entry', 'Icon')):
+						launcher.icon.attrib['mode1'] = 'file'
+					launcher.icon.text = entry.get('Desktop Entry', 'Icon')
+					launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
+				except ConfigParser.Error:
+					return
+				launchers.append(launcher)
 			if drop_info:
 				path, position = drop_info
 				dest = model[path][0]
@@ -233,22 +237,27 @@ class MenuFile(gtk.ScrolledWindow):
 				#print(dest.node, dest.node.getroot())
 				if dest.node.tag == 'menu' and position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
 					gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
-					dest.node.append(launcher.node)
-					fiter = model.append(diter, row=(launcher,))
+					for launcher in launchers:
+						dest.node.append(launcher.node)
+						fiter = model.append(diter, row=(launcher,))
 				else:
 					i = dest.node.getparent().index(dest.node)
-					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-						gtk.TREE_VIEW_DROP_BEFORE):
-						dest.node.getparent().insert(i, launcher.node)
-						fiter = model.insert_before(None, diter, row=(launcher,))
-					else:
-						dest.node.getparent().insert(i+1, launcher.node)
-						fiter = model.insert_after(None, diter, row=(launcher,))
+					for launcher in launchers:
+						if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
+							gtk.TREE_VIEW_DROP_BEFORE):
+							dest.node.getparent().insert(i, launcher.node)
+							fiter = model.insert_before(None, diter, row=(launcher,))
+						else:
+							dest.node.getparent().insert(i+1, launcher.node)
+							fiter = model.insert_after(None, diter, row=(launcher,))
+							diter = fiter
+						i+=1
 				if context.action == gtk.gdk.ACTION_MOVE:
 					context.finish(True, True, etime)
 			else:
-				self.menu.node.append(launcher.node)
-				fiter = model.append(None, row=(launcher,))
+				for launcher in launchers:
+					self.menu.node.append(launcher.node)
+					fiter = model.append(None, row=(launcher,))
 				
 		return
 
