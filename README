@@ -45,11 +45,11 @@ Items: <item type="Type"> There are a few supported item types:
     - <icon>: the icon name to use in the menu.
       This name is looked up by gtk+, so you can toss custom icons in 
       ~/.icons/$YOUR_THEME/$ICON_SIZE/apps/ or ~/.local/share/icons. By setting
-	  the mode1="file" attribute, you can specify icons located in nonstandard
-	  locations (like ~/.face for your login icon)
+      the mode1="file" attribute, you can specify icons located in nonstandard
+      locations (like ~/.face for your login icon)
     - <command>: the launcher command line, now can be used as 
-		a pipemenu by setting the mode2="pipe" attribute (this was done
-		to make up for the removal of pipeitems)
+        a pipemenu by setting the mode2="pipe" attribute (this was done
+        to make up for the removal of pipeitems)
  * separator: a simple GtkSeparatorMenuItem. You can add some more flare by 
    setting the icon="/path/or/name/of/icon" attribute and setting the 
    name="yourcustomname" attribute. You can also set a dynamic name for the
@@ -60,14 +60,14 @@ Items: <item type="Type"> There are a few supported item types:
  * viewportlist: libwnck-based viewport list menu. It also supports the 
    following child elements:
     - <icon>: just like launcher's <icon>
-	- <vpicon>: just like icon, except for the viewports
-	- <wrap>: specifies whether the viewport list should have wrapped navigation
+    - <vpicon>: just like icon, except for the viewports
+    - <wrap>: specifies whether the viewport list should have wrapped navigation
  * reload: reload button (it actually quits the daemon)
     - <icon>: just like launcher's <icon>
  * documents: access to recent documents list
     - <icon>: just like launcher's <icon>
-	- <command>: just like launcher's <command>, except it is used to open files 
-	  in the document list
+    - <command>: just like launcher's <command>, except it is used to open files 
+      in the document list
 
 === Implementation ===
 
