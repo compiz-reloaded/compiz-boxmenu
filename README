@@ -62,8 +62,9 @@ compiz-boxmenu-daemon, but you shouldn't ever need to manually launch it; the
 dbus service file will cause it to be automatically spawned when the name is
 requested.
 
-There are also three other binaries that allow you to call up the viewport list,
-windowlist, and documents list on their own. These are compiz-boxmenu-wlist, compiz-boxmenu-vplist,
+There are also four other binaries that allow you to call up the viewport list,
+windowlist, desktop list, and documents list on their own. These are 
+compiz-boxmenu-vplist, compiz-boxmenu-wlist, compiz-boxmenu-dplist,
 and compiz-boxmenu-dlist.
 
 == Credits ==
