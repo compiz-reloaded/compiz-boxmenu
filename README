@@ -36,22 +36,38 @@ basedir-compliant, so if you're setting those variables, adjust accordingly)
 
 Menus: <menu title="Title"> Menus can contain <item> and more <menu> tags (so
   they're infinitely nestable!). The title attribute is optional and is ignored
-  for the toplevel menu
+  for the toplevel menu. You can also set the icon for a menu by setting the
+  icon="/path/or/name/of/icon" attribute
 
 Items: <item type="Type"> There are a few supported item types:
  * launcher: supports the following child elements:
     - <name>: the label to show in the menu
     - <icon>: the icon name to use in the menu.
       This name is looked up by gtk+, so you can toss custom icons in 
-      ~/.icons/$YOUR_THEME/$ICON_SIZE/apps/
+      ~/.icons/$YOUR_THEME/$ICON_SIZE/apps/ or ~/.local/share/icons. By setting
+	  the mode1="file" attribute, you can specify icons located in nonstandard
+	  locations (like ~/.face for your login icon)
     - <command>: the launcher command line, now can be used as 
 		a pipemenu by setting the mode2="pipe" attribute (this was done
 		to make up for the removal of pipeitems)
- * separator: a simple GtkSeparatorMenuItem
- * windowlist: libwnck-based window list menu.
- * viewportlist: libwnck-based viewport list menu.
+ * separator: a simple GtkSeparatorMenuItem. You can add some more flare by 
+   setting the icon="/path/or/name/of/icon" attribute and setting the 
+   name="yourcustomname" attribute. You can also set a dynamic name for the
+   separator by setting the mode="exec" attribute.
+ * windowlist: libwnck-based window list menu. It also supports the following
+   child elements:
+    - <icon>: just like launcher's <icon>
+ * viewportlist: libwnck-based viewport list menu. It also supports the 
+   following child elements:
+    - <icon>: just like launcher's <icon>
+	- <vpicon>: just like icon, except for the viewports
+	- <wrap>: specifies whether the viewport list should have wrapped navigation
  * reload: reload button (it actually quits the daemon)
+    - <icon>: just like launcher's <icon>
  * documents: access to recent documents list
+    - <icon>: just like launcher's <icon>
+	- <command>: just like launcher's <command>, except it is used to open files 
+	  in the document list
 
 === Implementation ===
 
@@ -66,6 +82,8 @@ There are also four other binaries that allow you to call up the viewport list,
 windowlist, desktop list, and documents list on their own. These are 
 compiz-boxmenu-vplist, compiz-boxmenu-wlist, compiz-boxmenu-dplist,
 and compiz-boxmenu-dlist.
+
+You can also edit the menu by running compiz-boxmenu-editor
 
 == Credits ==
 crdlb for the original
