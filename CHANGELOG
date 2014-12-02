@@ -1,3 +1,12 @@
+10.6.2014-12.1.2014
+	* Added manpages for all the commands
+	* Updated the README to include the new desktop list client
+	* Fix a few typos in vplist, wlist, and new dplist clients
+	* Support dragging and dropping multiple *.desktop files
+	* Allow *.desktop files to be dropped into an empty menu
+	* Fix the _Edit right-click menu edit entry in the new editor
+	* Performance enhancements for the icon browser in the editor
+	* Fix a bug where the menu folder for Compiz Boxmenu wasn't created automatically
 9.21.2014
 	* Don't make the toolbar stretchy in the menu editor
 	* Add tooltips for the icon editor
