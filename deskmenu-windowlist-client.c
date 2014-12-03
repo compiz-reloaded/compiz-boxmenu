@@ -75,9 +75,9 @@ int main (int argc, char *argv[])
 	}
 	if (!dbus_g_proxy_call (proxy, "windowlist", &error, 
 	                        G_TYPE_BOOLEAN, images,
-	                        G_TG_TYPE_BOOLEAN, thisvp,
-	                        G_TG_TYPE_BOOLEAN, mini_only,
-	                        G_TG_TYPE_INVALID, G_TYPE_INVALID))
+	                        G_TYPE_BOOLEAN, thisvp,
+	                        G_TYPE_BOOLEAN, mini_only,
+	                        G_TYPE_INVALID, G_TYPE_INVALID))
 	{
 		g_printerr ("Error: %s\n", error->message);
 		g_error_free (error);
