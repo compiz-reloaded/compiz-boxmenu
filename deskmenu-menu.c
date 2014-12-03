@@ -1446,7 +1446,9 @@ main (int    argc,
     GError *error = NULL;
     GObject *deskmenu;
 
-    g_type_init ();
+	#if !GLIB_CHECK_VERSION(2,36,0)
+		g_type_init ();
+	#endif
 
     connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
     if (connection == NULL)

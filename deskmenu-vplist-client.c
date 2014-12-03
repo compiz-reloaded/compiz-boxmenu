@@ -32,7 +32,9 @@ int main (int argc, char *argv[])
 
 	usleep (200000);
 
-	g_type_init ();
+	#if !GLIB_CHECK_VERSION(2,36,0)
+		g_type_init ();
+	#endif
 
 	GOptionContext *context;
 	GOptionEntry entries[] =
