@@ -600,6 +600,20 @@ deskmenu_vplist_make_goto_viewport (DeskmenuVplist *vplist)
 		get_vp_names=dbus_g_proxy_call (proxy, "get", &error, 
         G_TYPE_INVALID, G_TYPE_STRV, &viewport_names, G_TYPE_INVALID);
 		g_free(screen_path);
+		g_object_unref (proxy);
+	}
+	if (!get_vp_names) {
+		g_printerr("Failed retrieving viewport names for Compiz, "); 
+		g_printerr("trying to fetch fusilli viewport names\n");
+		int screen_n = wnck_screen_get_number(vplist->screen);
+		proxy = dbus_g_proxy_new_for_name (connection,
+                                       "org.fusilli",
+                                       "/org/fusilli/wsnames",
+                                       "org.fusilli");
+		error = NULL;
+		get_vp_names=dbus_g_proxy_call (proxy, "getNames", &error, 
+        G_TYPE_INT, screen_n, G_TYPE_INVALID, G_TYPE_STRV, &viewport_names, G_TYPE_INVALID);
+		g_object_unref (proxy);
 	}
 	if (!get_vp_names) {
 		g_printerr ("Ignoring viewport names: %s\n",
