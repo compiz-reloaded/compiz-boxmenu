@@ -91,12 +91,12 @@ int main (int argc, char *argv[])
 		command = g_strdup("xdg-open");
 	}
 	if (!dbus_g_proxy_call (proxy, "documentlist", &error,
-		                    G_TYPE_BOOLEAN, images,
-		                    G_TG_TYPE_STRING, command,
-		                    G_TG_TYPE_INT, limit,
-		                    G_TG_TYPE_INT, age,
-		                    G_TG_TYPE_STRING, sort_type,
-	                        G_TG_TYPE_INVALID, G_TYPE_INVALID))
+	                        G_TYPE_BOOLEAN, images,
+	                        G_TYPE_STRING, command,
+	                        G_TYPE_INT, limit,
+	                        G_TYPE_INT, age,
+	                        G_TYPE_STRING, sort_type,
+	                        G_TYPE_INVALID, G_TYPE_INVALID))
 	{
 		g_printerr ("Error: %s\n", error->message);
 		g_error_free (error);
