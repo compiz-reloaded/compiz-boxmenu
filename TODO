@@ -10,11 +10,11 @@ Patch-up Roadmap:
 	TODO: Run pipemenu input as own menu (be sure to auto insert menu tags if it doesn't make its own menu)
 	TODO: Make this plugin able
 
-    Difficult TODO: Add configuration for menu icon size (need to register icon size for 
+	Difficult TODO: Add configuration for menu icon size (need to register icon size for 
 compatibility? Also needs recent documents rewrite)
 	Difficult TODO: Make the GUI for the upcoming daemon configuration
 
-    Possible TODO: add autocomplete for commands
-    Possible TODO: Variable expansion according to ~/.bashrc? (either tedious regex or just append sh -c '|\' to every command)
+	Possible TODO: add autocomplete for commands
+	Possible TODO: Variable expansion according to ~/.bashrc? (either tedious regex or just append sh -c '|\' to every command, which is stupidly insecure)
 	Possible TODO: Make an Apwal-esque mode if requested
 	TODO: Add some columns to the cache
