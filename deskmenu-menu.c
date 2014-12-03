@@ -221,7 +221,8 @@ GtkWidget *make_recent_documents_list (gboolean images, gchar *command, int limi
         gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER(widget), filter);
     }
 
-	if (sort_type) {
+	if (sort_type)
+	{
 			if (strcmp (sort_type, "most used") == 0)
 			{
 				gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER(widget), GTK_RECENT_SORT_MRU);
@@ -280,11 +281,12 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             if (item->icon)
             {
                 icon = g_strstrip (item->icon->str);
-                if (item->icon_file) {
+				if (item->icon_file)
+				{
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
                 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
 					   (menu_item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
-				   }
+				}
 				else {
 					gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menu_item),
 						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
@@ -329,7 +331,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             {
 				images = TRUE;
                 icon = g_strstrip (item->icon->str);
-                if (item->icon_file) {
+                if (item->icon_file)
+				{
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
                 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
 					   (menu_item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
@@ -364,7 +367,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             {
 				images = TRUE;
                 icon = g_strstrip (item->icon->str);
-                if (item->icon_file) {
+                if (item->icon_file)
+				{
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
                 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
 					   (menu_item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
@@ -377,7 +381,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             if (item->vpicon)
             {
                 vpicon = g_strstrip (parse_expand_tilde(item->vpicon->str));
-                if (item->vpicon_file) {
+				if (item->vpicon_file)
+				{
 					file = TRUE;
 				}
             }
@@ -407,7 +412,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             {
 				images = TRUE;
                 icon = g_strstrip (item->icon->str);
-                if (item->icon_file) {
+                if (item->icon_file)
+				{
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
                 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
 					   (menu_item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
@@ -420,7 +426,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             if (item->vpicon)
             {
                 vpicon = g_strstrip (parse_expand_tilde(item->vpicon->str));
-                if (item->vpicon_file) {
+				if (item->vpicon_file)
+				{
 					file = TRUE;
 				}
             }
@@ -443,7 +450,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             if (item->icon)
             {
                 icon = g_strstrip (item->icon->str);
-                if (item->icon_file) {
+				if (item->icon_file)
+				{
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
                 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
 					   (menu_item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
@@ -470,7 +478,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             {
 				images = TRUE;
                 icon = g_strstrip (item->icon->str);
-                if (item->icon_file) {
+				if (item->icon_file)
+				{
 					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
                 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
 					   (menu_item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
@@ -484,7 +493,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
             {
                 age = atoi(g_strstrip (item->age->str));
             }
-            if (item->sort_type) {
+            if (item->sort_type)
+			{
 				sort_type = g_strstrip (item->sort_type->str);
 			}
             if (item->quantity)
@@ -517,7 +527,8 @@ deskmenu_construct_item (DeskmenuObject *dm_object)
 }
 
 static void
-deskmenu_free_item (DeskmenuObject *dm_object) {
+deskmenu_free_item (DeskmenuObject *dm_object)
+{
 	/* free data used to make it */
     if (dm_object->current_item->name)
         g_string_free (dm_object->current_item->name, TRUE);
@@ -652,14 +663,15 @@ start_element (GMarkupParseContext *context,
 				}
                 if (icon)
 				{
-					if (icon_file) {
-					gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
-                	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM
-					   (item), gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
+					if (icon_file)
+					{
+						gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
+						gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM(item), 
+						                               gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL)));
 					}
 					else {
-					gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-						gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
+						gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
+						                               gtk_image_new_from_icon_name (icon, GTK_ICON_SIZE_MENU));
 					}
 				}
 				gtk_menu_shell_append (GTK_MENU_SHELL (dm_object->current_menu), item);
@@ -713,14 +725,16 @@ start_element (GMarkupParseContext *context,
                 item = gtk_separator_menu_item_new();
                 while (*ncursor)
                 {
-                    if (strcmp (*ncursor, "name") == 0) {
+                    if (strcmp (*ncursor, "name") == 0)
+					{
                         name = g_strdup (*vcursor);
 						if (!decorate)
 						{
 							decorate = TRUE;
 						}
 					}
-                    else if (strcmp (*ncursor, "icon") == 0) {
+                    else if (strcmp (*ncursor, "icon") == 0)
+					{
 						icon = g_strdup (*vcursor);
 						if (!decorate)
 						{
@@ -772,7 +786,8 @@ start_element (GMarkupParseContext *context,
 					if (icon)
 					{
 						GtkWidget *image;
-						if (icon_file) {
+						if (icon_file)
+						{
 							gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &w, &h);
 							image = gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_file_at_size (parse_expand_tilde(icon), w, h, NULL));
 						}
@@ -1043,7 +1058,8 @@ deskmenu_init (Deskmenu *deskmenu)
 }
 
 static void
-set_up_item_hash (void) {
+set_up_item_hash (void)
+{
 	item_hash= g_hash_table_new (g_str_hash, g_str_equal);
 
     g_hash_table_insert (item_hash, "launcher",
@@ -1063,7 +1079,8 @@ set_up_item_hash (void) {
 }
 
 static void
-set_up_element_hash (void) {
+set_up_element_hash (void)
+{
 	element_hash = g_hash_table_new (g_str_hash, g_str_equal);
 
     g_hash_table_insert (element_hash, "menu",
@@ -1095,7 +1112,8 @@ set_up_element_hash (void) {
 }
 
 static DeskmenuObject
-*deskmenu_object_init (void) {
+*deskmenu_object_init (void)
+{
 	DeskmenuObject *dm_object = g_slice_new0 (DeskmenuObject);
 
 	dm_object->menu = NULL;
@@ -1140,7 +1158,8 @@ static DeskmenuObject
 
 
 static DeskmenuObject
-*check_file_cache (Deskmenu *deskmenu, gchar *filename) {
+*check_file_cache (Deskmenu *deskmenu, gchar *filename)
+{
 	DeskmenuObject *dm_object;
 	gchar *user_default = g_build_path (G_DIR_SEPARATOR_S,  g_get_user_config_dir (),
 									"compiz",
@@ -1157,13 +1176,15 @@ static DeskmenuObject
                                "boxmenu",
                                "menu.xml",
                                NULL);
-	if (strcmp(filename, user_default) == 0) {
+	if (strcmp(filename, user_default) == 0)
+	{
 		g_print("Looking up default menu...\n");
 			/*
 			set default filename to be [configdir]/compiz/boxmenu/menu.xml
 			*/
 			gboolean success = FALSE;
-		if (!g_file_test(filename, G_FILE_TEST_EXISTS)) {
+		if (!g_file_test(filename, G_FILE_TEST_EXISTS))
+		{
 				g_print("Getting default system menu...\n");
 				const gchar* const *cursor = g_get_system_config_dirs ();
 				gchar *path = NULL;
@@ -1200,7 +1221,8 @@ static DeskmenuObject
 			{
 				if (g_hash_table_lookup(deskmenu->file_cache, user_default) == NULL)
 				{
-					if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
+					if (g_file_test(filename, G_FILE_TEST_EXISTS))
+					{
 						g_print("Preparing default menu!\n");
 						g_hash_table_insert (deskmenu->file_cache, g_strdup(filename), deskmenu_parse_file(filename));
 						success = TRUE;
@@ -1219,7 +1241,8 @@ static DeskmenuObject
 		}
 	}
 	else {
-		if (g_hash_table_lookup(deskmenu->file_cache, filename) == NULL) {
+		if (g_hash_table_lookup(deskmenu->file_cache, filename) == NULL)
+		{
 			if (g_file_test(filename, G_FILE_TEST_EXISTS))
 			{
 				g_print("Preparing new non-default menu...\n");
@@ -1254,7 +1277,8 @@ deskmenu_vplist (Deskmenu *deskmenu,
 				gboolean toggle_wrap,
 				gboolean toggle_images,
 				gboolean toggle_file,
-				gchar *viewport_icon) {
+				gchar *viewport_icon)
+{
 	DeskmenuVplist *vplist = deskmenu_vplist_initialize(toggle_wrap, toggle_images, toggle_file, g_strstrip(viewport_icon));
 	deskmenu_vplist_new (vplist);
 
@@ -1268,7 +1292,8 @@ gboolean
 deskmenu_dplist (Deskmenu *deskmenu,
 				gboolean toggle_images,
 				gboolean toggle_file,
-				gchar *viewport_icon) {
+				gchar *viewport_icon)
+{
 	DeskmenuDplist *dplist = deskmenu_dplist_initialize(toggle_images, toggle_file, g_strstrip(viewport_icon));
 	deskmenu_dplist_new (dplist);
 
@@ -1282,7 +1307,8 @@ gboolean
 deskmenu_windowlist (Deskmenu *deskmenu,
 					 gboolean images,
 					 gboolean thisvp,
-					 gboolean mini_only) {
+					 gboolean mini_only)
+{
 	DeskmenuWindowlist *windowlist = deskmenu_windowlist_initialize (images, thisvp, mini_only);
 	deskmenu_windowlist_new(windowlist);
 
@@ -1299,7 +1325,8 @@ deskmenu_documentlist (Deskmenu *deskmenu,
 					   gchar *command,
 					   int limit,
 					   int age,
-					   gchar *sort_type) {
+					   gchar *sort_type)
+{
 	GtkWidget *menu = make_recent_documents_list (images, g_strdup(command), limit, age, g_strstrip(sort_type));
 
     gtk_menu_popup (GTK_MENU (menu),
@@ -1320,7 +1347,8 @@ deskmenu_show (DeskmenuObject *dm_object,
 	if (deskmenu->pinnable)
 	{
 		gtk_menu_set_tearoff_state (GTK_MENU (dm_object->menu), TRUE);
-		for (iterator = list; iterator; iterator = iterator->next) {
+		for (iterator = list; iterator; iterator = iterator->next)
+		{
 			gtk_widget_show (iterator->data);
 			gtk_widget_set_no_show_all (iterator->data, FALSE);
 		}
@@ -1329,7 +1357,8 @@ deskmenu_show (DeskmenuObject *dm_object,
 		gtk_menu_popup (GTK_MENU (dm_object->menu),
                     NULL, NULL, NULL, NULL,
                     0, 0);
-        for (iterator = list; iterator; iterator = iterator->next) {
+        for (iterator = list; iterator; iterator = iterator->next)
+		{
 			gtk_widget_hide (iterator->data);
 			gtk_widget_set_no_show_all (iterator->data, TRUE);
 		}
@@ -1356,7 +1385,8 @@ deskmenu_reload (Deskmenu *deskmenu,
 gboolean
 deskmenu_control (Deskmenu *deskmenu, gchar *filename, gchar *workingd, GError  **error)
 {
-	if(chdir (workingd) == 0) {
+	if(chdir (workingd) == 0)
+	{
 		DeskmenuObject *dm_object = check_file_cache (deskmenu, g_strstrip(filename));
 		deskmenu_show(dm_object, deskmenu, error);
 		return TRUE;
@@ -1397,7 +1427,8 @@ deskmenu_precache (Deskmenu *deskmenu, gchar *filename)
 		for (i = 0;i < total;i++)
 		{
 			feed = g_key_file_get_string (config, "Files", files[i], &error);
-			if (feed) {
+			if (feed)
+			{
 				check_file_cache(deskmenu, parse_expand_tilde(feed));
 				g_free(feed);
 			}

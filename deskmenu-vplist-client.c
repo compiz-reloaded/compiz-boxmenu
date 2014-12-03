@@ -29,79 +29,79 @@ int main (int argc, char *argv[])
 	gboolean images = FALSE;
 	gboolean toggle_file = FALSE;
 	gboolean toggle_wrap = FALSE;
-	
-    usleep (200000);
 
-    g_type_init ();
+	usleep (200000);
 
-    GOptionContext *context;
-    GOptionEntry entries[] =
-    {
+	g_type_init ();
+
+	GOptionContext *context;
+	GOptionEntry entries[] =
+	{
 		{ "images", 'i', 0, G_OPTION_ARG_NONE, &images,
-            "Use IMAGES in the viewport list. Change the viewport icon with '-v <ICON>.'", NULL },
-        { "viewport-icon", 'v', 0, G_OPTION_ARG_STRING, &icon,
-            "Use ICON/FILENAME as the viewport icon.", "ICON" },
-        { "wrap", 'w', 0, G_OPTION_ARG_NONE, &toggle_wrap,
-            "Turn on viewport wrap navigation", NULL },
-        { NULL, 0, 0, 0, NULL, NULL, NULL }
-    };
+			"Use IMAGES in the viewport list. Change the viewport icon with '-v <ICON>.'", NULL },
+		{ "viewport-icon", 'v', 0, G_OPTION_ARG_STRING, &icon,
+			"Use ICON/FILENAME as the viewport icon.", "ICON" },
+		{ "wrap", 'w', 0, G_OPTION_ARG_NONE, &toggle_wrap,
+			"Turn on viewport wrap navigation", NULL },
+		{ NULL, 0, 0, 0, NULL, NULL, NULL }
+	};
 
-    context = g_option_context_new (NULL);
-    g_option_context_add_main_entries (context, entries, NULL);
-    g_option_context_set_summary (context, "Calls the daemon to display just a viewportlist");
+	context = g_option_context_new (NULL);
+	g_option_context_add_main_entries (context, entries, NULL);
+	g_option_context_set_summary (context, "Calls the daemon to display just a viewportlist");
 
-    error = NULL;
-    connection = dbus_g_bus_get (DBUS_BUS_SESSION,
-                               &error);
-    if (connection == NULL)
-    {
-        g_printerr ("Failed to open connection to bus: %s\n",
-                  error->message);
-        g_error_free (error);
-        return 1;
-    }
+	error = NULL;
+	connection = dbus_g_bus_get (DBUS_BUS_SESSION,
+			&error);
+	if (connection == NULL)
+	{
+		g_printerr ("Failed to open connection to bus: %s\n",
+				error->message);
+		g_error_free (error);
+		return 1;
+	}
 
-    proxy = dbus_g_proxy_new_for_name (connection,
-                                       DESKMENU_SERVICE_DBUS,
-                                       DESKMENU_PATH_DBUS,
-                                       DESKMENU_INTERFACE_DBUS);
+	proxy = dbus_g_proxy_new_for_name (connection,
+	                                   DESKMENU_SERVICE_DBUS,
+	                                   DESKMENU_PATH_DBUS,
+	                                   DESKMENU_INTERFACE_DBUS);
 
-    error = NULL;
-    
-    
-    if (!g_option_context_parse (context, &argc, &argv, &error))
-    {
-        g_printerr ("option parsing failed: %s", error->message);
-        g_error_free (error);
-        return 1;
-    }
+	error = NULL;
+
+
+	if (!g_option_context_parse (context, &argc, &argv, &error))
+	{
+		g_printerr ("option parsing failed: %s", error->message);
+		g_error_free (error);
+		return 1;
+	}
 
 	if (images)
 	{
-		if (icon) {
+		if (icon)
+		{
 			toggle_file = g_regex_match_simple ("/", icon, 0, 0);
 		}
 		else
 		{
 			icon = "user-desktop";
 		}
-		
 	}
 
-    if (!dbus_g_proxy_call (proxy, "vplist", &error, 
-		G_TYPE_BOOLEAN, toggle_wrap,
-		G_TYPE_BOOLEAN, images,
-		G_TYPE_BOOLEAN, toggle_file,
-		G_TYPE_STRING, icon,
-        G_TYPE_INVALID, G_TYPE_INVALID))
-    {
-        g_printerr ("Error: %s\n", error->message);
-        g_error_free (error);
-        return 1;
-    }
-  
-  g_option_context_free (context);
-  g_object_unref (proxy);
+	if (!dbus_g_proxy_call (proxy, "vplist", &error, 
+	                        G_TYPE_BOOLEAN, toggle_wrap,
+	                        G_TYPE_BOOLEAN, images,
+	                        G_TYPE_BOOLEAN, toggle_file,
+	                        G_TYPE_STRING, icon,
+	                        G_TYPE_INVALID, G_TYPE_INVALID))
+	{
+		g_printerr ("Error: %s\n", error->message);
+		g_error_free (error);
+		return 1;
+	}
 
-    return 0;
+	g_option_context_free (context);
+	g_object_unref (proxy);
+
+	return 0;
 }

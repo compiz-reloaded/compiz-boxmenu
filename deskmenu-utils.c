@@ -40,7 +40,8 @@ gchar *get_file_path (const gchar *file)
 	return f;
 }
 
-gchar *special_to_actual_chars (const gchar *file) {
+gchar *special_to_actual_chars (const gchar *file)
+{
 	GRegex *regex;
 	gchar *f;
 	

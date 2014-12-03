@@ -30,55 +30,54 @@ int main (int argc, char *argv[])
 	int limit, age;
 	gchar *sort_type = NULL;
 	
-    usleep (200000);
+	usleep (200000);
 
-    g_type_init ();
+	g_type_init ();
 
-    GOptionContext *context;
-    GOptionEntry entries[] =
-    {
+	GOptionContext *context;
+	GOptionEntry entries[] =
+	{
 		{ "images", 'i', 0, G_OPTION_ARG_NONE, &images,
-            "Use IMAGES the documentlist", NULL },
-        { "command", 'c', 0, G_OPTION_ARG_FILENAME, &command,
-            "Use COMMAND instead of xdg-open to open recent documents", "COMMAND" },
-        { "age", 'a', 0, G_OPTION_ARG_INT, &age,
-            "Limit documents to AGE number of days", "AGE" },
-        { "limit", 'l', 0, G_OPTION_ARG_INT, &limit,
-            "Display up to LIMIT items", "LIMIT" },
-        { "sort-type", 's', 0, G_OPTION_ARG_STRING, &sort_type,
-            "Sort items according to SORT TYPE. Valid sorting options are \"most used\" and \"least used\"", "SORT TYPE" },
-        { NULL, 0, 0, 0, NULL, NULL, NULL }
-    };
+			"Use IMAGES the documentlist", NULL },
+	    { "command", 'c', 0, G_OPTION_ARG_FILENAME, &command,
+			"Use COMMAND instead of xdg-open to open recent documents", "COMMAND" },
+	    { "age", 'a', 0, G_OPTION_ARG_INT, &age,
+			"Limit documents to AGE number of days", "AGE" },
+	    { "limit", 'l', 0, G_OPTION_ARG_INT, &limit,
+			"Display up to LIMIT items", "LIMIT" },
+		{ "sort-type", 's', 0, G_OPTION_ARG_STRING, &sort_type,
+			"Sort items according to SORT TYPE. Valid sorting options are \"most used\" and \"least used\"", "SORT TYPE" },
+		{ NULL, 0, 0, 0, NULL, NULL, NULL }
+	};
 
-    context = g_option_context_new (NULL);
-    g_option_context_add_main_entries (context, entries, NULL);
-    g_option_context_set_summary (context, "Calls the daemon to display just a documentlist");
+	context = g_option_context_new (NULL);
+	g_option_context_add_main_entries (context, entries, NULL);
+	g_option_context_set_summary (context, "Calls the daemon to display just a documentlist");
 
-    error = NULL;
-    connection = dbus_g_bus_get (DBUS_BUS_SESSION,
-                               &error);
-    if (connection == NULL)
-    {
-        g_printerr ("Failed to open connection to bus: %s\n",
-                  error->message);
-        g_error_free (error);
-        return 1;
-    }
+	error = NULL;
+	connection = dbus_g_bus_get (DBUS_BUS_SESSION,
+	                           &error);
+	if (connection == NULL)
+	{
+		g_printerr ("Failed to open connection to bus: %s\n",
+		            error->message);
+		g_error_free (error);
+		return 1;
+	}
 
-    proxy = dbus_g_proxy_new_for_name (connection,
-                                       DESKMENU_SERVICE_DBUS,
-                                       DESKMENU_PATH_DBUS,
-                                       DESKMENU_INTERFACE_DBUS);
+	proxy = dbus_g_proxy_new_for_name (connection,
+	                                   DESKMENU_SERVICE_DBUS,
+	                                   DESKMENU_PATH_DBUS,
+	                                   DESKMENU_INTERFACE_DBUS);
 
-    error = NULL;
-    
-    
-    if (!g_option_context_parse (context, &argc, &argv, &error))
-    {
-        g_printerr ("option parsing failed: %s", error->message);
-        g_error_free (error);
-        return 1;
-    }
+	error = NULL;
+
+	if (!g_option_context_parse (context, &argc, &argv, &error))
+	{
+	    g_printerr ("option parsing failed: %s", error->message);
+		g_error_free (error);
+		return 1;
+	}
 	if (!(limit > 0))
 	{
 		limit = -1;
@@ -91,22 +90,22 @@ int main (int argc, char *argv[])
 	{
 		command = g_strdup("xdg-open");
 	}
-    if (!dbus_g_proxy_call (proxy, "documentlist", &error, 
-		G_TYPE_BOOLEAN, images,
-		G_TYPE_STRING, command,
-		G_TYPE_INT, limit,
-		G_TYPE_INT, age,
-		G_TYPE_STRING, sort_type, 
-        G_TYPE_INVALID, G_TYPE_INVALID))
-    {
-        g_printerr ("Error: %s\n", error->message);
-        g_error_free (error);
-        return 1;
-    }
+	if (!dbus_g_proxy_call (proxy, "documentlist", &error,
+		                    G_TYPE_BOOLEAN, images,
+		                    G_TG_TYPE_STRING, command,
+		                    G_TG_TYPE_INT, limit,
+		                    G_TG_TYPE_INT, age,
+		                    G_TG_TYPE_STRING, sort_type,
+	                        G_TG_TYPE_INVALID, G_TYPE_INVALID))
+	{
+		g_printerr ("Error: %s\n", error->message);
+		g_error_free (error);
+		return 1;
+	}
   
-  g_option_context_free (context);
-  g_object_unref (proxy);
+	g_option_context_free (context);
+	g_object_unref (proxy);
 
-    return 0;
+	return 0;
 }
 

@@ -38,9 +38,9 @@ int main (int argc, char *argv[])
 	{
 		{ "images", 'i', 0, G_OPTION_ARG_NONE, &images,
 			"Use IMAGES in the desktoplist. Change the desktop icon with '-d <ICON>.'", NULL },
-			{ "desktop-icon", 'd', 0, G_OPTION_ARG_STRING, &icon,
-				"Use ICON/FILENAME as the desktop icon.", "ICON" },
-				{ NULL, 0, 0, 0, NULL, NULL, NULL }
+		{ "desktop-icon", 'd', 0, G_OPTION_ARG_STRING, &icon,
+			"Use ICON/FILENAME as the desktop icon.", "ICON" },
+		{ NULL, 0, 0, 0, NULL, NULL, NULL }
 	};
 	
 	context = g_option_context_new (NULL);
@@ -53,15 +53,15 @@ int main (int argc, char *argv[])
 	if (connection == NULL)
 	{
 		g_printerr ("Failed to open connection to bus: %s\n",
-					error->message);
+		            error->message);
 		g_error_free (error);
 		return 1;
 	}
 	
 	proxy = dbus_g_proxy_new_for_name (connection,
-									   DESKMENU_SERVICE_DBUS,
-									DESKMENU_PATH_DBUS,
-									DESKMENU_INTERFACE_DBUS);
+	                                   DESKMENU_SERVICE_DBUS,
+	                                   DESKMENU_PATH_DBUS,
+	                                   DESKMENU_INTERFACE_DBUS);
 	
 	error = NULL;
 	
@@ -75,21 +75,21 @@ int main (int argc, char *argv[])
 	
 	if (images)
 	{
-		if (icon) {
+		if (icon)
+		{
 			toggle_file = g_regex_match_simple ("/", icon, 0, 0);
 		}
 		else
 		{
 			icon = "user-desktop";
 		}
-		
 	}
 	
 	if (!dbus_g_proxy_call (proxy, "dplist", &error, 
-		G_TYPE_BOOLEAN, images,
-		G_TYPE_BOOLEAN, toggle_file,
-		G_TYPE_STRING, icon,
-		G_TYPE_INVALID, G_TYPE_INVALID))
+	                        G_TYPE_BOOLEAN, images,
+	                        G_TYPE_BOOLEAN, toggle_file,
+	                        G_TYPE_STRING, icon,
+	                        G_TYPE_INVALID, G_TYPE_INVALID))
 	{
 		g_printerr ("Error: %s\n", error->message);
 		g_error_free (error);
