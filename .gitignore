@@ -1,5 +1,6 @@
 *.pyc
 *.swp
+*.swo
 compiz-boxmenu
 compiz-boxmenu-*list
 compiz-boxmenu-editor
