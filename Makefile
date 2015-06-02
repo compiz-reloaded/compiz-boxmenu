@@ -23,8 +23,8 @@ ifneq ("$(DEBUG)","")
 else
 	CFLAGS := $(WARNINGS)
 endif
-LDFLAGS := `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
-LDFLAGS_CLIENT := `pkg-config --libs dbus-glib-1`
+LDFLAGS := -Wl,--as-needed `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
+LDFLAGS_CLIENT := -Wl,--as-needed `pkg-config --libs dbus-glib-1`
 
 VERSION=1.1.12
 
@@ -34,32 +34,32 @@ all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist c
 
 #has manpage
 compiz-boxmenu:
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	$(CC) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)  
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-dlist:
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-documentlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	$(CC) -o $@ deskmenu-documentlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS) 
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-vplist:
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-vplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	$(CC) -o $@ deskmenu-vplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-dplist:
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-dplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	$(CC) -o $@ deskmenu-dplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS) 
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-wlist:
-	$(CC) $(CPPFLAGS_CLIENT) $(CFLAGS) -o $@ deskmenu-windowlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT)  
+	$(CC) -o $@ deskmenu-windowlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-daemon:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c  $(LDFLAGS) 
+	$(CC) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c $(LDFLAGS) $(CPPFLAGS) $(CFLAGS) 
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 compiz-boxmenu-editor:
