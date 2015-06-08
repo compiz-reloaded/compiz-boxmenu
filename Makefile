@@ -72,6 +72,7 @@ deskmenu-glue.h:
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin/
 	mkdir -p $(DESTDIR)$(PREFIX)/share/icons
+	mkdir -p $(DESTDIR)$(PREFIX)/share/applications
 	mkdir -p $(DESTDIR)$(PREFIX)/share/cb-editor
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m755 compiz-boxmenu $(DESTDIR)$(PREFIX)/bin/
@@ -89,6 +90,7 @@ install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 	install -m644 org.compiz_fusion.boxmenu.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/
 	install -m644 man/*.1 $(DESTDIR)$(PREFIX)/share/man/man1
+	install -m644 Compiz-Boxmenu-Editor.desktop $(DESTDIR)$(PREFIX)/share/applications
 
 clean:
 	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-dplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor man/*.1
