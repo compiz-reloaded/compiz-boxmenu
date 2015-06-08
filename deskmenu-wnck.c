@@ -524,7 +524,7 @@ deskmenu_vplist_update (WnckScreen *screen, DeskmenuVplist *vplist)
 
 static void
 deskmenu_dplist_make_goto_desktop (WnckWorkspace *wksp,
-	                               DeskmenuDplist *dplist,
+                                   DeskmenuDplist *dplist,
                                    gint w, gint h)
 {
 	GtkWidget *item;
@@ -808,7 +808,7 @@ deskmenu_vplist_initialize(gboolean toggle_wrap,
 
 DeskmenuDplist*
 deskmenu_dplist_initialize(gboolean toggle_images,
-	                       gboolean toggle_file,
+                           gboolean toggle_file,
                            gchar *viewport_icon)
 {
 	DeskmenuDplist *dplist;
