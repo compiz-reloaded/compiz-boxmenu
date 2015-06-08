@@ -1168,14 +1168,12 @@ static DeskmenuObject
 									NULL);
 
 	//TODO: add a size column to cache for possible autorefresh
-		g_print("Checking cache...\n");
-	if (strlen(filename) == 0)
-    filename = g_build_path (G_DIR_SEPARATOR_S,
-                               g_get_user_config_dir (),
-                               "compiz",
-                               "boxmenu",
-                               "menu.xml",
-                               NULL);
+	g_print("Checking cache...\n");
+
+	if (strlen(filename) == 0) {
+		filename = g_strdup(user_default);
+	}
+
 	if (strcmp(filename, user_default) == 0)
 	{
 		g_print("Looking up default menu...\n");
