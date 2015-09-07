@@ -255,9 +255,25 @@ class CBEditor(gtk.Window):
 		if response==gtk.RESPONSE_ACCEPT:
 			process=subprocess.Popen(shlex.split(os.path.expanduser(input.entry.props.text)), \
 				stdout=subprocess.PIPE)
-			dummy_menu=etree.fromstring("<menu name='Dummy'>%s</menu>" % process.communicate()[0])
-			self.recursive_generate(widget, dummy_menu)
-		dialog.destroy()
+			try:
+				stdout = process.communicate()[0]
+				dummy_txt = "<menu name='Dummy'>{}</menu>".format(stdout)
+				dummy_menu=etree.fromstring("<menu name='Dummy'>{}</menu>".format(stdout))
+				self.recursive_generate(widget, dummy_menu)
+				dialog.destroy()
+			except etree.XMLSyntaxError as e:
+				message = gtk.MessageDialog(parent=self, flags=0, 
+				    type=gtk.MESSAGE_ERROR, 
+				    buttons=gtk.BUTTONS_OK, message_format=None)
+				msg = ("{}\n\nClick the gear icon in the dialog to check"
+				" pipe output.").format(e.msg)
+				message.set_markup(msg)
+				message.run()
+				message.destroy()
+			finally:
+				dialog.destroy()
+		else:
+			dialog.destroy()
 
 	def make_new_item(self, widget, element_type, nd=None, parent=None):
 		if element_type != 'Menu File':
