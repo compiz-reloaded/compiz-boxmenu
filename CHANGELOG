@@ -1,3 +1,9 @@
+11.16.2015
+	* Add the ability to show temporary pipemenus
+6.2.2015-6.8.2015
+	* Properly set menu icon for editor
+	* Make sure *.desktop file is installed
+	* Remove obsolete TODO items
 10.6.2014-12.1.2014
 	* Added manpages for all the commands
 	* Updated the README to include the new desktop list client

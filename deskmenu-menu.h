@@ -117,6 +117,7 @@ GQuark deskmenu_error_quark (void);
 
 gboolean deskmenu_reload (Deskmenu *deskmenu, GError **error);
 gboolean deskmenu_control (Deskmenu *deskmenu, gchar *filename, gchar *workingd, GError  **error);
+gboolean deskmenu_tmppipe (Deskmenu *deskmenu, gchar *piped_contents, GError  **error);
 gboolean deskmenu_pin (Deskmenu *deskmenu, gboolean pin);
 gboolean deskmenu_windowlist (Deskmenu *deskmenu, gboolean images, gboolean thisvp, gboolean mini_only);
 gboolean deskmenu_vplist (Deskmenu *deskmenu, gboolean toggle_wrap, gboolean toggle_images, gboolean toggle_file, gchar *viewport_icon);

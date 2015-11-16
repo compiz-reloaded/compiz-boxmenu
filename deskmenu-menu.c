@@ -1156,6 +1156,31 @@ static DeskmenuObject
 }
 
 static DeskmenuObject
+*deskmenu_parse_tmp_string (gchar *intext)
+{
+	GError *error = NULL;
+	DeskmenuObject *dm_object = deskmenu_object_init();
+	GMarkupParseContext *context = g_markup_parse_context_new (&parser,
+		0, dm_object, NULL);
+
+	gchar *text = g_strconcat("<menu>", intext,"</menu>", NULL);
+
+	if (!g_markup_parse_context_parse (context, text, strlen(text), &error)
+		|| !g_markup_parse_context_end_parse (context, &error))
+	{
+		g_printerr ("Parse failed with message: %s \n", error->message);
+		g_error_free (error);
+		exit (1);
+	}
+
+	g_free(text); //free the joined array
+	g_markup_parse_context_free (context); //free the parser
+
+	gtk_widget_show_all (dm_object->menu);
+	return dm_object;
+}
+
+static DeskmenuObject
 *deskmenu_parse_file (gchar *filename)
 {
 	GError *error = NULL;
@@ -1397,6 +1422,14 @@ deskmenu_reload (Deskmenu *deskmenu,
                  GError  **error)
 {
 	gtk_main_quit ();
+	return TRUE;
+}
+
+gboolean
+deskmenu_tmppipe(Deskmenu *deskmenu, gchar *piped_contents, GError **error)
+{
+	DeskmenuObject *dm_object = deskmenu_parse_tmp_string(piped_contents);
+	deskmenu_show(dm_object, deskmenu, error);
 	return TRUE;
 }
 

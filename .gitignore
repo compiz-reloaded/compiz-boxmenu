@@ -2,6 +2,7 @@
 *.swp
 *.swo
 compiz-boxmenu
+compiz-boxmenu-pipe
 compiz-boxmenu-daemon
 compiz-boxmenu-*list
 compiz-boxmenu-editor

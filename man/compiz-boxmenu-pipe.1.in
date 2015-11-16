@@ -1,0 +1,29 @@
+.TH compiz-boxmenu-pipe 1 "Nov 16, 2015" "Compiz Boxmenu VERSION"
+.SH NAME
+compiz\-boxmenu-pipe \- show temporary pipe menus in Compiz Boxmenu
+.SH SYNOPSIS
+.B compiz-boxmenu-pipe
+[ -h  ]
+[
+.B \-p
+]
+.
+.SH DESCRIPTION
+.B compiz-boxmenu-pipe
+is a main D-Bus client for compiz-boxmenu-daemon. It shows a menu based on the content piped to it.
+.
+.SH OPTIONS
+.TP
+.B \-h
+Show help options
+
+.TP
+.B -p\fR, \fB--pin\fR
+PIN the pipemenu menu as soon as it's generated
+.SH AUTHOR
+Written by ShadowKyogre
+.SH HISTORY
+.SH "SEE ALSO"
+compiz-boxmenu-daemon(1), compiz-boxmenu-editor(1), 
+.br
+compiz-boxmenu-dlist(1), compiz-boxmenu-dplist(1), compiz-boxmenu-vplist(1), compiz-boxmenu-wlist(1)

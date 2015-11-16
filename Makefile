@@ -26,15 +26,19 @@ endif
 LDFLAGS := -Wl,--as-needed `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
 LDFLAGS_CLIENT := -Wl,--as-needed `pkg-config --libs dbus-glib-1`
 
-VERSION=1.1.12
+VERSION=1.1.13
 
 # Targets
 
-all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-dplist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-editor
+all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-pipe compiz-boxmenu-dlist compiz-boxmenu-dplist compiz-boxmenu-vplist compiz-boxmenu-wlist compiz-boxmenu-editor
 
 #has manpage
 compiz-boxmenu:
-	$(CC) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)  
+	$(CC) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
+	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
+
+compiz-boxmenu-pipe:
+	$(CC) -o $@ deskmenu-pipe.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
@@ -49,7 +53,7 @@ compiz-boxmenu-vplist:
 
 #has manpage
 compiz-boxmenu-dplist:
-	$(CC) -o $@ deskmenu-dplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS) 
+	$(CC) -o $@ deskmenu-dplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
@@ -59,7 +63,7 @@ compiz-boxmenu-wlist:
 
 #has manpage
 compiz-boxmenu-daemon:
-	$(CC) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c $(LDFLAGS) $(CPPFLAGS) $(CFLAGS) 
+	$(CC) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c $(LDFLAGS) $(CPPFLAGS) $(CFLAGS)
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 compiz-boxmenu-editor:
@@ -93,4 +97,4 @@ install: all
 	install -m644 Compiz-Boxmenu-Editor.desktop $(DESTDIR)$(PREFIX)/share/applications
 
 clean:
-	rm -f compiz-boxmenu compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-dplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor man/*.1
+	rm -f compiz-boxmenu compiz-boxmenu-pipe compiz-boxmenu-dlist compiz-boxmenu-vplist compiz-boxmenu-dplist compiz-boxmenu-wlist compiz-boxmenu-daemon deskmenu-glue.h compiz-boxmenu-editor man/*.1

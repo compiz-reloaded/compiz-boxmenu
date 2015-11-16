@@ -83,6 +83,9 @@ windowlist, desktop list, and documents list on their own. These are
 compiz-boxmenu-vplist, compiz-boxmenu-wlist, compiz-boxmenu-dplist,
 and compiz-boxmenu-dlist.
 
+Finally, there is a special binary called compiz-boxmenu-pipe. This allows you
+to show temporary pipe menus by piping command output to the stdin of this command.
+
 You can also edit the menu by running compiz-boxmenu-editor
 
 == Credits ==

@@ -7,6 +7,9 @@
       <arg type="s" name="filename" direction="in" />
       <arg type="s" name="workingd" direction="in" />
     </method>
+    <method name="tmppipe">
+      <arg type="s" name="piped_text" direction="in" />
+    </method>
     <method name="pin">
       <arg type="b" name="pin" direction="in" />
     </method>
