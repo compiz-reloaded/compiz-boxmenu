@@ -7,9 +7,11 @@ from sys import stderr
 class IcoBrowse(gtk.Dialog):
 	def __init__(self, message="", default_text='', modal=True):
 		gtk.Dialog.__init__(self)
+		if LOADED_ICONS is False:
+			icobrowse_set_up()
 		self.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CLOSE,
 		      gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
-		#self.set_title("Icon search")
+		self.set_title("Icon search")
 		if modal:
 			self.set_modal(True)
 		self.set_border_width(5)
@@ -36,22 +38,8 @@ class IcoBrowse(gtk.Dialog):
 		self.refine.set_icon_from_stock(gtk.ENTRY_ICON_SECONDARY, gtk.STOCK_FIND)
 		self.refine.set_size_request(200, 30)
 		self.modelfilter.set_visible_func(self.search_icons)
-		#catted_icons=[]
 		for c in defaulttheme.list_contexts():
-			#current=defaulttheme.list_icons(context=c)
-			#catted_icons+=set(current)
 			self.combobox.append_text(c)
-			#for i in current:
-			#	try:
-			#		self.model.append([defaulttheme.load_icon(i, 32,
-			#						  gtk.ICON_LOOKUP_USE_BUILTIN),
-			#						  i,c])
-			#	except GError as err: stderr.write('Error loading "%s": %s\n' % (i, err.args[0]))
-		#other=list(set(defaulttheme.list_icons())-(set(catted_icons)))
-		#for i in other:
-		#	self.model.append([defaulttheme.load_icon(i, 32,
-		#							  gtk.ICON_LOOKUP_USE_BUILTIN),
-		#							  i,"Other"])
 		self.combobox.prepend_text("Other")
 		scrolled = gtk.ScrolledWindow()
 		scrolled.add(self.iconview)
@@ -64,7 +52,6 @@ class IcoBrowse(gtk.Dialog):
 		self.combobox.set_active(0)
 		
 		self.iconview.connect('selection-changed', self.get_icon_name)
-		
 		self.vbox.show_all()
 
 	def set_defaults(self, icon_name):
@@ -98,11 +85,30 @@ class IcoBrowse(gtk.Dialog):
 		else:
 			return False
 
-def set_up():
+# leaving this here while trying to figure out how to show this
+# to the user
+class ProgressDialog(gtk.Dialog):
+	def __init__(self, modal=True):
+		gtk.Dialog.__init__(self)
+		self.set_title("Loading icons...")
+		if modal:
+			self.set_modal(True)
+		self.set_border_width(5)
+		self.progress_bar = gtk.ProgressBar(adjustment=None)
+		self.vbox.pack_start(self.progress_bar)
+		self.show_all()
+
+def icobrowse_set_up():
 	print "Preloading icons"
 	defaulttheme=gtk.icon_theme_get_default()
 	catted_icons=set()
-	for c in defaulttheme.list_contexts():
+	dt_contexts = defaulttheme.list_contexts()
+	# pd=ProgressDialog()
+	# pd.show()
+	# progress = 0.
+	# max_progress = len(dt_contexts)+1.
+
+	for c in dt_contexts:
 		current=defaulttheme.list_icons(context=c)
 		catted_icons=catted_icons.union(set(current))
 		print "Found {} icons in {}".format(len(current),c)
@@ -113,19 +119,31 @@ def set_up():
 								  gtk.ICON_LOOKUP_USE_BUILTIN),
 								  i,c])
 			except GError as err: stderr.write('Error loading "%s": %s\n' % (i, err.args[0]))
+		# progress+=1
+		# pd.progress_bar.set_fraction(progress/max_progress)
+
 	other=list(set(defaulttheme.list_icons())-catted_icons)
 	print "Placing misc. icons in Other"
 	for i in other:
 		ICON_STORE.append([defaulttheme.load_icon(i, 32,
 								  gtk.ICON_LOOKUP_USE_BUILTIN),
 								  i,"Other"])
+	# progress+=1
+	# pd.progress_bar.set_fraction(progress/max_progress)
+	global LOADED_ICONS
+	LOADED_ICONS = True
 
 
 ICON_STORE=gtk.ListStore(gtk.gdk.Pixbuf, gobject.TYPE_STRING, gobject.TYPE_STRING)
-set_up()
+LOADED_ICONS = False
 
 if __name__ == '__main__':
+	def misc_callback(dialog, resp):
+		if resp == gtk.RESPONSE_ACCEPT:
+			text = icobrowse.get_icon_name(None)
+			print(text)
+		icobrowse.destroy()
+
 	icobrowse = IcoBrowse()
-	icobrowse.connect('destroy', gtk.main_quit)
+	icobrowse.connect('response', misc_callback)
 	icobrowse.run()
-	gtk.main()

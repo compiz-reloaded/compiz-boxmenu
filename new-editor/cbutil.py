@@ -252,5 +252,5 @@ def completion_setup():
 					POSSIBILITY_STORE.append([j])
 
 POSSIBILITY_STORE = gtk.ListStore(str)
-set_up()
+icobrowse_set_up()
 completion_setup()
