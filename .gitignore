@@ -6,5 +6,6 @@ compiz-boxmenu-pipe
 compiz-boxmenu-daemon
 compiz-boxmenu-*list
 compiz-boxmenu-editor
+compiz-boxmenu-iconbrowser
 deskmenu-glue.h
 man/*.1

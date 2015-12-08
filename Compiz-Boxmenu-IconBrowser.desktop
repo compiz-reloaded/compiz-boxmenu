@@ -1,0 +1,11 @@
+[Desktop Entry]
+Exec=compiz-boxmenu-iconbrowser
+GenericName[en_US]=Browse your current icon theme
+GenericName=Browse your current icon theme
+Icon=cbmenu
+Name[en_US]=Compiz Boxmenu Icon Browser
+Name=Compiz Boxmenu Icon Browser
+StartupNotify=true
+Terminal=false
+Categories=Application;Accessories;System
+Type=Application
