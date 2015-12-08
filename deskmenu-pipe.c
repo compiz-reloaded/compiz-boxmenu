@@ -66,7 +66,7 @@ int main (int argc, char *argv[])
 	gsize length;
 	if (!isatty(fileno(stdin))) {
 		GIOChannel *gioch = g_io_channel_unix_new(fileno(stdin));
-		GIOStatus ret_value = g_io_channel_read_line (gioch, &intext, &length, NULL, NULL);
+		GIOStatus ret_value = g_io_channel_read_to_end (gioch, &intext, &length, NULL);
 	}
 	else {
 		g_printerr("Cannot pipe a tty as menu contents!");
