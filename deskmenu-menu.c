@@ -1532,6 +1532,7 @@ main (int    argc,
 		return 1;
 	}
 	g_set_prgname ("Compiz Boxmenu");
+	gtk_window_set_default_icon_name("cbmenu");
 	g_option_context_free (context);
 
 #if HAVE_WNCK
