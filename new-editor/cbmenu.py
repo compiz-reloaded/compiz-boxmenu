@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import gtk
 import os
 import glib
@@ -209,7 +211,7 @@ class MenuFile(gtk.ScrolledWindow):
 					context.finish(True, True, etime)
 
 		elif selection.type == 'text/uri-list':
-			print selection.data, drop_info
+			print(selection.data, drop_info)
 			#uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
 			uris = selection.data.replace('file:///', '/').strip('\r\n\x00').split()
 			launchers = []

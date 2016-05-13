@@ -1,5 +1,7 @@
+from __future__ import print_function
+
 import os, gtk, glib
-from pyicon_browser import *
+from pyicon_browser import IcoBrowse
 import gobject
 import subprocess
 import shlex
@@ -30,13 +32,6 @@ class TabButton(gtk.HBox):
 		self.btn.modify_style(style)
 
 		self.show_all()
-
-#test code
-#from cbutil import *
-#import gtk
-#d=gtk.Dialog()
-#d.vbox.add(CommandText())
-#d.run()
 
 class CommandText(gtk.HBox):
 	def __init__(self, label_text="Name", mode="Normal", text="", alternate_mode="Execute"):
@@ -98,7 +93,7 @@ class CommandText(gtk.HBox):
 		self.emit('text-changed', widget.props.text)
 
 	def _preview_text(self, widget):
-		print "Generating preview, please wait..."
+		print("Generating preview, please wait...")
 		buffer=gtk.TextBuffer()
 		buffer_errors=gtk.TextBuffer()
 		full_text=' '.join(['/usr/bin/env',os.path.expanduser(self.entry.props.text)])
@@ -134,13 +129,6 @@ class CommandText(gtk.HBox):
 		dialog.run()
 		dialog.destroy()
 
-#test code
-#from cbutil import *
-#import gtk
-#d=gtk.Dialog()
-#d.vbox.add(IconSelector())
-#d.run()
-
 class IconSelector(gtk.HBox):
 	def __init__(self, label_text="Icon", mode="Normal", text=""):
 			gtk.HBox.__init__(self)
@@ -170,7 +158,7 @@ class IconSelector(gtk.HBox):
 					self.image.set_from_pixbuf(pixbuf)
 				except glib.GError:
 					self.image.set_from_pixbuf(None)
-					print "Couldn't set icon from file: %s" %(self.text)
+					print("Couldn't set icon from file: %s" %(self.text))
 			else:
 				self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
 			self.button.set_tooltip_text(self.text)
@@ -185,7 +173,7 @@ class IconSelector(gtk.HBox):
 				self.image.set_from_pixbuf(pixbuf)
 			except glib.GError:
 				self.image.set_from_pixbuf(None)
-				print "Couldn't set icon from file: %s" %(self.text)
+				print("Couldn't set icon from file: %s" %(self.text))
 		else:
 			self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
 		self.emit('image-changed', mode)
@@ -241,10 +229,10 @@ def set_up():
 	gobject.signal_new("mode-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
 
 def completion_setup():
-	print "Setting up command auto completion for best experience"
+	print("Setting up command auto completion for best experience")
 	for i in os.path.expandvars("$PATH").split(":"):
 		if os.path.exists(i):
-			print "Looking in %s" %i
+			print("Looking in %s" %i)
 			for j in os.listdir(i):
 				path="%s/%s" %(i,j)
 				if not os.path.isdir(path) and \

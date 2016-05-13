@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+from __future__ import print_function
 
 import gtk, gobject, re
 from glib import GError
@@ -63,7 +64,7 @@ class IcoBrowse(gtk.Dialog):
 					self.refine.props.text=icon_name
 					for j in xrange(len(cmodel)):
 						if ICON_STORE[i][2] == cmodel[j][0]:
-							print cmodel[j]
+							print(cmodel[j])
 							self.combobox.set_active(j)
 							break
 					break
@@ -100,7 +101,7 @@ class ProgressDialog(gtk.Dialog):
 		self.show_all()
 
 def icobrowse_set_up(defaulttheme=gtk.icon_theme_get_default()):
-	print "Preloading icons"
+	print("Preloading icons")
 	catted_icons=set()
 	dt_contexts = defaulttheme.list_contexts()
 	# pd=ProgressDialog()
@@ -111,7 +112,7 @@ def icobrowse_set_up(defaulttheme=gtk.icon_theme_get_default()):
 	for c in dt_contexts:
 		current=defaulttheme.list_icons(context=c)
 		catted_icons=catted_icons.union(set(current))
-		print "Found {} icons in {}".format(len(current),c)
+		print("Found {} icons in {}".format(len(current),c))
 		#self.combobox.append_text(c)
 		for i in current:
 			try:
@@ -123,7 +124,7 @@ def icobrowse_set_up(defaulttheme=gtk.icon_theme_get_default()):
 		# pd.progress_bar.set_fraction(progress/max_progress)
 
 	other=list(set(defaulttheme.list_icons())-catted_icons)
-	print "Placing misc. icons in Other"
+	print("Placing misc. icons in Other")
 	for i in other:
 		ICON_STORE.append([defaulttheme.load_icon(i, 32,
 								  gtk.ICON_LOOKUP_USE_BUILTIN),

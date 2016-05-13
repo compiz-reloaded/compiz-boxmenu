@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import gtk
 from lxml import etree
 from cbutil import *
@@ -143,7 +145,7 @@ class Launcher(Item):
 
 	def on_name_mode_changed(self, widget, text):
 		namenode = self.node.find('name')
-		print text
+		print(text)
 		if text == "Execute":
 			if namenode is None:
 				namenode = etree.SubElement(self.node, 'name')
@@ -650,7 +652,7 @@ class Documents(Item):
 		sortnode = self.node.find('sort')
 		sorttype = widget.get_active_text()
 		if sorttype != 'None':
-			print sorttype
+			print(sorttype)
 			if sortnode is None:
 				sortnode = etree.SubElement(self.node, 'sort')
 			if sorttype == 'Most Used':
