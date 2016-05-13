@@ -7,10 +7,10 @@ from sys import stderr
 #http://developer.gnome.org/pygtk/2.22/class-gtkicontheme.html#method-gtkicontheme--list-contexts
 
 class IcoBrowse(gtk.Dialog):
-	def __init__(self, message="", default_text='', modal=True):
+	def __init__(self, message="", default_text='', modal=True, defaulttheme=gtk.icon_theme_get_default()):
 		gtk.Dialog.__init__(self)
 		if LOADED_ICONS is False:
-			icobrowse_set_up()
+			icobrowse_set_up(defaulttheme=defaulttheme)
 		self.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CLOSE,
 		      gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
 		self.set_title("Icon search")
@@ -33,7 +33,6 @@ class IcoBrowse(gtk.Dialog):
 		self.iconview.set_selection_mode(gtk.SELECTION_SINGLE)
 		self.iconview.set_item_width(72)
 		self.iconview.set_size_request(200, 220)
-		defaulttheme=gtk.icon_theme_get_default()
 		self.combobox.connect('changed', self.category_changed)
 		self.refine=gtk.Entry()
 		self.refine.connect('changed', self.category_changed)
@@ -100,9 +99,8 @@ class ProgressDialog(gtk.Dialog):
 		self.vbox.pack_start(self.progress_bar)
 		self.show_all()
 
-def icobrowse_set_up():
+def icobrowse_set_up(defaulttheme=gtk.icon_theme_get_default()):
 	print "Preloading icons"
-	defaulttheme=gtk.icon_theme_get_default()
 	catted_icons=set()
 	dt_contexts = defaulttheme.list_contexts()
 	# pd=ProgressDialog()
@@ -146,6 +144,13 @@ if __name__ == '__main__':
 			print(text)
 		icobrowse.destroy()
 
-	icobrowse = IcoBrowse()
+	import sys
+	if len(sys.argv) > 1:
+		theme = gtk.IconTheme()
+		theme.set_custom_theme(sys.argv[1])
+		icobrowse = IcoBrowse(defaulttheme=theme)
+	else:
+		icobrowse = IcoBrowse()
+
 	icobrowse.connect('response', misc_callback)
 	icobrowse.run()
