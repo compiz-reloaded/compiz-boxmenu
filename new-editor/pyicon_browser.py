@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import gtk, gobject, re
 from glib import GError
 from sys import stderr
