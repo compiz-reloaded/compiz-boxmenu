@@ -7,7 +7,7 @@ from xdg import BaseDirectory
 import re #This is to autoset file mode for *.desktop icons
 import ConfigParser
 from lxml import etree
-from cb_itemtypes import *
+from .item_types import *
 
 #test lines:
 #import cbmenu,cb_itemtypes
@@ -264,7 +264,6 @@ class MenuFile(gtk.ScrolledWindow):
 		return
 
 	def on_selection_changed(self, selection):
-
 		model, row = selection.get_selected()
 
 		sensitive = row and model.get_value(row, 0).editable
@@ -273,7 +272,6 @@ class MenuFile(gtk.ScrolledWindow):
 		self.delete_menu.props.sensitive = row
 
 	def on_row_activated(self, treeview, path, view_column):
-
 		model = treeview.get_model()
 		if hasattr(self, 'currently_editing'):
 			self.currently_editing.destroy()

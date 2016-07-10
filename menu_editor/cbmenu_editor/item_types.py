@@ -2,7 +2,8 @@ from __future__ import print_function
 
 import gtk
 from lxml import etree
-from cbutil import *
+
+from .util import CommandText, IconSelector
 
 class Item(object):
 
@@ -916,27 +917,26 @@ class Menu(object):
 		elif 'mode1' in self.node.attrib:
 			del self.node.attrib['mode1']
 
-itemtypes = {
+item_types = {
 	'launcher': Launcher,
 	'windowlist': Windowlist,
 	'viewportlist': Viewportlist,
-        'desktoplist': Desktoplist,
+	'desktoplist': Desktoplist,
 	'documents': Documents,
 	'reload': Reload,
 }
 
 
 def make_item(node):
-
-	itemtype = node.attrib.get('type')
-	return itemtypes.get(itemtype, Item)(node)
+	item_type = node.attrib.get('type')
+	return item_types.get(item_type, Item)(node)
 
 elements = {'menu': Menu, 'item': make_item, 'separator': Separator}
 
-elementsbyname = {
+elements_by_name = {
 	'Launcher': Launcher,
 	'Windows List': Windowlist,
-        'Desktops List': Desktoplist,
+	'Desktops List': Desktoplist,
 	'Viewports List': Viewportlist,
 	'Recent Documents': Documents,
 	'Reload': Reload,

@@ -1,11 +1,12 @@
 from __future__ import print_function
 
 import os, gtk, glib
-from pyicon_browser import IcoBrowse, icobrowse_set_up
 import gobject
 import subprocess
 import shlex
 import os
+
+from  .icon_browser import IcoBrowse, icobrowse_set_up
 
 class TabButton(gtk.HBox):
 	def __init__(self, text):
@@ -129,6 +130,12 @@ class CommandText(gtk.HBox):
 		dialog.run()
 		dialog.destroy()
 
+gobject.type_register(CommandText)
+gobject.signal_new("text-changed", CommandText, gobject.SIGNAL_RUN_FIRST,
+                   gobject.TYPE_NONE, (gobject.TYPE_STRING,))
+gobject.signal_new("mode-changed", CommandText, gobject.SIGNAL_RUN_FIRST,
+                   gobject.TYPE_NONE, (gobject.TYPE_STRING,))
+
 class IconSelector(gtk.HBox):
 	def __init__(self, label_text="Icon", mode="Normal", text=""):
 			gtk.HBox.__init__(self)
@@ -216,6 +223,14 @@ class IconSelector(gtk.HBox):
 			self._change_image(self.combobox.get_active_text())
 			self.button.set_tooltip_text(self.text)
 			self.emit('text-changed', text)
+
+gobject.type_register(IconSelector)
+gobject.signal_new("text-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,
+                   gobject.TYPE_NONE, (gobject.TYPE_STRING,))
+gobject.signal_new("mode-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,
+                   gobject.TYPE_NONE, (gobject.TYPE_STRING,))
+gobject.signal_new("image-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,
+                   gobject.TYPE_NONE, (gobject.TYPE_STRING,))
 
 def set_up():
 	gobject.type_register(CommandText)

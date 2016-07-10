@@ -1,12 +1,14 @@
 from __future__ import print_function
 
 import gtk, gobject, re
-from cb_itemtypes import *
-from cbmenu import *
-from cbutil import TabButton, CommandText
+from .item_types import elements, elements_by_name
+from .menu import MenuFile
+from .util import TabButton, CommandText
+
 from lxml import etree
 from xdg import BaseDirectory
-import os,re
+import os
+import re
 import ConfigParser
 import shlex
 
@@ -15,7 +17,7 @@ try:
 except ImportError:
 	 dbus = None
 
-elementlist = [
+element_list = [
 	'Launcher',
 	'Menu',
 	'Separator',
@@ -138,7 +140,7 @@ class CBEditor(gtk.Window):
 
 	def make_new_menu(self):
 		new_menu=gtk.Menu()
-		for i in elementlist:
+		for i in element_list:
 			new_item = gtk.ImageMenuItem(i, gtk.STOCK_NEW)
 			new_item.connect('activate', self.make_new_item, i)
 			new_menu.append(new_item)
@@ -227,7 +229,7 @@ class CBEditor(gtk.Window):
 		dialog.set_has_separator(False)
 
 		model = gtk.ListStore(str)
-		for el in elementlist:
+		for el in element_list:
 			model.append([el])
 
 		treeview = gtk.TreeView(model)
@@ -316,7 +318,7 @@ class CBEditor(gtk.Window):
 			else:
 				parentelement = menu.menu
 
-			element = elementsbyname[element_type](node=nd)
+			element = elements_by_name[element_type](node=nd)
 			if sibling:
 				position = parentelement.node.index(current.node) + 1
 				parentelement.node.insert(position, element.node)
