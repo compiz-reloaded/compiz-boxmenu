@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import os, gtk, glib
-from pyicon_browser import IcoBrowse
+from pyicon_browser import IcoBrowse, icobrowse_set_up
 import gobject
 import subprocess
 import shlex

@@ -138,7 +138,7 @@ def icobrowse_set_up(defaulttheme=gtk.icon_theme_get_default()):
 ICON_STORE=gtk.ListStore(gtk.gdk.Pixbuf, gobject.TYPE_STRING, gobject.TYPE_STRING)
 LOADED_ICONS = False
 
-if __name__ == '__main__':
+def main():
 	def misc_callback(dialog, resp):
 		if resp == gtk.RESPONSE_ACCEPT:
 			text = icobrowse.get_icon_name(None)
@@ -155,3 +155,6 @@ if __name__ == '__main__':
 
 	icobrowse.connect('response', misc_callback)
 	icobrowse.run()
+
+if __name__ == '__main__':
+	main()

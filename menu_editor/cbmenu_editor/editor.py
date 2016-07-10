@@ -15,6 +15,20 @@ try:
 except ImportError:
 	 dbus = None
 
+elementlist = [
+	'Launcher',
+	'Menu',
+	'Separator',
+	'Windows List',
+	'Desktops List',
+	'Viewports List',
+	'Recent Documents', 
+	'Reload',
+	'Menu File',
+]
+
+allnotcache = True
+
 class CBEditor(gtk.Window):
 	def __init__(self):
 		gtk.Window.__init__(self)
@@ -464,8 +478,7 @@ class CBEditor(gtk.Window):
 				else:
 					self.menu_list.append([self.check_cache(path),checking, path])
 
-if __name__ == '__main__':
-
+def main():
 	if dbus:
 		try:
 			 bus = dbus.SessionBus()
@@ -488,8 +501,8 @@ if __name__ == '__main__':
 		allnotcache=False
 	except IOError:
 		allnotcache=True
-	elementlist = ['Launcher', 'Menu', 'Separator', 'Windows List',
-	               'Desktops List','Viewports List', 'Recent Documents', 
-				   'Reload', 'Menu File']
 	CBEditor()
 	gtk.main()
+
+if __name__ == '__main__':
+	main()

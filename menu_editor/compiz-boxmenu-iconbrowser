@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+
+from cbmenu_editor import pyicon_browser
+
+pyicon_browser.main()
