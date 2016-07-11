@@ -1,16 +1,19 @@
 from __future__ import print_function
 
-import gtk, gobject, re
-from .item_types import elements, elements_by_name
-from .menu import MenuFile
-from .util import TabButton, CommandText
+import gtk
+import gobject
 
 from lxml import etree
 from xdg import BaseDirectory
+
+import ConfigParser
 import os
 import re
-import ConfigParser
 import shlex
+
+from .item_types import elements, elements_by_name
+from .menu import MenuFile
+from .util import TabButton, CommandText
 
 try:
 	 import dbus

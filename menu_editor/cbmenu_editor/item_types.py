@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import gtk
+
 from lxml import etree
 
 from .util import CommandText, IconSelector

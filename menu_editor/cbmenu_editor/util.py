@@ -1,10 +1,12 @@
 from __future__ import print_function
 
-import os, gtk, glib
+import gtk
+import glib
 import gobject
-import subprocess
-import shlex
+
 import os
+import shlex
+import subprocess
 
 from  .icon_browser import IcoBrowse, icobrowse_set_up
 

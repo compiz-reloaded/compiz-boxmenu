@@ -1,8 +1,10 @@
 #!/usr/bin/env python2
 from __future__ import print_function
 
-import gtk, gobject, re
+import gtk
+import gobject
 from glib import GError
+
 from sys import stderr
 
 #http://developer.gnome.org/pygtk/2.22/class-gtkicontheme.html#method-gtkicontheme--list-contexts

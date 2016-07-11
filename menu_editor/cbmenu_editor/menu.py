@@ -1,12 +1,16 @@
 from __future__ import print_function
 
 import gtk
-import os
 import glib
+
+from lxml import etree
+
 from xdg import BaseDirectory
+
+import os
 import re #This is to autoset file mode for *.desktop icons
 import ConfigParser
-from lxml import etree
+
 from .item_types import *
 
 #test lines:
