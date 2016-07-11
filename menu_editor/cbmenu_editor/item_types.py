@@ -7,9 +7,7 @@ from lxml import etree
 from .util import CommandText, IconSelector
 
 class Item(object):
-
 	def __init__(self, node=None, parent=None, _type=None):
-
 		self.editable = False
 
 		if node is None:
@@ -26,16 +24,24 @@ class Item(object):
 		return 'Item'
 
 	def get_icon(self):
-		return None
+		iconnode = self.node.find('icon')
+		if iconnode is not None:
+			return iconnode.text
+		else:
+			return None
 
 	def get_icon_mode(self):
-		return None
+		iconnode = self.node.find('icon')
+		if iconnode is not None:
+			if iconnode.attrib.get('mode1') == 'file':
+				return iconnode.attrib.get('mode1')
+		else:
+			return None
 
 class Launcher(Item):
 
 	def __init__(self, node=None):
-
-		super().__init__(node=node, _type='launcher')
+		super(Launcher, self).__init__(node=node, _type='launcher')
 		self.editable = True
 
 	def get_name(self):
@@ -50,21 +56,6 @@ class Launcher(Item):
 
 	def get_type(self):
 		return 'Launcher'
-
-	def get_icon(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			return iconnode.text
-		else:
-			return None
-
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
 
 	def get_options(self):
 
@@ -179,25 +170,10 @@ class Launcher(Item):
 class Windowlist(Item):
 
 	def __init__(self, node=None):
-		super().__init__(node=node, _type='windowlist')
+		super(Windowlist, self).__init__(node=node, _type='windowlist')
 		self.editable = True
 		self.thisvp = self.node.find('thisvp')
 		self.minionly = self.node.find('minionly')
-
-	def get_icon(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			return iconnode.text
-		else:
-			return None
-
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
 
 	def get_options(self):
 		icons = []
@@ -285,28 +261,12 @@ class Windowlist(Item):
 class Viewportlist(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		super().__init__(node=node, _type='viewportlist')
+		super(Viewportlist, self).__init__(node=node, _type='viewportlist')
 		self.editable = True
 		self.wrap = self.node.find('wrap')
 
 	def get_type(self):
 		return 'Viewports list'
-
-	def get_icon(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			return iconnode.text
-		else:
-			return None
-
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
-
 
 	def get_options(self):
 		retlist = []
@@ -398,27 +358,11 @@ class Viewportlist(Item):
 class Desktoplist(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		super().__init__(node=node, _type='desktoplist')
+		super(Desktoplist, self).__init__(node=node, _type='desktoplist')
 		self.editable = True
 
 	def get_type(self):
 		return 'Desktops list'
-
-	def get_icon(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			return iconnode.text
-		else:
-			return None
-
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
-
 
 	def get_options(self):
 		retlist = []
@@ -491,27 +435,11 @@ class Desktoplist(Item):
 class Documents(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		super().__init__(node=node, _type='documents')
+		super(Documents, self).__init__(node=node, _type='documents')
 		self.editable = True
 
 	def get_type(self):
 		return 'Recent Documents list'
-
-	def get_icon(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			return iconnode.text
-		else:
-			return None
-
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
-
 
 	def get_options(self):
 		retlist = []
@@ -662,23 +590,8 @@ class Documents(Item):
 class Reload(Item):
 
 	def __init__(self, node=None):
-		super().__init__(node=node, _type='reload')
+		super(Reload, self).__init__(node=node, _type='reload')
 		self.editable = True
-
-	def get_icon(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			return iconnode.text
-		else:
-			return None
-
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
 
 	def get_options(self):
 		icons = []

@@ -292,14 +292,6 @@ class MenuFile(gtk.ScrolledWindow):
 				self.popup.popup(None, None, None, event.button, event.time)
 			return 1
 
-	def get_icon_mode(self):
-		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
-		else:
-			return None
-
 	def indent(self,elem, level=0):
 		i = "\n" + level*"\t" #used to be "  ", use actual tabs
 		if len(elem):
