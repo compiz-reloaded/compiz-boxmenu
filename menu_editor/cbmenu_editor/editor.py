@@ -394,11 +394,11 @@ class CBEditor(gtk.Window):
 					widget.currently_editing.show()
 
 	def change_tab_title_del(self, path, a, label):
-		if not re.match("\*",label.get_text()):
+		if not re.match(r"\*",label.get_text()):
 			label.set_text("*"+label.get_text())
 
 	def change_tab_title(self, path, item_iter, a, label):
-		if not re.match("\*",label.get_text()):
+		if not re.match(r"\*",label.get_text()):
 			label.set_text("*"+label.get_text())
 
 	def get_edit_panel(self, treeview, path, view_column, menufile):
@@ -435,7 +435,7 @@ class CBEditor(gtk.Window):
 	def on_closetab_button_clicked(self, sender, widget, menufile):
 		pagenum = self.tabs.page_num(menufile)
 		menu=self.tabs.get_nth_page(pagenum)
-		if re.match("\*",widget.get_text()):
+		if re.match(r"\*",widget.get_text()):
 			warning = gtk.MessageDialog(self, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_NONE, 'Close %s with unsaved changes?' % os.path.basename(menu.filename))
 			warning.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
 			if warning.run() != gtk.RESPONSE_ACCEPT:

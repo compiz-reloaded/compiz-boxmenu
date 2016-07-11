@@ -557,7 +557,7 @@ class Documents(Item):
 			if subnode is None and tag != 'age' and tag != 'quantity':
 				subnode = etree.SubElement(self.node, tag)
 			elif tag == 'age' or tag == 'quantity':
-				if re.search("^\d+$", text): #don't make if it doesn't have text
+				if re.search(r"^\d+$", text): #don't make if it doesn't have text
 					if subnode is None:
 						subnode = etree.SubElement(self.node, tag)
 					subnode.text = text #don't change the numbers if
