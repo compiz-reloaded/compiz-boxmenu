@@ -164,11 +164,10 @@ class MenuFile(gtk.ScrolledWindow):
 
 		self.write_menu()
 
-	def on_drag_data_get(self, treeview, context, selection, target_id,
-						   etime):
+	def on_drag_data_get(self, treeview, context, selection, target_id, etime):
 		treeselection = treeview.get_selection()
-		model, iter = treeselection.get_selected()
-		data = model.get_string_from_iter(iter)
+		model, item_iter = treeselection.get_selected()
+		data = model.get_string_from_iter(item_iter)
 
 		selection.set(selection.target, 8, data)
 
