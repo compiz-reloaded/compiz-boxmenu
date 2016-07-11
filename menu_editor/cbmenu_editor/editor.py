@@ -171,7 +171,7 @@ class CBEditor(gtk.Window):
 		delete_item.connect('activate', self.delete_item)
 		delete_menu.append(delete_item)
 
-		delete_item=gtk.ImageMenuItem("Current Menu")
+		delete_item=gtk.ImageMenuItem("Current Menu File")
 		delete_item.connect('activate', self.delete_menu)
 		delete_menu.append(delete_item)
 
