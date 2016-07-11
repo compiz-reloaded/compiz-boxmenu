@@ -234,17 +234,6 @@ gobject.signal_new("mode-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,
 gobject.signal_new("image-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,
                    gobject.TYPE_NONE, (gobject.TYPE_STRING,))
 
-def set_up():
-	gobject.type_register(CommandText)
-	gobject.type_register(IconSelector)
-
-	gobject.signal_new("text-changed", CommandText, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-	gobject.signal_new("mode-changed", CommandText, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-
-	gobject.signal_new("image-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-	gobject.signal_new("text-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-	gobject.signal_new("mode-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-
 def completion_setup():
 	print("Setting up command auto completion for best experience")
 	for i in os.path.expandvars("$PATH").split(":"):
