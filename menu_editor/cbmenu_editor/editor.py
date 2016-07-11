@@ -10,6 +10,8 @@ import ConfigParser
 import os
 import re
 import shlex
+from shutil import copyfile
+import subprocess
 
 from .item_types import elements_by_name
 from .menu import MenuFile
@@ -19,6 +21,8 @@ try:
 	 import dbus
 except ImportError:
 	 dbus = None
+
+bus = None
 
 element_list = [
 	'Launcher',
@@ -35,8 +39,18 @@ element_list = [
 allnotcache = True
 
 class CBEditor(gtk.Window):
-	def __init__(self):
+	def __init__(self, cache_file):
 		gtk.Window.__init__(self)
+
+		self.cache_file = cache_file
+		try:
+			self.parser=ConfigParser.SafeConfigParser()
+			self.parser.read([cache_file])
+			self.cache=self.parser.items("Files")
+			self.allnotcache=False
+		except IOError:
+			self.allnotcache=True
+
 		self.set_title("Compiz Boxmenu Editor")
 		self.set_icon_name('cbmenu')
 		self.set_border_width(5)
@@ -188,11 +202,10 @@ class CBEditor(gtk.Window):
 		if response == gtk.RESPONSE_ACCEPT:
 			idx=self.tabs.get_current_page()
 			menu=self.tabs.get_nth_page(idx)
-			for i in self.menu_list:
-				if i[2]==menu.filename:
+			for list_row in self.menu_list:
+				if list_row[2]==menu.filename:
 					break
-			item_iter=self.menu_list.get_iter(j)
-			self.menu_list.remove(item_iter)
+			self.menu_list.remove(list_row.iter)
 			os.remove(menu.filename)
 			if hasattr(menu, 'currently_editing'):
 				menu.currently_editing.destroy()
@@ -435,19 +448,21 @@ class CBEditor(gtk.Window):
 
 	def update_cache(self, widget, path):
 		self.menu_list[path][0] = not self.menu_list[path][0]
-		parser.remove_section("Files")
-		parser.add_section("Files")
+		self.parser.remove_section("Files")
+		self.parser.add_section("Files")
 		j=0
 		for i in self.menu_list:
 			if i[1] == "menu.xml":
 				print("Compiz Boxmenu caches menu.xml by default")
 				continue
 			if i[0]:
-				parser.set("Files", "file_%s" % j, i[2])
+				self.parser.set("Files", "file_%s" % j, i[2])
 				j=j+1
-		parser.write(open(cache_file, 'w'))
+		with open(self.cache_file, 'w') as f:
+			self.parser.write(f)
 
 	def reload_menu(self, widget):
+		global bus
 		if bus is not None:
 			try:
 				bus.get_object('org.compiz_fusion.boxmenu', \
@@ -465,7 +480,7 @@ class CBEditor(gtk.Window):
 		dialog.destroy()
 
 	def check_cache(self, path):
-		for i in cache:
+		for i in self.cache:
 			if os.path.expanduser(i[1]) == path:
 				return True
 		return False
@@ -484,6 +499,7 @@ class CBEditor(gtk.Window):
 					self.menu_list.append([self.check_cache(path),checking, path])
 
 def main():
+	global bus
 	if dbus:
 		try:
 			 bus = dbus.SessionBus()
@@ -491,22 +507,17 @@ def main():
 			 bus = None
 	else:
 		bus = None
-	menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
+
+	menu_path = BaseDirectory.xdg_config_home + "/compiz/boxmenu"
+
 	if not os.path.exists(menu_path):
 		os.makedirs(menu_path)
 	elif not os.path.exists(menu_path+"/menu.xml"):
-		starting_file=BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
-		from shutil import copyfile
+		starting_file = BaseDirectory.load_first_config('compiz/boxmenu/menu.xml')
 		copyfile(starting_file, menu_path+"/menu.xml")
-	try:
-		cache_file=menu_path+"/precache.ini"
-		parser=ConfigParser.SafeConfigParser()
-		parser.readfp(open(cache_file))
-		cache=parser.items("Files")
-		allnotcache=False
-	except IOError:
-		allnotcache=True
-	CBEditor()
+
+	cache_file=menu_path+"/precache.ini"
+	CBEditor(cache_file)
 	gtk.main()
 
 if __name__ == '__main__':

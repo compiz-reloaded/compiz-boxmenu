@@ -4,6 +4,8 @@ import gtk
 
 from lxml import etree
 
+import re
+
 from .util import CommandText, IconSelector
 
 class Item(object):
@@ -457,7 +459,9 @@ class Documents(Item):
 		else:
 			command = ''
 		widget.props.text = command
-		widget.set_tooltip_text('If you need a more complicated command, type in that command and %f, which will tell compiz-boxmenu where to place the file name.')
+		widget.set_tooltip_text('If you need a more complicated command, '
+			'type in that command and %f, which will tell '
+			'compiz-boxmenu where to place the file name.')
 		widget.connect('changed', self.on_subnode_changed, 'command')
 
 		hbox = gtk.HBox()
