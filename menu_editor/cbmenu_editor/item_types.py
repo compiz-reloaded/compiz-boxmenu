@@ -8,15 +8,14 @@ from .util import CommandText, IconSelector
 
 class Item(object):
 
-	def __init__(self, node=None, parent=None, type=None):
+	def __init__(self, node=None, parent=None, _type=None):
 
 		self.editable = False
 
 		if node is None:
 			self.node = etree.Element('item')
-			if type is not None:
-				self.node.attrib['type'] = type
-
+			if _type is not None:
+				self.node.attrib['type'] = _type
 		else:
 			self.node = node
 
@@ -36,15 +35,10 @@ class Launcher(Item):
 
 	def __init__(self, node=None):
 
-		Item.__init__(self, node)
-
-		if node is None:
-			self.node = etree.Element('item', type='launcher')
-
+		super().__init__(node=node, _type='launcher')
 		self.editable = True
 
 	def get_name(self):
-
 		subnode = self.node.find('name')
 		if subnode is not None:
 			name = subnode.text
@@ -185,7 +179,7 @@ class Launcher(Item):
 class Windowlist(Item):
 
 	def __init__(self, node=None):
-		Item.__init__(self, node, type='windowlist')
+		super().__init__(node=node, _type='windowlist')
 		self.editable = True
 		self.thisvp = self.node.find('thisvp')
 		self.minionly = self.node.find('minionly')
@@ -291,7 +285,7 @@ class Windowlist(Item):
 class Viewportlist(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		Item.__init__(self, node, type='viewportlist')
+		super().__init__(node=node, _type='viewportlist')
 		self.editable = True
 		self.wrap = self.node.find('wrap')
 
@@ -404,7 +398,7 @@ class Viewportlist(Item):
 class Desktoplist(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		Item.__init__(self, node, type='desktoplist')
+		super().__init__(node=node, _type='desktoplist')
 		self.editable = True
 
 	def get_type(self):
@@ -497,7 +491,7 @@ class Desktoplist(Item):
 class Documents(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		Item.__init__(self, node, type='documents')
+		super().__init__(node=node, _type='documents')
 		self.editable = True
 
 	def get_type(self):
@@ -668,7 +662,7 @@ class Documents(Item):
 class Reload(Item):
 
 	def __init__(self, node=None):
-		Item.__init__(self, node, type='reload')
+		super().__init__(node=node, _type='reload')
 		self.editable = True
 
 	def get_icon(self):

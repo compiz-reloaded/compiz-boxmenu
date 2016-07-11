@@ -97,15 +97,15 @@ class CommandText(gtk.HBox):
 
 	def _preview_text(self, widget):
 		print("Generating preview, please wait...")
-		buffer=gtk.TextBuffer()
+		text_buffer=gtk.TextBuffer()
 		buffer_errors=gtk.TextBuffer()
 		full_text=' '.join(['/usr/bin/env',os.path.expanduser(self.entry.props.text)])
 		cmd=subprocess.Popen(shlex.split(full_text),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		text,errors=cmd.communicate()
 		if text != None:
-			buffer.set_text(text)
+			text_buffer.set_text(text)
 		else:
-			buffer.set_text("")
+			text_buffer.set_text("")
 
 		if errors != None:
 			buffer_errors.set_text(errors)
@@ -119,7 +119,7 @@ class CommandText(gtk.HBox):
 		tabs.set_scrollable(True)
 
 		scrolled=gtk.ScrolledWindow()
-		scrolled.add(gtk.TextView(buffer))
+		scrolled.add(gtk.TextView(text_buffer))
 
 		scrolled_errors=gtk.ScrolledWindow()
 		scrolled_errors.add(gtk.TextView(buffer_errors))
@@ -205,17 +205,17 @@ class IconSelector(gtk.HBox):
 			btns=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_ACCEPT)
 			dialog=gtk.FileChooserDialog(title="Select Icon", buttons=btns)
 			dialog.set_filename(text)
-			filter = gtk.FileFilter()
-			filter.set_name("Images")
-			filter.add_mime_type("image/png")
-			filter.add_mime_type("image/jpeg")
-			filter.add_mime_type("image/gif")
-			filter.add_pattern("*.png")
-			filter.add_pattern("*.jpg")
-			filter.add_pattern("*.gif")
-			filter.add_pattern("*.tif")
-			filter.add_pattern("*.xpm")
-			dialog.add_filter(filter)
+			file_filter = gtk.FileFilter()
+			file_filter.set_name("Images")
+			file_filter.add_mime_type("image/png")
+			file_filter.add_mime_type("image/jpeg")
+			file_filter.add_mime_type("image/gif")
+			file_filter.add_pattern("*.png")
+			file_filter.add_pattern("*.jpg")
+			file_filter.add_pattern("*.gif")
+			file_filter.add_pattern("*.tif")
+			file_filter.add_pattern("*.xpm")
+			dialog.add_filter(file_filter)
 			response = dialog.run()
 			if response == gtk.RESPONSE_ACCEPT:
 				text=dialog.get_filename()

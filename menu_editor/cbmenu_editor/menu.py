@@ -89,25 +89,25 @@ class MenuFile(gtk.ScrolledWindow):
 
 	def add_menu(self, m, parent=None):
 		for item in m.children:
-			iter = self.model.append(parent, [item])
+			item_iter = self.model.append(parent, [item])
 			if item.node.tag == 'menu':
-				self.add_menu(item, iter)
+				self.add_menu(item, item_iter)
 
-	def get_name(self, column, cell, model, iter):
-		name = model.get_value(iter, 0).get_name()
+	def get_name(self, column, cell, model, item_iter):
+		name = model.get_value(item_iter, 0).get_name()
 		if name is None:
 			name = ''
 		cell.set_property('text', name)
 
-	def get_type(self, column, cell, model, iter):
-		typ = model.get_value(iter, 0).get_type()
+	def get_type(self, column, cell, model, item_iter):
+		typ = model.get_value(item_iter, 0).get_type()
 		if typ is None:
 			typ = ''
 		cell.set_property('text', typ)
 
-	def get_icon(self, column, cell, model, iter):
-		icon = model.get_value(iter, 0).get_icon()
-		icon_mode = model.get_value(iter, 0).get_icon_mode()
+	def get_icon(self, column, cell, model, item_iter):
+		icon = model.get_value(item_iter, 0).get_icon()
+		icon_mode = model.get_value(item_iter, 0).get_icon_mode()
 		#somehow does not set icon until selection change with things that don't have icons originally!
 		if icon is not None:
 			if icon_mode is not None:
@@ -129,8 +129,8 @@ class MenuFile(gtk.ScrolledWindow):
 		if hasattr(self, 'currently_editing'):
 			self.currently_editing.destroy()
 		model=self.selection.get_selected()[0]
-		iter=self.selection.get_selected()[1]
-		self.currently_editing=EditItemPanel(model,iter)
+		item_iter=self.selection.get_selected()[1]
+		self.currently_editing=EditItemPanel(model,item_iter)
 
 	def on_delete_clicked(self, widget):
 

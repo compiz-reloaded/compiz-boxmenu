@@ -80,13 +80,15 @@ class IcoBrowse(gtk.Dialog):
 	def category_changed(self, widget):
 		self.modelfilter.refilter()
 
-	def search_icons(self, tree, iter):
-		search_term = self.combobox.get_active_text()
-		search_term2 = self.refine.props.text
-		if ICON_STORE.get_value(iter, 2) == search_term:
-			if search_term2 == None or search_term2 == "" or re.search(search_term2, ICON_STORE.get_value(iter,1)):
-				return True
-			return False
+	def search_icons(self, tree, item_iter):
+		category = self.combobox.get_active_text()
+		icon_substr = self.refine.props.text
+
+		cur_category = ICON_STORE.get_value(item_iter, 2)
+		cur_icon_name = ICON_STORE.get_value(item_iter, 1)
+
+		if cur_category == category:
+			return icon_substr in (None, "") or re.search(icon_substr, cur_icon_name)
 		else:
 			return False
 

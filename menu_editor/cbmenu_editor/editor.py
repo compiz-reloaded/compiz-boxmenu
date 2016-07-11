@@ -191,8 +191,8 @@ class CBEditor(gtk.Window):
 			for i in self.menu_list:
 				if i[2]==menu.filename:
 					break
-			iter=self.menu_list.get_iter(j)
-			self.menu_list.remove(iter)
+			item_iter=self.menu_list.get_iter(j)
+			self.menu_list.remove(item_iter)
 			os.remove(menu.filename)
 			if hasattr(menu, 'currently_editing'):
 				menu.currently_editing.destroy()
@@ -268,13 +268,13 @@ class CBEditor(gtk.Window):
 	def generated_item(self, widget):
 		dialog=gtk.Dialog("Add generated items from pipemenu", self, gtk.DIALOG_MODAL, \
 		buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
-		input=CommandText(label_text="Command", mode="Pipe Menu" , alternate_mode="Pipe Menu")
-		dialog.vbox.add(input)
+		cmd_input=CommandText(label_text="Command", mode="Pipe Menu" , alternate_mode="Pipe Menu")
+		dialog.vbox.add(cmd_input)
 		dialog.vbox.show_all()
-		input.combobox.hide()
+		cmd_input.combobox.hide()
 		response=dialog.run()
 		if response==gtk.RESPONSE_ACCEPT:
-			process=subprocess.Popen(shlex.split(os.path.expanduser(input.entry.props.text)), \
+			process=subprocess.Popen(shlex.split(os.path.expanduser(cmd_input.entry.props.text)), \
 				stdout=subprocess.PIPE)
 			try:
 				stdout = process.communicate()[0]
@@ -335,21 +335,21 @@ class CBEditor(gtk.Window):
 			menu_path=BaseDirectory.xdg_config_home + "/compiz/boxmenu"
 			dialog=gtk.Dialog("Add a new file", self, gtk.DIALOG_MODAL, \
 			buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
-			input=gtk.Entry()
+			fpath_input=gtk.Entry()
 			dialog.vbox.add(gtk.Label("Name of the new menu to be created, with .xml at the end:"))
-			dialog.vbox.add(input)
+			dialog.vbox.add(fpath_input)
 			dialog.vbox.show_all()
 			response=dialog.run()
 			if response != gtk.RESPONSE_ACCEPT or \
-				input.props.text == "" or \
-				not input.props.text.endswith(".xml"):
+				fpath_input.props.text == "" or \
+				not fpath_input.props.text.endswith(".xml"):
 				dialog.destroy()
 				return
-			path="%s/%s" %(menu_path, input.props.text)
+			path="%s/%s" %(menu_path, fpath_input.props.text)
 			f = open(path, "w")
 			f.write("<menu></menu>")
 			f.close()
-			self.menu_list.append([False,input.props.text, path])
+			self.menu_list.append([False, fpath_input.props.text, path])
 			dialog.destroy()
 			print("New %s created" % element_type)
 
@@ -384,7 +384,7 @@ class CBEditor(gtk.Window):
 		if not re.match("\*",label.get_text()):
 			label.set_text("*"+label.get_text())
 
-	def change_tab_title(self, path, iter, a, label):
+	def change_tab_title(self, path, item_iter, a, label):
 		if not re.match("\*",label.get_text()):
 			label.set_text("*"+label.get_text())
 
