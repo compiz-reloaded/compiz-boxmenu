@@ -11,7 +11,7 @@ import os
 import re
 import shlex
 
-from .item_types import elements, elements_by_name
+from .item_types import elements_by_name
 from .menu import MenuFile
 from .util import TabButton, CommandText
 

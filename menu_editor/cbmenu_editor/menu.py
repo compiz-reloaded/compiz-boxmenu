@@ -11,7 +11,7 @@ import os
 import re #This is to autoset file mode for *.desktop icons
 import ConfigParser
 
-from .item_types import *
+from .item_types import Launcher, Menu
 
 #test lines:
 #import cbmenu,cb_itemtypes

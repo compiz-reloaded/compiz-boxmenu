@@ -5,6 +5,7 @@ import gtk
 import gobject
 from glib import GError
 
+import re
 from sys import stderr
 
 #http://developer.gnome.org/pygtk/2.22/class-gtkicontheme.html#method-gtkicontheme--list-contexts
