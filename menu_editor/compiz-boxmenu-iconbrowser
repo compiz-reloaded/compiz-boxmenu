@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
 
-from cbmenu_editor import icon_browser
+from cbmenu_editor.utils import icon_browser
 
 icon_browser.main()

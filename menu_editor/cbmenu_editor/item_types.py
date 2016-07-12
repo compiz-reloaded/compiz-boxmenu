@@ -6,7 +6,7 @@ from lxml import etree
 
 import re
 
-from .util import CommandText, IconSelector
+from .utils.widgets import CommandText, IconSelector
 
 class Item(object):
 	def __init__(self, node=None, parent=None, _type=None, ui_type='Item'):

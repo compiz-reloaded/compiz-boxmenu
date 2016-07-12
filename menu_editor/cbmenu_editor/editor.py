@@ -15,7 +15,7 @@ import subprocess
 
 from .item_types import elements_by_name
 from .menu import MenuFile
-from .util import TabButton, CommandText
+from .utils.widgets import TabButton, CommandText
 
 try:
 	 import dbus
