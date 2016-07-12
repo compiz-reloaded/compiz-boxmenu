@@ -454,10 +454,8 @@ class Documents(Item):
 		label.set_markup('<b>Open method:</b>')
 		widget = gtk.Entry()
 		commandnode = self.node.find('command')
-		if commandnode is not None:
-			command = commandnode.text
-		else:
-			command = ''
+		command = '' if commandnode is None else commandnode.text
+
 		widget.props.text = command
 		widget.set_tooltip_text('If you need a more complicated command, '
 			'type in that command and %f, which will tell '
@@ -493,10 +491,8 @@ class Documents(Item):
 		widget = gtk.Entry()
 
 		agenode = self.node.find('age')
-		if agenode is not None:
-			age = agenode.text
-		else:
-			age = ''
+		age = '' if agenode is None else agenode.text
+
 		widget.props.text = age
 		widget.connect('changed', self.on_subnode_changed, 'age')
 

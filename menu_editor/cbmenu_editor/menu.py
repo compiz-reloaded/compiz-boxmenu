@@ -161,7 +161,6 @@ class MenuFile(gtk.ScrolledWindow):
 		#write_menu()
 
 	def on_close_clicked(self, widget):
-
 		self.write_menu()
 
 	def on_drag_data_get(self, treeview, context, selection, target_id, etime):
@@ -171,47 +170,57 @@ class MenuFile(gtk.ScrolledWindow):
 
 		selection.set(selection.target, 8, data)
 
-	def on_drag_data_received(self, treeview, context, x, y, selection,
-								info, etime):
+	def on_drag_data_received(self, treeview, context, x, y, selection, info, etime):
 		model = treeview.get_model()
 		data = selection.data
 
+		menu_into_positions = {
+			gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
+			gtk.TREE_VIEW_DROP_INTO_OR_AFTER,
+		}
+
+		menu_before_positions = {
+			gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
+			gtk.TREE_VIEW_DROP_BEFORE,
+		}
+
 		drop_info = treeview.get_dest_row_at_pos(x, y)
 		if selection.type == 'deskmenu-element':
+			if drop_info is None:
+				return
 			source = model[data][0]
-			if drop_info:
-				path, position = drop_info
-				siter = model.get_iter(data)
-				diter = model.get_iter(path)
+			path, position = drop_info
+			siter = model.get_iter(data)
+			diter = model.get_iter(path)
 
-				if model.get_path(model.get_iter_from_string(data)) == path:
-					return
+			if model.get_path(model.get_iter_from_string(data)) == path:
+				return
 
-				dest = model[path][0]
-				if context.action == gtk.gdk.ACTION_MOVE:
-					source.node.getparent().remove(source.node)
+			dest = model[path][0]
+			if context.action == gtk.gdk.ACTION_MOVE:
+				source.node.getparent().remove(source.node)
 
-				if dest.node.tag == 'menu' and position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-					gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
-					dest.node.append(source.node)
-					fiter = model.append(diter, row=(source,))
+			if dest.node.tag == 'menu' and position in menu_into_positions:
+				dest.node.append(source.node)
+				fiter = model.append(diter, row=(source,))
+			else:
+				dest_parent = dest.node.getparent()
+				i = dest_parent.index(dest.node)
+				if position in menu_before_positions:
+					dest_parent.insert(i, source.node)
+					fiter = model.insert_before(None, diter, row=(source,))
 				else:
-					i = dest.node.getparent().index(dest.node)
-					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-						gtk.TREE_VIEW_DROP_BEFORE):
-						dest.node.getparent().insert(i, source.node)
-						fiter = model.insert_before(None, diter, row=(source,))
-					else:
-						dest.node.getparent().insert(i+1, source.node)
-						fiter = model.insert_after(None, diter, row=(source,))
+					dest_parent.insert(i+1, source.node)
+					fiter = model.insert_after(None, diter, row=(source,))
 
-				if model.iter_has_child(siter):
-					citer = model.iter_children(siter)
-					while citer is not None:
-						model.append(fiter, row=(model[citer][0],))
-						citer = model.iter_next(citer)
-				if context.action == gtk.gdk.ACTION_MOVE:
-					context.finish(True, True, etime)
+			if model.iter_has_child(siter):
+				citer = model.iter_children(siter)
+				while citer is not None:
+					model.append(fiter, row=(model[citer][0],))
+					citer = model.iter_next(citer)
+
+			if context.action == gtk.gdk.ACTION_MOVE:
+				context.finish(True, True, etime)
 
 		elif selection.type == 'text/uri-list':
 			print(selection.data, drop_info)
@@ -240,20 +249,19 @@ class MenuFile(gtk.ScrolledWindow):
 				dest = model[path][0]
 				diter = model.get_iter(path)
 				#print(dest.node, dest.node.getroot())
-				if dest.node.tag == 'menu' and position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-					gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
+				if dest.node.tag == 'menu' and position in menu_into_positions:
 					for launcher in launchers:
 						dest.node.append(launcher.node)
 						fiter = model.append(diter, row=(launcher,))
 				else:
-					i = dest.node.getparent().index(dest.node)
+					dest_parent = dest.node.getparent()
+					i = dest_parent.index(dest.node)
 					for launcher in launchers:
-						if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-							gtk.TREE_VIEW_DROP_BEFORE):
-							dest.node.getparent().insert(i, launcher.node)
+						if position in menu_before_positions:
+							dest_parent.insert(i, launcher.node)
 							fiter = model.insert_before(None, diter, row=(launcher,))
 						else:
-							dest.node.getparent().insert(i+1, launcher.node)
+							dest_parent.insert(i+1, launcher.node)
 							fiter = model.insert_after(None, diter, row=(launcher,))
 							diter = fiter
 						i+=1
@@ -263,8 +271,6 @@ class MenuFile(gtk.ScrolledWindow):
 				for launcher in launchers:
 					self.menu.node.append(launcher.node)
 					fiter = model.append(None, row=(launcher,))
-				
-		return
 
 	def on_selection_changed(self, selection):
 		model, row = selection.get_selected()
