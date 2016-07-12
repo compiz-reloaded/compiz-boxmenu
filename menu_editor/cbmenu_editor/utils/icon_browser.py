@@ -60,17 +60,18 @@ class IcoBrowse(gtk.Dialog):
 		self.vbox.show_all()
 
 	def set_defaults(self, icon_name):
-		if icon_name != "" and icon_name != None:
-			cmodel = self.combobox.get_model()
-			for i in xrange(len(ICON_STORE)):
-				if ICON_STORE[i][1] == icon_name:
-					self.refine.props.text=icon_name
-					for j in xrange(len(cmodel)):
-						if ICON_STORE[i][2] == cmodel[j][0]:
-							print(cmodel[j])
-							self.combobox.set_active(j)
-							break
-					break
+		if icon_name in {"", None}:
+			return
+		cmodel = self.combobox.get_model()
+		for i in xrange(len(ICON_STORE)):
+			if ICON_STORE[i][1] == icon_name:
+				self.refine.props.text=icon_name
+				for j in xrange(len(cmodel)):
+					if ICON_STORE[i][2] == cmodel[j][0]:
+						print(cmodel[j])
+						self.combobox.set_active(j)
+						break
+				break
 
 	def get_icon_name(self, widget):
 		path=self.iconview.get_selected_items()

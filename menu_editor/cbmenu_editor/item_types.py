@@ -33,9 +33,8 @@ class Item(object):
 
 	def get_icon_mode(self):
 		iconnode = self.node.find('icon')
-		if iconnode is not None:
-			if iconnode.attrib.get('mode1') == 'file':
-				return iconnode.attrib.get('mode1')
+		if iconnode is not None and iconnode.attrib.get('mode1') == 'file':
+			return iconnode.attrib.get('mode1')
 		else:
 			return None
 
@@ -532,9 +531,9 @@ class Documents(Item):
 	def on_subnode_changed(self, widget, text, tag):
 		subnode = self.node.find(tag)
 		if text:
-			if subnode is None and tag != 'age' and tag != 'quantity':
+			if subnode is None and tag not in {'age', 'quantity'}:
 				subnode = etree.SubElement(self.node, tag)
-			elif tag == 'age' or tag == 'quantity':
+			elif tag in {'age', 'quantity'}:
 				if re.search(r"^\d+$", text): #don't make if it doesn't have text
 					if subnode is None:
 						subnode = etree.SubElement(self.node, tag)

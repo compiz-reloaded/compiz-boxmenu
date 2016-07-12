@@ -292,9 +292,8 @@ class MenuFile(gtk.ScrolledWindow):
 				if not e.tail or not e.tail.strip():
 					e.tail = i + "\t"
 
-			if e is not None:
-				if not e.tail or not e.tail.strip():
-					e.tail = i
+			if e is not None and not e.tail or not e.tail.strip():
+				e.tail = i
 		else:
 			if level and (not elem.tail or not elem.tail.strip()):
 				elem.tail = i
@@ -332,7 +331,6 @@ class EditItemPanel(gtk.HBox):
 			self.vbox_other_options.pack_start(widget, fill=False)
 
 		self.show_all()
-
 
 def desktop_files_to_launchers(*paths):
 	launchers = []
