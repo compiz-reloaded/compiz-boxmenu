@@ -297,17 +297,21 @@ class MenuFile(gtk.ScrolledWindow):
 				self.popup.popup(None, None, None, event.button, event.time)
 			return 1
 
-	def indent(self,elem, level=0):
+	def indent(self, elem, level=0):
 		i = "\n" + level*"\t" #used to be "  ", use actual tabs
 		if len(elem):
 			if not elem.text or not elem.text.strip():
 				elem.text = i + "\t"
+
+			e = None
 			for e in elem:
 				self.indent(e, level+1)
 				if not e.tail or not e.tail.strip():
 					e.tail = i + "\t"
-			if not e.tail or not e.tail.strip():
-				e.tail = i
+
+			if e is not None:
+				if not e.tail or not e.tail.strip():
+					e.tail = i
 		else:
 			if level and (not elem.tail or not elem.tail.strip()):
 				elem.tail = i

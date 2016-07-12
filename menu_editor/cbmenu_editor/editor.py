@@ -204,8 +204,8 @@ class CBEditor(gtk.Window):
 			menu=self.tabs.get_nth_page(idx)
 			for list_row in self.menu_list:
 				if list_row[2]==menu.filename:
+					self.menu_list.remove(list_row.iter)
 					break
-			self.menu_list.remove(list_row.iter)
 			os.remove(menu.filename)
 			if menu.currently_editing is not None:
 				menu.currently_editing.destroy()
