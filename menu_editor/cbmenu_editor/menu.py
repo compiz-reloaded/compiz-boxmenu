@@ -11,6 +11,7 @@ import re
 import ConfigParser
 
 from .item_types import Launcher, Menu
+from . import utils
 
 #test lines:
 #import cbmenu,cb_itemtypes
@@ -280,27 +281,10 @@ class MenuFile(gtk.ScrolledWindow):
 				self.popup.popup(None, None, None, event.button, event.time)
 			return 1
 
-	def indent(self, elem, level=0):
-		i = "\n" + level*"\t" #used to be "  ", use actual tabs
-		if len(elem):
-			if not elem.text or not elem.text.strip():
-				elem.text = i + "\t"
-
-			e = None
-			for e in elem:
-				self.indent(e, level+1)
-				if not e.tail or not e.tail.strip():
-					e.tail = i + "\t"
-
-			if e is not None and not e.tail or not e.tail.strip():
-				e.tail = i
-		else:
-			if level and (not elem.tail or not elem.tail.strip()):
-				elem.tail = i
-
 	def write_menu(self):
-		self.indent(self.menu.node)
-		self.menufile.write(open(self.filename, 'w'))
+		with open(self.filename, 'w') as f:
+			utils.xml_indent(self.menu.node)
+			self.menufile.write(f)
 
 class EditItemPanel(gtk.HBox):
 
