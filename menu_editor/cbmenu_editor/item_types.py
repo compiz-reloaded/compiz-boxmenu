@@ -9,7 +9,7 @@ import re
 from .util import CommandText, IconSelector
 
 class Item(object):
-	def __init__(self, node=None, parent=None, _type=None):
+	def __init__(self, node=None, parent=None, _type=None, ui_type='Item'):
 		self.editable = False
 
 		if node is None:
@@ -19,11 +19,10 @@ class Item(object):
 		else:
 			self.node = node
 
+		self.ui_type = ui_type
+
 	def get_name(self):
 		return None
-
-	def get_type(self):
-		return 'Item'
 
 	def get_icon(self):
 		iconnode = self.node.find('icon')
@@ -43,7 +42,7 @@ class Item(object):
 class Launcher(Item):
 
 	def __init__(self, node=None):
-		super(Launcher, self).__init__(node=node, _type='launcher')
+		super(Launcher, self).__init__(node=node, _type='launcher', ui_type='Launcher')
 		self.editable = True
 
 	def get_name(self):
@@ -56,11 +55,7 @@ class Launcher(Item):
 		else:
 			return None
 
-	def get_type(self):
-		return 'Launcher'
-
 	def get_options(self):
-
 		retlist = []
 		icons = []
 
@@ -170,9 +165,8 @@ class Launcher(Item):
 			del commandnode.attrib['cache']
 
 class Windowlist(Item):
-
 	def __init__(self, node=None):
-		super(Windowlist, self).__init__(node=node, _type='windowlist')
+		super(Windowlist, self).__init__(node=node, _type='windowlist', ui_type='Windows list')
 		self.editable = True
 		self.thisvp = self.node.find('thisvp')
 		self.minionly = self.node.find('minionly')
@@ -257,18 +251,12 @@ class Windowlist(Item):
 			text = 'false'
 		self.minionly.text = text
 
-	def get_type(self):
-		return 'Windows list'
-
 class Viewportlist(Item):
 
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		super(Viewportlist, self).__init__(node=node, _type='viewportlist')
+		super(Viewportlist, self).__init__(node=node, _type='viewportlist', ui_type='Viewport list')
 		self.editable = True
 		self.wrap = self.node.find('wrap')
-
-	def get_type(self):
-		return 'Viewports list'
 
 	def get_options(self):
 		retlist = []
@@ -358,13 +346,9 @@ class Viewportlist(Item):
 		self.wrap.text = text
 
 class Desktoplist(Item):
-
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		super(Desktoplist, self).__init__(node=node, _type='desktoplist')
+		super(Desktoplist, self).__init__(node=node, _type='desktoplist', ui_type='Desktops list')
 		self.editable = True
-
-	def get_type(self):
-		return 'Desktops list'
 
 	def get_options(self):
 		retlist = []
@@ -435,13 +419,9 @@ class Desktoplist(Item):
 				self.node.remove(subnode)
 
 class Documents(Item):
-
 	def __init__(self, node=None): #change to be an attribute of viewportlist
-		super(Documents, self).__init__(node=node, _type='documents')
+		super(Documents, self).__init__(node=node, _type='documents', ui_type='Recent Documents list')
 		self.editable = True
-
-	def get_type(self):
-		return 'Recent Documents list'
 
 	def get_options(self):
 		retlist = []
@@ -590,7 +570,7 @@ class Documents(Item):
 class Reload(Item):
 
 	def __init__(self, node=None):
-		super(Reload, self).__init__(node=node, _type='reload')
+		super(Reload, self).__init__(node=node, _type='reload', ui_type='Reload')
 		self.editable = True
 
 	def get_options(self):
@@ -636,14 +616,12 @@ class Reload(Item):
 		elif 'mode1' in iconnode.attrib:
 			del iconnode.attrib['mode1']
 
-	def get_type(self):
-		return 'Reload'
-
 class Separator(object):
 
 	def __init__(self, node=None, parent=None):
 		self.node = node
 		self.editable = True
+		self.ui_type = 'Separator'
 		if self.node is None:
 			self.node = etree.Element('separator')
 
@@ -652,9 +630,6 @@ class Separator(object):
 		if self.node.attrib.get('mode') == 'exec':
 			name = 'exec: %s' %name
 		return name
-
-	def get_type(self):
-		return 'Separator'
 
 	def get_icon(self):
 		return self.node.attrib.get('icon', '')
@@ -733,19 +708,16 @@ class Menu(object):
 		self.node = node
 		self.children = []
 		self.editable = True
+		self.ui_type = 'Menu'
 
 		if node is None:
 			self.node = etree.Element('menu', name='')
 
 		for child in self.node.getchildren():
 			try:
-				self.children.append(self.make_child(child))
+				self.children.append(elements[child.tag](child))
 			except KeyError:
 				pass
-
-
-	def make_child(self, child):
-		return elements[child.tag](child)
 
 	def get_name(self):
 		name = self.node.attrib.get('name', '')
@@ -762,11 +734,7 @@ class Menu(object):
 		else:
 			return None
 
-	def get_type(self):
-		return 'Menu'
-
 	def get_options(self):
-
 		icons = []
 		retlist = []
 
@@ -833,7 +801,6 @@ item_types = {
 	'documents': Documents,
 	'reload': Reload,
 }
-
 
 def make_item(node):
 	item_type = node.attrib.get('type')

@@ -22,7 +22,6 @@ from .item_types import Launcher, Menu
 #blurg.show_all()
 
 class MenuFile(gtk.ScrolledWindow):
-
 	def __init__(self,filename):
 		gtk.ScrolledWindow.__init__(self)
 
@@ -101,7 +100,7 @@ class MenuFile(gtk.ScrolledWindow):
 		cell.set_property('text', name)
 
 	def get_type(self, column, cell, model, item_iter):
-		typ = model.get_value(item_iter, 0).get_type()
+		typ = model.get_value(item_iter, 0).ui_type
 		if typ is None:
 			typ = ''
 		cell.set_property('text', typ)
