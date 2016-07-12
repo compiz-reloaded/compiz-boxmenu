@@ -5,10 +5,9 @@ import glib
 
 from lxml import etree
 
-from xdg import BaseDirectory
-
 import os
-import re #This is to autoset file mode for *.desktop icons
+#This is to autoset file mode for *.desktop icons
+import re
 import ConfigParser
 
 from .item_types import Launcher, Menu
@@ -225,25 +224,9 @@ class MenuFile(gtk.ScrolledWindow):
 		elif selection.type == 'text/uri-list':
 			print(selection.data, drop_info)
 			#uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
-			uris = selection.data.replace('file:///', '/').strip('\r\n\x00').split()
-			launchers = []
-			for uri in uris:
-				uri=uri.replace("%20", " ")
-				entry = ConfigParser.ConfigParser()
-				entry.read(uri)
-				launcher = Launcher()
-				launcher.name = etree.SubElement(launcher.node, 'name')
-				launcher.icon = etree.SubElement(launcher.node, 'icon')
-				launcher.command = etree.SubElement(launcher.node, 'command')
-				try:
-					launcher.name.text = entry.get('Desktop Entry', 'Name')
-					if re.search("/", entry.get('Desktop Entry', 'Icon')):
-						launcher.icon.attrib['mode1'] = 'file'
-					launcher.icon.text = entry.get('Desktop Entry', 'Icon')
-					launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
-				except ConfigParser.Error:
-					return
-				launchers.append(launcher)
+			sanitized_uris = selection.data.replace('file:///', '/').strip('\r\n\x00')
+			uris = (u.replace("%20", " ") for u in sanitized_uris.split())
+			launchers = desktop_files_to_launchers(*uris)
 			if drop_info:
 				path, position = drop_info
 				dest = model[path][0]
@@ -349,3 +332,26 @@ class EditItemPanel(gtk.HBox):
 			self.vbox_other_options.pack_start(widget, fill=False)
 
 		self.show_all()
+
+
+def desktop_files_to_launchers(*paths):
+	launchers = []
+
+	for path in paths:
+		entry = ConfigParser.ConfigParser()
+		entry.read(path)
+		launcher = Launcher()
+		launcher.name = etree.SubElement(launcher.node, 'name')
+		launcher.icon = etree.SubElement(launcher.node, 'icon')
+		launcher.command = etree.SubElement(launcher.node, 'command')
+		try:
+			launcher.name.text = entry.get('Desktop Entry', 'Name')
+			if re.search("/", entry.get('Desktop Entry', 'Icon')):
+				launcher.icon.attrib['mode1'] = 'file'
+			launcher.icon.text = entry.get('Desktop Entry', 'Icon')
+			launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
+		except ConfigParser.Error:
+			return
+		launchers.append(launcher)
+
+	return launchers
