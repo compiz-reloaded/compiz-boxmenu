@@ -28,7 +28,8 @@ class MenuFile(gtk.ScrolledWindow):
 
 		self.model = gtk.TreeStore(object)
 		self.add_menu_file(filename)
-		self.filename=filename
+		self.filename = filename
+		self.currently_editing = None
 
 		self.props.hscrollbar_policy = gtk.POLICY_AUTOMATIC #because you really might want to read some of the stuff hanging off
 		self.props.vscrollbar_policy = gtk.POLICY_AUTOMATIC
@@ -126,11 +127,11 @@ class MenuFile(gtk.ScrolledWindow):
 			cell.set_property('pixbuf', None)
 
 	def on_edit_clicked(self, widget):
-		if hasattr(self, 'currently_editing'):
+		if self.currently_editing is not None:
 			self.currently_editing.destroy()
 		model=self.selection.get_selected()[0]
 		item_iter=self.selection.get_selected()[1]
-		self.currently_editing=EditItemPanel(model,item_iter)
+		self.currently_editing = EditItemPanel(model,item_iter)
 
 	def on_delete_clicked(self, widget):
 
@@ -282,9 +283,9 @@ class MenuFile(gtk.ScrolledWindow):
 
 	def on_row_activated(self, treeview, path, view_column):
 		model = treeview.get_model()
-		if hasattr(self, 'currently_editing'):
+		if self.currently_editing is not None:
 			self.currently_editing.destroy()
-		self.currently_editing=EditItemPanel(model, model.get_iter(path))
+		self.currently_editing = EditItemPanel(model, model.get_iter(path))
 		#change this to actually fill out item panel
 
 	def on_treeview_button_press_event(self, treeview, event):

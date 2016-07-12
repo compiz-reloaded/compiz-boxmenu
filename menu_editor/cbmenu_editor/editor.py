@@ -207,7 +207,7 @@ class CBEditor(gtk.Window):
 					break
 			self.menu_list.remove(list_row.iter)
 			os.remove(menu.filename)
-			if hasattr(menu, 'currently_editing'):
+			if menu.currently_editing is not None:
 				menu.currently_editing.destroy()
 			self.tabs.remove_page(idx)
 
@@ -387,7 +387,7 @@ class CBEditor(gtk.Window):
 	def get_current_menu(self, notebook, page, page_num):
 		for i in xrange(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
-			if hasattr(widget, 'currently_editing'):
+			if widget.currently_editing is not None:
 				if i != page_num:
 					widget.currently_editing.hide()
 				else:
@@ -406,7 +406,7 @@ class CBEditor(gtk.Window):
 		page_num=self.tabs.get_current_page()
 		for i in xrange(self.tabs.get_n_pages()):
 			widget=self.tabs.get_nth_page(i)
-			if hasattr(widget, 'currently_editing'):
+			if widget.currently_editing is not None:
 				if i != page_num:
 					widget.currently_editing.hide()
 				else:
@@ -442,7 +442,7 @@ class CBEditor(gtk.Window):
 				warning.destroy()
 				return
 			warning.destroy()
-		if hasattr(menu, 'currently_editing'):
+		if menu.currently_editing is not None:
 			menu.currently_editing.destroy()
 		self.tabs.remove_page(pagenum)
 
