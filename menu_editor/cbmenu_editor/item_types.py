@@ -70,11 +70,11 @@ class Launcher(Item):
 			name = ''
 			name_mode="Normal"
 
-		widget = CommandText(mode=name_mode,text=name)
-		widget.connect('text-changed', self.on_subnode_changed, 'name')
-		widget.connect('mode-changed', self.on_name_mode_changed)
+		name_widget = CommandText(mode=name_mode,text=name)
+		name_widget.connect('text-changed', self.on_subnode_changed, 'name')
+		name_widget.connect('mode-changed', self.on_name_mode_changed)
 
-		retlist.append(widget)
+		retlist.append(name_widget)
 
 		iconnode = self.node.find('icon')
 		if iconnode is not None:
@@ -86,12 +86,12 @@ class Launcher(Item):
 		else:
 			icon = ''
 			icon_mode="Normal"
-		widget = IconSelector(mode=icon_mode,text=icon)
+		icon_widget = IconSelector(mode=icon_mode,text=icon)
 
-		widget.connect('text-changed', self.on_subnode_changed, 'icon')
-		widget.connect('mode-changed', self.on_icon_mode_changed)
+		icon_widget.connect('text-changed', self.on_subnode_changed, 'icon')
+		icon_widget.connect('mode-changed', self.on_icon_mode_changed)
 
-		icons.append(widget)
+		icons.append(icon_widget)
 
 		commandnode = self.node.find('command')
 		if commandnode is not None:
@@ -103,17 +103,19 @@ class Launcher(Item):
 		else:
 			command = ''
 			command_mode = "Normal"
-		widget = CommandText(label_text="Command",mode=command_mode,text=command, alternate_mode="Pipe")
+		cmd_widget = CommandText(label_text="Command",mode=command_mode,text=command, alternate_mode="Pipe")
 
-		widget.connect('text-changed', self.on_subnode_changed, 'command')
-		widget.connect('mode-changed', self.on_command_mode_changed)
+		cmd_widget.connect('text-changed', self.on_subnode_changed, 'command')
+		cmd_widget.connect('mode-changed', self.on_command_mode_changed)
 
-		retlist.append(widget)
+		retlist.append(cmd_widget)
 
-		widget = gtk.CheckButton("Cache output of pipe")
-		widget.props.active = commandnode is not None and commandnode.attrib.get('mode2') == 'pipe' and commandnode.attrib.get('cache') == 'true'
-		widget.connect('toggled', self.on_cached_changed)
-		retlist.append(widget)
+		cache_widget = gtk.CheckButton("Cache output of pipe")
+		cache_widget.props.active = commandnode is not None and \
+		                            commandnode.attrib.get('mode2') == 'pipe' and \
+		                            commandnode.attrib.get('cache') == 'true'
+		cache_widget.connect('toggled', self.on_cached_changed)
+		retlist.append(cache_widget)
 
 		return icons,retlist
 
@@ -654,11 +656,11 @@ class Separator(object):
 			name = ''
 			name_mode="Normal"
 
-		widget = CommandText(mode=name_mode,text=name)
-		widget.connect('text-changed', self.on_name_changed)
-		widget.connect('mode-changed', self.on_name_mode_changed)
+		name_widget = CommandText(mode=name_mode,text=name)
+		name_widget.connect('text-changed', self.on_name_changed)
+		name_widget.connect('mode-changed', self.on_name_mode_changed)
 
-		retlist.append(widget)
+		retlist.append(name_widget)
 
 		icon = self.node.attrib.get('icon')
 		if icon is not None:
@@ -670,11 +672,11 @@ class Separator(object):
 			icon = ''
 			icon_mode="Normal"
 
-		widget = IconSelector(mode=icon_mode,text=icon)
-		widget.connect('text-changed', self.on_icon_changed)
-		widget.connect('mode-changed', self.on_icon_mode_changed)
+		icon_widget = IconSelector(mode=icon_mode,text=icon)
+		icon_widget.connect('text-changed', self.on_icon_changed)
+		icon_widget.connect('mode-changed', self.on_icon_mode_changed)
 
-		icons.append(widget)
+		icons.append(icon_widget)
 
 		return icons,retlist
 
@@ -748,11 +750,11 @@ class Menu(object):
 			name = ''
 			name_mode="Normal"
 
-		widget = CommandText(mode=name_mode,text=name)
-		widget.connect('text-changed', self.on_name_changed)
-		widget.connect('mode-changed', self.on_name_mode_changed)
+		name_widget = CommandText(mode=name_mode,text=name)
+		name_widget.connect('text-changed', self.on_name_changed)
+		name_widget.connect('mode-changed', self.on_name_mode_changed)
 
-		retlist.append(widget)
+		retlist.append(name_widget)
 
 		icon = self.node.attrib.get('icon')
 		if icon is not None:
@@ -764,11 +766,11 @@ class Menu(object):
 			icon = ''
 			icon_mode="Normal"
 
-		widget = IconSelector(mode=icon_mode,text=icon)
-		widget.connect('text-changed', self.on_icon_changed)
-		widget.connect('mode-changed', self.on_icon_mode_changed)
+		icon_widget = IconSelector(mode=icon_mode,text=icon)
+		icon_widget.connect('text-changed', self.on_icon_changed)
+		icon_widget.connect('mode-changed', self.on_icon_mode_changed)
 
-		icons.append(widget)
+		icons.append(icon_widget)
 
 		return icons,retlist
 
