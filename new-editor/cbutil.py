@@ -1,67 +1,67 @@
 import os, gtk, glib
 from pyicon_browser import *
-import gobject
+from gi.repository import GObject
 import subprocess
 import shlex
 import os
 
-class TabButton(gtk.HBox):
+class TabButton(Gtk.HBox):
 	def __init__(self, text):
-		gtk.HBox.__init__(self)
+		GObject.GObject.__init__(self)
 		#http://www.eurion.net/python-snippets/snippet/Notebook%20close%20button.html
-		self.label = gtk.Label(text)
-		self.pack_start(self.label)
+		self.label = Gtk.Label(label=text)
+		self.pack_start(self.label, expand=True, fill=True, padding=0)
 
 		#get a stock close button image
-		close_image = gtk.image_new_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
-		image_w, image_h = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
+		close_image = Gtk.Image.new_from_stock(Gtk.STOCK_CLOSE, Gtk.IconSize.MENU)
+		b_val, image_w, image_h = Gtk.icon_size_lookup(Gtk.IconSize.MENU)
 
 		#make the close button
-		self.btn = gtk.Button()
-		self.btn.set_relief(gtk.RELIEF_NONE)
+		self.btn = Gtk.Button()
+		self.btn.set_relief(Gtk.ReliefStyle.NONE)
 		self.btn.set_focus_on_click(False)
 		self.btn.add(close_image)
-		self.pack_start(self.btn, False, False)
+		self.pack_start(self.btn, expand=False, fill=False, padding=0)
 
 		#this reduces the size of the button
-		style = gtk.RcStyle()
-		style.xthickness = 0
-		style.ythickness = 0
-		self.btn.modify_style(style)
+		#style = Gtk.RcStyle()
+		#style.xthickness = 0
+		#style.ythickness = 0
+		#self.btn.modify_style(style)
 
 		self.show_all()
 
 #test code
 #from cbutil import *
-#import gtk
-#d=gtk.Dialog()
+#from gi.repository import Gtk
+#d=Gtk.Dialog()
 #d.vbox.add(CommandText())
 #d.run()
 
-class CommandText(gtk.HBox):
+class CommandText(Gtk.HBox):
 	def __init__(self, label_text="Name", mode="Normal", text="", alternate_mode="Execute"):
-			gtk.HBox.__init__(self)
+			GObject.GObject.__init__(self)
 
-			label=gtk.Label(label_text)
+			label=Gtk.Label(label=label_text)
 
-			self.entry=gtk.Entry()
+			self.entry=Gtk.Entry()
 			self.entry.props.text=text
 
-			self.button=gtk.Button()
-			image=gtk.image_new_from_icon_name("gtk-execute",gtk.ICON_SIZE_LARGE_TOOLBAR)
+			self.button=Gtk.Button()
+			image=Gtk.Image.new_from_icon_name("gtk-execute",Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_image(image)
 			#known bug
 			self.button.set_tooltip_markup("See the output this command generates")
 
-			self.combobox=gtk.combo_box_new_text()
+			self.combobox=Gtk.ComboBoxText()
 			self.combobox.append_text("Normal")
 			self.combobox.append_text(alternate_mode)
 			self.combobox.props.active = mode != "Normal"
 
-			self.pack_start(label,expand=False)
-			self.pack_start(self.entry)
-			self.pack_end(self.button,expand=False)
-			self.pack_end(self.combobox)
+			self.pack_start(label,expand=False,fill=True,padding=0)
+			self.pack_start(self.entry, True, True, 0)
+			self.pack_end(self.button,expand=False,fill=True,padding=0)
+			self.pack_end(self.combobox, True, True, 0)
 
 			self.combobox.connect('changed', self._emit_mode_signal)
 			self.entry.connect('changed', self._emit_text_signal)
@@ -76,7 +76,7 @@ class CommandText(gtk.HBox):
 				self.button.props.sensitive=1
 
 			if alternate_mode != "Execute" or get_mode != "Normal":
-				completion = gtk.EntryCompletion()
+				completion = Gtk.EntryCompletion()
 				self.entry.set_completion(completion)
 				completion.set_model(POSSIBILITY_STORE)
 				completion.set_text_column(0)
@@ -87,7 +87,7 @@ class CommandText(gtk.HBox):
 			self.entry.set_completion(None)
 			self.button.props.sensitive=0
 		else:
-			completion = gtk.EntryCompletion()
+			completion = Gtk.EntryCompletion()
 			self.entry.set_completion(completion)
 			completion.set_model(POSSIBILITY_STORE)
 			completion.set_text_column(0)
@@ -98,9 +98,9 @@ class CommandText(gtk.HBox):
 		self.emit('text-changed', widget.props.text)
 
 	def _preview_text(self, widget):
-		print "Generating preview, please wait..."
-		buffer=gtk.TextBuffer()
-		buffer_errors=gtk.TextBuffer()
+		print("Generating preview, please wait...")
+		buffer=Gtk.TextBuffer()
+		buffer_errors=Gtk.TextBuffer()
 		full_text=' '.join(['/usr/bin/env',os.path.expanduser(self.entry.props.text)])
 		cmd=subprocess.Popen(shlex.split(full_text),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		text,errors=cmd.communicate()
@@ -114,20 +114,20 @@ class CommandText(gtk.HBox):
 		else:
 			buffer_errors.set_text("")
 
-		dialog=gtk.Dialog(title="Preview of %s" %(self.entry.props.text), \
-			buttons=(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+		dialog=Gtk.Dialog(title="Preview of %s" %(self.entry.props.text), \
+			buttons=(Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
 
-		tabs=gtk.Notebook()
+		tabs=Gtk.Notebook()
 		tabs.set_scrollable(True)
 
-		scrolled=gtk.ScrolledWindow()
-		scrolled.add(gtk.TextView(buffer))
+		scrolled=Gtk.ScrolledWindow()
+		scrolled.add(Gtk.TextView(buffer))
 
-		scrolled_errors=gtk.ScrolledWindow()
-		scrolled_errors.add(gtk.TextView(buffer_errors))
+		scrolled_errors=Gtk.ScrolledWindow()
+		scrolled_errors.add(Gtk.TextView(buffer_errors))
 
-		tabs.append_page(scrolled, gtk.Label("Output"))
-		tabs.append_page(scrolled_errors, gtk.Label("Errors"))
+		tabs.append_page(scrolled, Gtk.Label(label="Output"))
+		tabs.append_page(scrolled_errors, Gtk.Label(label="Errors"))
 
 		dialog.vbox.add(tabs)
 		dialog.show_all()
@@ -136,58 +136,58 @@ class CommandText(gtk.HBox):
 
 #test code
 #from cbutil import *
-#import gtk
-#d=gtk.Dialog()
+#from gi.repository import Gtk
+#d=Gtk.Dialog()
 #d.vbox.add(IconSelector())
 #d.run()
 
-class IconSelector(gtk.HBox):
+class IconSelector(Gtk.HBox):
 	def __init__(self, label_text="Icon", mode="Normal", text=""):
-			gtk.HBox.__init__(self)
+			GObject.GObject.__init__(self)
 
-			label=gtk.Label(label_text)
+			label=Gtk.Label(label=label_text)
 			self.text=text
 
-			self.combobox=gtk.combo_box_new_text()
+			self.combobox=Gtk.ComboBoxText()
 			self.combobox.append_text("Normal")
 			self.combobox.append_text("File path")
 			self.combobox.props.active = mode != "Normal"
-			self.button=gtk.Button()
-			self.image=gtk.Image()
+			self.button=Gtk.Button()
+			self.image=Gtk.Image()
 
-			self.pack_start(label, expand=False)
-			self.pack_start(self.button,expand=False)
-			self.pack_end(self.combobox, expand=True)
+			self.pack_start(label, False, True, 0)
+			self.pack_start(self.button,expand=False,fill=True,padding=0)
+			self.pack_end(self.combobox, True, True, 0)
 			self.button.set_image(self.image)
 
 			self.combobox.connect('changed', self._emit_mode_signal)
 			self.button.connect('pressed', self._emit_text_signal)
 
 			if mode == "File path":
-				size=gtk.icon_size_lookup(gtk.ICON_SIZE_LARGE_TOOLBAR)[0]
+				size=Gtk.icon_size_lookup(Gtk.IconSize.LARGE_TOOLBAR)[0]
 				try:
-					pixbuf=gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(self.text), size, size)
+					pixbuf=GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
 					self.image.set_from_pixbuf(pixbuf)
-				except glib.GError:
+				except GLib.GError:
 					self.image.set_from_pixbuf(None)
-					print "Couldn't set icon from file: %s" %(self.text)
+					print("Couldn't set icon from file: %s" %(self.text))
 			else:
-				self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
+				self.image.set_from_icon_name(self.text,Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_tooltip_text(self.text)
 
 			self.show_all()
 
 	def _change_image(self, mode):
 		if mode == "File path":
-			size=gtk.icon_size_lookup(gtk.ICON_SIZE_LARGE_TOOLBAR)[0]
+			size=Gtk.icon_size_lookup(Gtk.IconSize.LARGE_TOOLBAR)[0]
 			try:
-				pixbuf=gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(self.text), size, size)
+				pixbuf=GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
 				self.image.set_from_pixbuf(pixbuf)
-			except glib.GError:
+			except GLib.GError:
 				self.image.set_from_pixbuf(None)
-				print "Couldn't set icon from file: %s" %(self.text)
+				print("Couldn't set icon from file: %s" %(self.text))
 		else:
-			self.image.set_from_icon_name(self.text,gtk.ICON_SIZE_LARGE_TOOLBAR)
+			self.image.set_from_icon_name(self.text,Gtk.IconSize.LARGE_TOOLBAR)
 		self.emit('image-changed', mode)
 
 	def _emit_mode_signal(self, widget):
@@ -201,14 +201,14 @@ class IconSelector(gtk.HBox):
 			dialog=IcoBrowse()
 			dialog.set_defaults(self.text)
 			response = dialog.run()
-			if response == gtk.RESPONSE_ACCEPT:
+			if response == Gtk.ResponseType.ACCEPT:
 				text=dialog.get_icon_name(None)
 			dialog.destroy()
 		else:
-			btns=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_ACCEPT)
-			dialog=gtk.FileChooserDialog(title="Select Icon", buttons=btns)
+			btns=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT)
+			dialog=Gtk.FileChooserDialog(title="Select Icon", buttons=btns)
 			dialog.set_filename(text)
-			filter = gtk.FileFilter()
+			filter = Gtk.FileFilter()
 			filter.set_name("Images")
 			filter.add_mime_type("image/png")
 			filter.add_mime_type("image/jpeg")
@@ -220,7 +220,7 @@ class IconSelector(gtk.HBox):
 			filter.add_pattern("*.xpm")
 			dialog.add_filter(filter)
 			response = dialog.run()
-			if response == gtk.RESPONSE_ACCEPT:
+			if response == Gtk.ResponseType.ACCEPT:
 				text=dialog.get_filename()
 			dialog.destroy()
 		if text != self.text and (text != "" and text != None):
@@ -230,27 +230,27 @@ class IconSelector(gtk.HBox):
 			self.emit('text-changed', text)
 
 def set_up():
-	gobject.type_register(CommandText)
-	gobject.type_register(IconSelector)
+	GObject.type_register(CommandText)
+	GObject.type_register(IconSelector)
 
-	gobject.signal_new("text-changed", CommandText, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-	gobject.signal_new("mode-changed", CommandText, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
+	GObject.signal_new("text-changed", CommandText, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
+	GObject.signal_new("mode-changed", CommandText, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
 
-	gobject.signal_new("image-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-	gobject.signal_new("text-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-	gobject.signal_new("mode-changed", IconSelector, gobject.SIGNAL_RUN_FIRST,  gobject.TYPE_NONE, (gobject.TYPE_STRING,))
+	GObject.signal_new("image-changed", IconSelector, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
+	GObject.signal_new("text-changed", IconSelector, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
+	GObject.signal_new("mode-changed", IconSelector, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
 
 def completion_setup():
-	print "Setting up command auto completion for best experience"
+	print("Setting up command auto completion for best experience")
 	for i in os.path.expandvars("$PATH").split(":"):
 		if os.path.exists(i):
-			print "Looking in %s" %i
+			print("Looking in %s" %i)
 			for j in os.listdir(i):
 				path="%s/%s" %(i,j)
 				if not os.path.isdir(path) and \
 				os.access(path, os.X_OK):
 					POSSIBILITY_STORE.append([j])
 
-POSSIBILITY_STORE = gtk.ListStore(str)
+POSSIBILITY_STORE = Gtk.ListStore(str)
 set_up()
 completion_setup()

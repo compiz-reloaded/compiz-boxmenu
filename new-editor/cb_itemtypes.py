@@ -1,4 +1,4 @@
-import gtk
+from gi.repository import Gtk
 from lxml import etree
 from cbutil import *
 
@@ -124,7 +124,7 @@ class Launcher(Item):
 
 		retlist.append(widget)
 
-		widget = gtk.CheckButton("Cache output of pipe")
+		widget = Gtk.CheckButton("Cache output of pipe")
 		widget.props.active = commandnode is not None and commandnode.attrib.get('mode2') == 'pipe' and commandnode.attrib.get('cache') == 'true'
 		widget.connect('toggled', self.on_cached_changed)
 		retlist.append(widget)
@@ -143,7 +143,7 @@ class Launcher(Item):
 
 	def on_name_mode_changed(self, widget, text):
 		namenode = self.node.find('name')
-		print text
+		print(text)
 		if text == "Execute":
 			if namenode is None:
 				namenode = etree.SubElement(self.node, 'name')
@@ -205,12 +205,12 @@ class Windowlist(Item):
 		icons = []
 		retlist = []
 
-		widget = gtk.CheckButton("Show windows only on current viewport")
+		widget = Gtk.CheckButton("Show windows only on current viewport")
 		widget.props.active = self.get_thisvp()
 		widget.connect('toggled', self.on_thisvp_changed)
 		retlist.append(widget)
 
-		widget = gtk.CheckButton("Show only minimized windows")
+		widget = Gtk.CheckButton("Show only minimized windows")
 		widget.props.active = self.get_minionly()
 		widget.connect('toggled', self.on_minionly_changed)
 		retlist.append(widget)
@@ -314,7 +314,7 @@ class Viewportlist(Item):
 		retlist = []
 		icons = []
 
-		widget = gtk.CheckButton("Wrap Viewports")
+		widget = Gtk.CheckButton("Wrap Viewports")
 		widget.props.active = self.get_wrap()
 		widget.connect('toggled', self.on_wrap_changed)
 		retlist.append(widget)
@@ -518,13 +518,13 @@ class Documents(Item):
 	def get_options(self):
 		retlist = []
 		icons = []
-		sgroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sgroup = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
-		label = gtk.Label()
+		label = Gtk.Label()
 		label.set_alignment(0, 0.5)
 		sgroup.add_widget(label)
 		label.set_markup('<b>Open method:</b>')
-		widget = gtk.Entry()
+		widget = Gtk.Entry()
 		commandnode = self.node.find('command')
 		if commandnode is not None:
 			command = commandnode.text
@@ -534,9 +534,9 @@ class Documents(Item):
 		widget.set_tooltip_text('If you need a more complicated command, type in that command and %f, which will tell compiz-boxmenu where to place the file name.')
 		widget.connect('changed', self.on_subnode_changed, 'command')
 
-		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox = Gtk.HBox()
+		hbox.pack_start(label, expand=True, fill=True, padding=0)
+		hbox.pack_start(widget, expand=True, fill=True, padding=0)
 		retlist.append(hbox)
 
 		iconnode = self.node.find('icon')
@@ -556,11 +556,11 @@ class Documents(Item):
 
 		icons.append(widget)
 
-		label = gtk.Label()
+		label = Gtk.Label()
 		label.set_alignment(0, 0.5)
 		sgroup.add_widget(label)
 		label.set_markup('<b>Days from today:</b>')
-		widget = gtk.Entry()
+		widget = Gtk.Entry()
 
 		agenode = self.node.find('age')
 		if agenode is not None:
@@ -570,16 +570,16 @@ class Documents(Item):
 		widget.props.text = age
 		widget.connect('changed', self.on_subnode_changed, 'age')
 
-		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox = Gtk.HBox()
+		hbox.pack_start(label, expand=True, fill=True, padding=0)
+		hbox.pack_start(widget, expand=True, fill=True, padding=0)
 		retlist.append(hbox)
 
-		label = gtk.Label()
+		label = Gtk.Label()
 		label.set_alignment(0, 0.5)
 		sgroup.add_widget(label)
 		label.set_markup('<b>Items to display:</b>')
-		widget = gtk.Entry()
+		widget = Gtk.Entry()
 
 		quantitynode = self.node.find('quantity')
 		if quantitynode is not None:
@@ -589,18 +589,18 @@ class Documents(Item):
 		widget.props.text = quantity
 		widget.connect('changed', self.on_subnode_changed, 'quantity')
 
-		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox = Gtk.HBox()
+		hbox.pack_start(label, expand=True, fill=True, padding=0)
+		hbox.pack_start(widget, expand=True, fill=True, padding=0)
 		retlist.append(hbox)
 
 		sortnode = self.node.find('sort')
 
-		label = gtk.Label()
+		label = Gtk.Label()
 		label.set_alignment(0, 0.5)
 		sgroup.add_widget(label)
 		label.set_markup('<b>Sort mode:</b>')
-		widget = gtk.combo_box_new_text()
+		widget = Gtk.ComboBoxText()
 		widget.append_text('None')
 		widget.append_text('Most Used')
 		widget.append_text('Least Used')
@@ -614,9 +614,9 @@ class Documents(Item):
 			widget.set_active(-1)
 		widget.connect('changed', self.on_sort_mode_changed)
 
-		hbox = gtk.HBox()
-		hbox.pack_start(label)
-		hbox.pack_start(widget, True, True)
+		hbox = Gtk.HBox()
+		hbox.pack_start(label, expand=True, fill=True, padding=0)
+		hbox.pack_start(widget, expand=True, fill=True, padding=0)
 		retlist.append(hbox)
 
 		return icons,retlist
@@ -650,7 +650,7 @@ class Documents(Item):
 		sortnode = self.node.find('sort')
 		sorttype = widget.get_active_text()
 		if sorttype != 'None':
-			print sorttype
+			print(sorttype)
 			if sortnode is None:
 				sortnode = etree.SubElement(self.node, 'sort')
 			if sorttype == 'Most Used':

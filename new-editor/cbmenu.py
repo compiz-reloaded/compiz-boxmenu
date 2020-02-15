@@ -1,58 +1,59 @@
-import gtk
+from gi.repository import Gtk
+from gi.repository import Gdk
 import os
-import glib
+from gi.repository import GLib
 from xdg import BaseDirectory
 import re #This is to autoset file mode for *.desktop icons
-import ConfigParser
+import configparser
 from lxml import etree
 from cb_itemtypes import *
 
 #test lines:
 #import cbmenu,cb_itemtypes
-#import gtk
+#from gi.repository import Gtk
 #blah=cbmenu.MenuFile("/home/shadowkyogre/.config/compiz/boxmenu/menu.xml")
-#blurg=gtk.Window()
+#blurg=Gtk.Window()
 #blurg.add(blah)
 #blurg.show_all()
 
-class MenuFile(gtk.ScrolledWindow):
+class MenuFile(Gtk.ScrolledWindow):
 
 	def __init__(self,filename):
-		gtk.ScrolledWindow.__init__(self)
+		GObject.GObject.__init__(self)
 
-		self.model = gtk.TreeStore(object)
+		self.model = Gtk.TreeStore(object)
 		self.add_menu_file(filename)
 		self.filename=filename
 
-		self.props.hscrollbar_policy = gtk.POLICY_AUTOMATIC #because you really might want to read some of the stuff hanging off
-		self.props.vscrollbar_policy = gtk.POLICY_AUTOMATIC
-		self.treeview = gtk.TreeView(self.model)
+		self.props.hscrollbar_policy = Gtk.PolicyType.AUTOMATIC #because you really might want to read some of the stuff hanging off
+		self.props.vscrollbar_policy = Gtk.PolicyType.AUTOMATIC
+		self.treeview = Gtk.TreeView(self.model)
 		self.treeview.set_reorderable(True)
-		cell = gtk.CellRendererText()
-		elements = gtk.TreeViewColumn('Item', cell)
+		cell = Gtk.CellRendererText()
+		elements = Gtk.TreeViewColumn('Item', cell)
 		elements.set_cell_data_func(cell, self.get_type)
 		self.treeview.append_column(elements)
 
-		name = gtk.TreeViewColumn('Name')
+		name = Gtk.TreeViewColumn('Name')
 
-		cell = gtk.CellRendererPixbuf()
-		name.pack_start(cell, False)
+		cell = Gtk.CellRendererPixbuf()
+		name.pack_start(cell, expand=False)
 		name.set_cell_data_func(cell, self.get_icon)
 
-		cell = gtk.CellRendererText()
-		name.pack_start(cell)
+		cell = Gtk.CellRendererText()
+		name.pack_start(cell, expand=True) #, True, 0)
 		name.set_cell_data_func(cell, self.get_name)
 
 		self.treeview.append_column(name)
 		self.add(self.treeview)
 		targets = [
-			('deskmenu-element', gtk.TARGET_SAME_WIDGET, 0),
-			#('deskmenu-element', gtk.TARGET_SAME_APP, 0),
-			#('deskmenu-element', gtk.TREE_VIEW_ITEM, 0),
+			('deskmenu-element', Gtk.TargetFlags.SAME_WIDGET, 0),
+			#('deskmenu-element', Gtk.TargetFlags.SAME_APP, 0),
+			#('deskmenu-element', Gtk.TREE_VIEW_ITEM, 0),
 			('text/uri-list', 0, 1),
 		]
-		self.treeview.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, targets, gtk.gdk.ACTION_DEFAULT|gtk.gdk.ACTION_MOVE)
-		self.treeview.enable_model_drag_dest(targets, gtk.gdk.ACTION_MOVE)
+		self.treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, targets, Gdk.DragAction.DEFAULT|Gdk.DragAction.MOVE)
+		self.treeview.enable_model_drag_dest(targets, Gdk.DragAction.MOVE)
 
 		self.treeview.connect('drag-data-get', self.on_drag_data_get)
 		self.treeview.connect('drag-data-received', self.on_drag_data_received)
@@ -65,11 +66,11 @@ class MenuFile(gtk.ScrolledWindow):
 		self.selection = self.treeview.get_selection()
 		self.selection.connect('changed', self.on_selection_changed)
 
-		self.popup = gtk.Menu()
-		self.edit_menu = gtk.ImageMenuItem(stock_id=gtk.STOCK_EDIT)
+		self.popup = Gtk.Menu()
+		self.edit_menu = Gtk.MenuItem.new_with_mnemonic("_EDIT")
 		self.edit_menu.connect('activate', self.on_edit_clicked)
 		self.popup.append(self.edit_menu)
-		self.delete_menu = gtk.ImageMenuItem(stock_id=gtk.STOCK_DELETE)
+		self.delete_menu = Gtk.MenuItem.new_with_mnemonic("_DELETE")
 		self.delete_menu.connect('activate', self.on_delete_clicked)
 		self.popup.append(self.delete_menu)
 		self.popup.show_all()
@@ -87,29 +88,29 @@ class MenuFile(gtk.ScrolledWindow):
 			if item.node.tag == 'menu':
 				self.add_menu(item, iter)
 
-	def get_name(self, column, cell, model, iter):
+	def get_name(self, column, cell, model, iter, face):
 		name = model.get_value(iter, 0).get_name()
 		if name is None:
 			name = ''
 		cell.set_property('text', name)
 
-	def get_type(self, column, cell, model, iter):
+	def get_type(self, column, cell, model, iter, face):
 		typ = model.get_value(iter, 0).get_type()
 		if typ is None:
 			typ = ''
 		cell.set_property('text', typ)
 
-	def get_icon(self, column, cell, model, iter):
+	def get_icon(self, column, cell, model, iter, face):
 		icon = model.get_value(iter, 0).get_icon()
 		icon_mode = model.get_value(iter, 0).get_icon_mode()
 		#somehow does not set icon until selection change with things that don't have icons originally!
 		if icon is not None:
 			if icon_mode is not None:
-				w = gtk.icon_size_lookup(gtk.ICON_SIZE_MENU)
+				w = Gtk.icon_size_lookup(Gtk.IconSize.MENU)
 				try:
-					cell.set_property('pixbuf', gtk.gdk.pixbuf_new_from_file_at_size(os.path.expanduser(icon), w[0], w[0]))
+					cell.set_property('pixbuf', GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(icon), w[0], w[0]))
 					cell.set_property('icon-name', None) #possibly reduntant safety measure
-				except glib.GError:
+				except GLib.GError:
 					cell.set_property('icon-name', None)
 					cell.set_property('pixbuf', None)
 			else:
@@ -135,11 +136,11 @@ class MenuFile(gtk.ScrolledWindow):
 			current = model[row][0].node
 
 			if current.tag == 'menu' and len(current):
-				warning = gtk.MessageDialog(self.get_toplevel(), \
-				gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_NONE, \
+				warning = Gtk.MessageDialog(self.get_toplevel(), \
+				Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO, Gtk.ButtonsType.NONE, \
 				'Delete menu element with %s children?' %len(current))
-				warning.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_DELETE, gtk.RESPONSE_ACCEPT)
-				if warning.run() != gtk.RESPONSE_ACCEPT:
+				warning.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_DELETE, Gtk.ResponseType.ACCEPT)
+				if warning.run() != Gtk.ResponseType.ACCEPT:
 					warning.destroy()
 					return
 				warning.destroy()
@@ -183,17 +184,17 @@ class MenuFile(gtk.ScrolledWindow):
 					return
 
 				dest = model[path][0]
-				if context.action == gtk.gdk.ACTION_MOVE:
+				if context.action == Gdk.DragAction.MOVE:
 					source.node.getparent().remove(source.node)
 
-				if dest.node.tag == 'menu' and position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-					gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
+				if dest.node.tag == 'menu' and position in (Gtk.TreeViewDropPosition.INTO_OR_BEFORE,
+					Gtk.TreeViewDropPosition.INTO_OR_AFTER):
 					dest.node.append(source.node)
 					fiter = model.append(diter, row=(source,))
 				else:
 					i = dest.node.getparent().index(dest.node)
-					if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-						gtk.TREE_VIEW_DROP_BEFORE):
+					if position in (Gtk.TreeViewDropPosition.INTO_OR_BEFORE,
+						Gtk.TreeViewDropPosition.BEFORE):
 						dest.node.getparent().insert(i, source.node)
 						fiter = model.insert_before(None, diter, row=(source,))
 					else:
@@ -205,17 +206,17 @@ class MenuFile(gtk.ScrolledWindow):
 					while citer is not None:
 						model.append(fiter, row=(model[citer][0],))
 						citer = model.iter_next(citer)
-				if context.action == gtk.gdk.ACTION_MOVE:
+				if context.action == Gdk.DragAction.MOVE:
 					context.finish(True, True, etime)
 
 		elif selection.type == 'text/uri-list':
-			print selection.data, drop_info
+			print(selection.data, drop_info)
 			#uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
 			uris = selection.data.replace('file:///', '/').strip('\r\n\x00').split()
 			launchers = []
 			for uri in uris:
 				uri=uri.replace("%20", " ")
-				entry = ConfigParser.ConfigParser()
+				entry = configparser.ConfigParser()
 				entry.read(uri)
 				launcher = Launcher()
 				launcher.name = etree.SubElement(launcher.node, 'name')
@@ -227,7 +228,7 @@ class MenuFile(gtk.ScrolledWindow):
 						launcher.icon.attrib['mode1'] = 'file'
 					launcher.icon.text = entry.get('Desktop Entry', 'Icon')
 					launcher.command.text = entry.get('Desktop Entry', 'Exec').split('%')[0]
-				except ConfigParser.Error:
+				except configparser.Error:
 					return
 				launchers.append(launcher)
 			if drop_info:
@@ -235,16 +236,16 @@ class MenuFile(gtk.ScrolledWindow):
 				dest = model[path][0]
 				diter = model.get_iter(path)
 				#print(dest.node, dest.node.getroot())
-				if dest.node.tag == 'menu' and position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-					gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
+				if dest.node.tag == 'menu' and position in (Gtk.TreeViewDropPosition.INTO_OR_BEFORE,
+					Gtk.TreeViewDropPosition.INTO_OR_AFTER):
 					for launcher in launchers:
 						dest.node.append(launcher.node)
 						fiter = model.append(diter, row=(launcher,))
 				else:
 					i = dest.node.getparent().index(dest.node)
 					for launcher in launchers:
-						if position in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE,
-							gtk.TREE_VIEW_DROP_BEFORE):
+						if position in (Gtk.TreeViewDropPosition.INTO_OR_BEFORE,
+							Gtk.TreeViewDropPosition.BEFORE):
 							dest.node.getparent().insert(i, launcher.node)
 							fiter = model.insert_before(None, diter, row=(launcher,))
 						else:
@@ -252,7 +253,7 @@ class MenuFile(gtk.ScrolledWindow):
 							fiter = model.insert_after(None, diter, row=(launcher,))
 							diter = fiter
 						i+=1
-				if context.action == gtk.gdk.ACTION_MOVE:
+				if context.action == Gdk.DragAction.MOVE:
 					context.finish(True, True, etime)
 			else:
 				for launcher in launchers:
@@ -315,15 +316,15 @@ class MenuFile(gtk.ScrolledWindow):
 		self.indent(self.menu.node)
 		self.menufile.write(open(self.filename, 'w'))
 
-class EditItemPanel(gtk.HBox):
+class EditItemPanel(Gtk.HBox):
 
 	def __init__(self, model=None, row=None, element=None):
-		gtk.HBox.__init__(self)
-		self.vbox_image_grid=gtk.VBox(False, 2)
-		self.vbox_other_options=gtk.VBox(False, 2)
+		GObject.GObject.__init__(self)
+		self.vbox_image_grid=Gtk.VBox(False, 2)
+		self.vbox_other_options=Gtk.VBox(False, 2)
 
-		self.pack_start(self.vbox_image_grid)
-		self.pack_end(self.vbox_other_options)
+		self.pack_start(self.vbox_image_grid, expand=True, fill=True, padding=0)
+		self.pack_end(self.vbox_other_options, expand=True, fill=True, padding=0)
 
 		self.props.spacing = 6
 
@@ -338,9 +339,9 @@ class EditItemPanel(gtk.HBox):
 		icons,widgets=element.get_options()
 
 		for icon in icons:
-			self.vbox_image_grid.pack_start(icon, fill=False)
+			self.vbox_image_grid.pack_start(icon, expand=True, fill=True, padding=0)
 
 		for widget in widgets:
-			self.vbox_other_options.pack_start(widget, fill=False)
+			self.vbox_other_options.pack_start(widget, expand=True, fill=True, padding=0)
 
 		self.show_all()
