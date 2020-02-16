@@ -63,8 +63,8 @@ class IcoBrowse(Gtk.Dialog):
 		scrolled.props.vscrollbar_policy = Gtk.PolicyType.AUTOMATIC
 		hbox.add(self.combobox)
 		hbox.add(self.refine)
-		self.vbox.add(hbox)
-		self.vbox.add(scrolled)
+		self.vbox.pack_start(hbox, expand=False,fill=True, padding=1)
+		self.vbox.pack_end(scrolled, expand=True, fill=True, padding=1)
 		self.combobox.set_active(0)
 		
 		self.iconview.connect('selection-changed', self.get_icon_name)
