@@ -285,7 +285,7 @@ class MenuFile(Gtk.ScrolledWindow):
 				path, col, cellx, celly = pthinfo
 				treeview.grab_focus()
 				treeview.set_cursor(path, col, 0)
-				self.popup.popup(None, None, None, event.button, event.time)
+				self.popup.popup(None, None, None, None, event.button, event.time)
 			return 1
 
 	def get_icon_mode(self):
