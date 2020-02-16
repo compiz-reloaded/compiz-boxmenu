@@ -92,7 +92,7 @@ class IcoBrowse(Gtk.Dialog):
 	def category_changed(self, widget):
 		self.modelfilter.refilter()
 
-	def search_icons(self, tree, iter, face):
+	def search_icons(self, tree, iter, data):
 		search_term = self.combobox.get_active_text()
 		search_term2 = self.refine.props.text
 		if ICON_STORE.get_value(iter, 2) == search_term:

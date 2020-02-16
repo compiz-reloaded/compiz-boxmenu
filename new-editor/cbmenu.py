@@ -88,19 +88,19 @@ class MenuFile(Gtk.ScrolledWindow):
 			if item.node.tag == 'menu':
 				self.add_menu(item, iter)
 
-	def get_name(self, column, cell, model, iter, face):
+	def get_name(self, column, cell, model, iter, data):
 		name = model.get_value(iter, 0).get_name()
 		if name is None:
 			name = ''
 		cell.set_property('text', name)
 
-	def get_type(self, column, cell, model, iter, face):
+	def get_type(self, column, cell, model, iter, data):
 		typ = model.get_value(iter, 0).get_type()
 		if typ is None:
 			typ = ''
 		cell.set_property('text', typ)
 
-	def get_icon(self, column, cell, model, iter, face):
+	def get_icon(self, column, cell, model, iter, data):
 		icon = model.get_value(iter, 0).get_icon()
 		icon_mode = model.get_value(iter, 0).get_icon_mode()
 		#somehow does not set icon until selection change with things that don't have icons originally!
@@ -156,7 +156,6 @@ class MenuFile(Gtk.ScrolledWindow):
 		#write_menu()
 
 	def on_close_clicked(self, widget):
-
 		self.write_menu()
 
 	def on_drag_data_get(self, treeview, context, selection, target_id,
@@ -314,7 +313,7 @@ class MenuFile(Gtk.ScrolledWindow):
 
 	def write_menu(self):
 		self.indent(self.menu.node)
-		self.menufile.write(open(self.filename, 'w'))
+		self.menufile.write(open(self.filename, 'wb'))
 
 class EditItemPanel(Gtk.HBox):
 
