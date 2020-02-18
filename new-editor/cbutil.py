@@ -172,6 +172,8 @@ class IconSelector(Gtk.HBox):
 					except GLib.GError:
 						self.image.set_from_pixbuf(None)
 						print("Couldn't set icon from file: %s" %(self.text))
+				else:
+					self.image.set_from_pixbuf(None)
 			else:
 				self.image.set_from_icon_name(self.text,Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_tooltip_text(self.text)
