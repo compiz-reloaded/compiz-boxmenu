@@ -165,12 +165,13 @@ class IconSelector(Gtk.HBox):
 
 			if mode == "File path":
 				size=Gtk.icon_size_lookup(Gtk.IconSize.LARGE_TOOLBAR)[0]
-				try:
-					pixbuf=GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
-					self.image.set_from_pixbuf(pixbuf)
-				except GLib.GError:
-					self.image.set_from_pixbuf(None)
-					print("Couldn't set icon from file: %s" %(self.text))
+				if self.text != None:
+					try:
+						pixbuf=GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
+						self.image.set_from_pixbuf(pixbuf)
+					except GLib.GError:
+						self.image.set_from_pixbuf(None)
+						print("Couldn't set icon from file: %s" %(self.text))
 			else:
 				self.image.set_from_icon_name(self.text,Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_tooltip_text(self.text)
@@ -233,8 +234,8 @@ def set_up():
 	GObject.type_register(CommandText)
 	GObject.type_register(IconSelector)
 
-	GObject.signal_new("text-changed", CommandText, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
-	GObject.signal_new("mode-changed", CommandText, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
+	GObject.signal_new("text-changed", CommandText, GObject.SignalFlags.RUN_FIRST,	None, (GObject.TYPE_STRING,))
+	GObject.signal_new("mode-changed", CommandText, GObject.SignalFlags.RUN_FIRST,	None, (GObject.TYPE_STRING,))
 
 	GObject.signal_new("image-changed", IconSelector, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
 	GObject.signal_new("text-changed", IconSelector, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
