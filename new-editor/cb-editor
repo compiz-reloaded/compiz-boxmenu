@@ -442,7 +442,7 @@ class CBEditor(Gtk.Window):
 		dialog=Gtk.AboutDialog()
 		dialog.set_name("Compiz Boxmenu Editor")
 		dialog.set_version("1.1.6")
-		dialog.set_authors(["ShadowKyogre","crdlb"])
+		dialog.set_authors(["ShadowKyogre","mazes_80","crdlb"])
 		dialog.set_comments("A specialized editor for Compiz Boxmenu's menu files")
 		dialog.set_logo_icon_name("help-about")
 		dialog.run()
