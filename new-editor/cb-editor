@@ -267,8 +267,8 @@ class CBEditor(Gtk.Window):
 				dialog.destroy()
 			except etree.XMLSyntaxError as e:
 				message = Gtk.MessageDialog(parent=self, flags=0, 
-				    type=Gtk.MessageType.ERROR, 
-				    buttons=Gtk.ButtonsType.OK, message_format=None)
+					type=Gtk.MessageType.ERROR,
+					buttons=Gtk.ButtonsType.OK, message_format=None)
 				msg = ("{}\n\nClick the gear icon in the dialog to check"
 				" pipe output.").format(e.msg)
 				message.set_markup(msg)
@@ -444,6 +444,7 @@ class CBEditor(Gtk.Window):
 		dialog.set_version("1.1.6")
 		dialog.set_authors(["ShadowKyogre","crdlb"])
 		dialog.set_comments("A specialized editor for Compiz Boxmenu's menu files")
+		dialog.set_logo_icon_name("help-about")
 		dialog.run()
 		dialog.destroy()
 
@@ -491,7 +492,7 @@ if __name__ == '__main__':
 	except IOError:
 		allnotcache=True
 	elementlist = ['Launcher', 'Menu', 'Separator', 'Windows List',
-	               'Desktops List','Viewports List', 'Recent Documents', 
-				   'Reload', 'Menu File']
+				'Desktops List','Viewports List', 'Recent Documents',
+				'Reload', 'Menu File']
 	CBEditor()
 	Gtk.main()
