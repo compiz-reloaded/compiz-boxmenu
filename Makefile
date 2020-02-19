@@ -6,12 +6,10 @@ else
 endif
 
 # checking for python
-PYTHONBIN?=$(shell which python$(shell pkg-config --modversion python-2.7 2> /dev/null))
-PYTHONBIN?=$(shell which python2.6)
-PYTHONBIN?=$(shell which python2)
+PYTHONBIN?=$(shell which python)
 
 ifeq ("$(PYTHONBIN)", "")
-$(error Python not found. Version >= 2.7 or 2.6 is required.)
+$(error Python not found.)
 endif
 
 # Set up compile flags
