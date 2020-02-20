@@ -48,7 +48,7 @@ class CommandText(Gtk.HBox):
 			self.entry.props.text=text
 
 			self.button=Gtk.Button()
-			image=Gtk.Image.new_from_icon_name("gtk-execute",Gtk.IconSize.LARGE_TOOLBAR)
+			image=Gtk.Image.new_from_icon_name("system-run",Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_image(image)
 			#known bug
 			self.button.set_tooltip_markup("See the output this command generates")
