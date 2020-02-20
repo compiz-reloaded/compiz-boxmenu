@@ -164,15 +164,15 @@ class MenuFile(Gtk.ScrolledWindow):
 		model, iter = treeselection.get_selected()
 		data = model.get_string_from_iter(iter)
 
-		selection.set(selection.target, 8, data)
+		selection.set(selection.get_target(), 8, data)
 
 	def on_drag_data_received(self, treeview, context, x, y, selection,
 								info, etime):
 		model = treeview.get_model()
-		data = selection.data
+		data = selection.get_data()
 
 		drop_info = treeview.get_dest_row_at_pos(x, y)
-		if selection.type == 'deskmenu-element':
+		if selection.get_data_type() == 'deskmenu-element':
 			source = model[data][0]
 			if drop_info:
 				path, position = drop_info
@@ -208,7 +208,7 @@ class MenuFile(Gtk.ScrolledWindow):
 				if context.action == Gdk.DragAction.MOVE:
 					context.finish(True, True, etime)
 
-		elif selection.type == 'text/uri-list':
+		elif selection.get_data_type() == 'text/uri-list':
 			print(selection.data, drop_info)
 			#uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
 			uris = selection.data.replace('file:///', '/').strip('\r\n\x00').split()
