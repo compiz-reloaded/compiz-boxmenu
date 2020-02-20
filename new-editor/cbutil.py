@@ -23,20 +23,7 @@ class TabButton(Gtk.HBox):
 		self.btn.add(close_image)
 		self.pack_start(self.btn, expand=False, fill=False, padding=0)
 
-		#this reduces the size of the button
-		#style = Gtk.RcStyle()
-		#style.xthickness = 0
-		#style.ythickness = 0
-		#self.btn.modify_style(style)
-
 		self.show_all()
-
-#test code
-#from cbutil import *
-#from gi.repository import Gtk
-#d=Gtk.Dialog()
-#d.vbox.add(CommandText())
-#d.run()
 
 class CommandText(Gtk.HBox):
 	def __init__(self, label_text="Name", mode="Normal", text="", alternate_mode="Execute"):
@@ -50,7 +37,6 @@ class CommandText(Gtk.HBox):
 			self.button=Gtk.Button()
 			image=Gtk.Image.new_from_icon_name("system-run",Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_image(image)
-			#known bug
 			self.button.set_tooltip_markup("See the output this command generates")
 
 			self.combobox=Gtk.ComboBoxText()
@@ -133,13 +119,6 @@ class CommandText(Gtk.HBox):
 		dialog.show_all()
 		dialog.run()
 		dialog.destroy()
-
-#test code
-#from cbutil import *
-#from gi.repository import Gtk
-#d=Gtk.Dialog()
-#d.vbox.add(IconSelector())
-#d.run()
 
 class IconSelector(Gtk.HBox):
 	def __init__(self, label_text="Icon", mode="Normal", text=""):

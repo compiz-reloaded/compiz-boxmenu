@@ -8,14 +8,6 @@ import configparser
 from lxml import etree
 from cb_itemtypes import *
 
-#test lines:
-#import cbmenu,cb_itemtypes
-#from gi.repository import Gtk
-#blah=cbmenu.MenuFile("/home/shadowkyogre/.config/compiz/boxmenu/menu.xml")
-#blurg=Gtk.Window()
-#blurg.add(blah)
-#blurg.show_all()
-
 class MenuFile(Gtk.ScrolledWindow):
 
 	def __init__(self,filename):
@@ -41,15 +33,13 @@ class MenuFile(Gtk.ScrolledWindow):
 		name.set_cell_data_func(cell, self.get_icon)
 
 		cell = Gtk.CellRendererText()
-		name.pack_start(cell, expand=True) #, True, 0)
+		name.pack_start(cell, expand=True)
 		name.set_cell_data_func(cell, self.get_name)
 
 		self.treeview.append_column(name)
 		self.add(self.treeview)
 		targets = [
 			('deskmenu-element', Gtk.TargetFlags.SAME_WIDGET, 0),
-			#('deskmenu-element', Gtk.TargetFlags.SAME_APP, 0),
-			#('deskmenu-element', Gtk.TREE_VIEW_ITEM, 0),
 			('text/uri-list', 0, 1),
 		]
 		self.treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, targets, Gdk.DragAction.DEFAULT|Gdk.DragAction.MOVE)
@@ -172,7 +162,6 @@ class MenuFile(Gtk.ScrolledWindow):
 		data = selection.get_data().decode()
 
 		drop_info = treeview.get_dest_row_at_pos(x, y)
-		# todo compare identical class
 		if selection.get_data_type().name() == 'deskmenu-element':
 			source = model[data][0]
 			if drop_info:
@@ -211,7 +200,6 @@ class MenuFile(Gtk.ScrolledWindow):
 
 		elif selection.get_data_type().name() == 'text/uri-list':
 			print(selection.data, drop_info)
-			#uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
 			uris = selection.data.replace('file:///', '/').strip('\r\n\x00').split()
 			launchers = []
 			for uri in uris:
@@ -235,7 +223,6 @@ class MenuFile(Gtk.ScrolledWindow):
 				path, position = drop_info
 				dest = model[path][0]
 				diter = model.get_iter(path)
-				#print(dest.node, dest.node.getroot())
 				if dest.node.tag == 'menu' and position in (Gtk.TreeViewDropPosition.INTO_OR_BEFORE,
 					Gtk.TreeViewDropPosition.INTO_OR_AFTER):
 					for launcher in launchers:

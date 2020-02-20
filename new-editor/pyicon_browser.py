@@ -3,17 +3,13 @@ from gi.repository import GdkPixbuf
 from gi.repository import GObject
 import re
 from gi.repository import GLib
-#from GLib import GError
 from sys import stderr
-
-#http://developer.gnome.org/pygtk/2.22/class-gtkicontheme.html#method-gtkicontheme--list-contexts
 
 class IcoBrowse(Gtk.Dialog):
 	def __init__(self, message="", default_text='', modal=True):
 		GObject.GObject.__init__(self)
 		self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CLOSE,
 		      Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT)
-		#self.set_title("Icon search")
 		if modal:
 			self.set_modal(True)
 		self.set_border_width(5)
@@ -22,9 +18,6 @@ class IcoBrowse(Gtk.Dialog):
 		self.combobox.set_size_request(200, 20)
 		hbox=Gtk.HBox(False,2)
 		
-		#format: actual icon, name, context
-		#self.model=Gtk.ListStore(GdkPixbuf.Pixbuf, GObject.TYPE_STRING, GObject.TYPE_STRING)
-		#self.modelfilter=self.model.filter_new()
 		self.modelfilter=ICON_STORE.filter_new()
 		self.iconview=Gtk.IconView()
 		self.iconview.set_model(self.modelfilter)
@@ -110,7 +103,6 @@ def set_up():
 		current=defaulttheme.list_icons(context=c)
 		catted_icons=catted_icons.union(set(current))
 		print("Found {} icons in {}".format(len(current),c))
-		#self.combobox.append_text(c)
 		for i in current:
 			try:
 				ICON_STORE.append([defaulttheme.load_icon(i, 32,
