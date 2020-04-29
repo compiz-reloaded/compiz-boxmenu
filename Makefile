@@ -15,7 +15,7 @@ $(error Python not found. Version >= 2.7 or 2.6 is required.)
 endif
 
 # Set up compile flags
-CPPFLAGS := `pkg-config --cflags dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
+CPPFLAGS := `pkg-config --cflags dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
 CPPFLAGS_CLIENT := `pkg-config --cflags dbus-glib-1`
 WARNINGS := -Wall -Wextra -Wno-unused-parameter
 ifneq ("$(DEBUG)","")
@@ -23,7 +23,7 @@ ifneq ("$(DEBUG)","")
 else
 	CFLAGS := $(WARNINGS)
 endif
-LDFLAGS := -Wl,--as-needed `pkg-config --libs dbus-glib-1 gdk-2.0 gtk+-2.0 libwnck-1.0`
+LDFLAGS := -Wl,--as-needed `pkg-config --libs dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
 LDFLAGS_CLIENT := -Wl,--as-needed `pkg-config --libs dbus-glib-1`
 
 VERSION=1.1.12
