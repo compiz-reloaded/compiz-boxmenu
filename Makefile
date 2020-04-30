@@ -34,27 +34,27 @@ all: deskmenu-glue.h compiz-boxmenu-daemon compiz-boxmenu compiz-boxmenu-dlist c
 
 #has manpage
 compiz-boxmenu:
-	$(CC) -o $@ deskmenu.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)  
+	$(CC) -o $@ deskmenu.c $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)  
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-dlist:
-	$(CC) -o $@ deskmenu-documentlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS) 
+	$(CC) -o $@ deskmenu-documentlist-client.c $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS) 
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-vplist:
-	$(CC) -o $@ deskmenu-vplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
+	$(CC) -o $@ deskmenu-vplist-client.c $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-dplist:
-	$(CC) -o $@ deskmenu-dplist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS) 
+	$(CC) -o $@ deskmenu-dplist-client.c $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS) 
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
 compiz-boxmenu-wlist:
-	$(CC) -o $@ deskmenu-windowlist-client.c deskmenu-common.h $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
+	$(CC) -o $@ deskmenu-windowlist-client.c $(LDFLAGS_CLIENT) $(CPPFLAGS_CLIENT) $(CFLAGS)
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
