@@ -85,7 +85,7 @@ wnck_selector_get_width (GtkWidget  *widget,
 	gtk_widget_ensure_style (widget);
 
 	context = gtk_widget_get_pango_context (widget);
-	metrics = pango_context_get_metrics (context, widget->style->font_desc,
+	metrics = pango_context_get_metrics (context, gtk_widget_get_style(widget)->font_desc,
 			pango_context_get_language (context));
 	char_width = pango_font_metrics_get_approximate_char_width (metrics);
 	pango_font_metrics_unref (metrics);

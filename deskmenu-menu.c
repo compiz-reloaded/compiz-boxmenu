@@ -103,7 +103,7 @@ launcher_activated (GtkWidget *widget,
 {
 	GError *error = NULL;
 
-	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(command), &error))
+	if (!g_spawn_command_line_async (parse_expand_tilde(command), &error))
 	{
 		deskmenu_widget_error(error);
 	}
@@ -119,7 +119,7 @@ recent_activated (GtkRecentChooser *chooser,
 	file = gtk_recent_chooser_get_current_uri (chooser);
 	full_command = get_full_command(command, file);
 
-	if (!gdk_spawn_command_line_on_screen (gdk_screen_get_default (), parse_expand_tilde(full_command), &error))
+	if (!g_spawn_command_line_async (parse_expand_tilde(full_command), &error))
 	{
 		deskmenu_widget_error(error);
 	}
