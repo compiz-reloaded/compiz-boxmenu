@@ -5,8 +5,10 @@ else
 	PREFIX?=/usr
 endif
 
+PKG_CONFIG ?= pkg-config
+
 # checking for python
-PYTHONBIN?=$(shell which python$(shell pkg-config --modversion python-2.7 2> /dev/null))
+PYTHONBIN?=$(shell which python$(shell $(PKG_CONFIG) --modversion python-2.7 2> /dev/null))
 PYTHONBIN?=$(shell which python2.6)
 PYTHONBIN?=$(shell which python2)
 
@@ -15,16 +17,16 @@ $(error Python not found. Version >= 2.7 or 2.6 is required.)
 endif
 
 # Set up compile flags
-CPPFLAGS := `pkg-config --cflags dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
-CPPFLAGS_CLIENT := `pkg-config --cflags dbus-glib-1`
+CPPFLAGS := `$(PKG_CONFIG) --cflags dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
+CPPFLAGS_CLIENT := `$(PKG_CONFIG) --cflags dbus-glib-1`
 WARNINGS := -Wall -Wextra -Wno-unused-parameter
 ifneq ("$(DEBUG)","")
 	CFLAGS := -O2 -g $(WARNINGS)
 else
 	CFLAGS := $(WARNINGS)
 endif
-LDFLAGS := -Wl,--as-needed `pkg-config --libs dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
-LDFLAGS_CLIENT := -Wl,--as-needed `pkg-config --libs dbus-glib-1`
+LDFLAGS := -Wl,--as-needed `$(PKG_CONFIG) --libs dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
+LDFLAGS_CLIENT := -Wl,--as-needed `$(PKG_CONFIG) --libs dbus-glib-1`
 
 VERSION=1.1.12
 
