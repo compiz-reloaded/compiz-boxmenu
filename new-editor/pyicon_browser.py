@@ -50,7 +50,7 @@ class IcoBrowse(Gtk.Dialog):
 			#		self.model.append([defaulttheme.load_icon(i, 32,
 			#						  Gtk.IconLookupFlags.USE_BUILTIN),
 			#						  i,c])
-			#	except GError as err: stderr.write('Error loading "%s": %s\n' % (i, err.args[0]))
+			#	except GLib.GError as err: stderr.write('Error loading "%s": %s\n' % (i, err.args[0]))
 		#other=list(set(defaulttheme.list_icons())-(set(catted_icons)))
 		#for i in other:
 		#	self.model.append([defaulttheme.load_icon(i, 32,
@@ -116,7 +116,7 @@ def set_up():
 				ICON_STORE.append([defaulttheme.load_icon(i, 32,
 								  Gtk.IconLookupFlags.USE_BUILTIN),
 								  i,c])
-			except GError as err: stderr.write('Error loading "%s": %s\n' % (i, err.args[0]))
+			except GLib.GError as err: stderr.write('Error loading "%s": %s\n' % (i, err.args[0]))
 	other=list(set(defaulttheme.list_icons())-catted_icons)
 	print("Placing misc. icons in Other")
 	for i in other:
