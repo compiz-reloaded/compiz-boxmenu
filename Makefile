@@ -17,16 +17,19 @@ $(error Python not found. Version >= 2.7 or 2.6 is required.)
 endif
 
 # Set up compile flags
-CPPFLAGS := `$(PKG_CONFIG) --cflags dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
-CPPFLAGS_CLIENT := `$(PKG_CONFIG) --cflags dbus-glib-1`
+CPPFLAGS ?=
+CPPFLAGS_CLIENT := $(CPPFLAGS) `$(PKG_CONFIG) --cflags dbus-glib-1`
+CPPFLAGS += `$(PKG_CONFIG) --cflags dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
 WARNINGS := -Wall -Wextra -Wno-unused-parameter
 ifneq ("$(DEBUG)","")
-	CFLAGS := -O2 -g $(WARNINGS)
+	CFLAGS ?= -O2 -g
 else
-	CFLAGS := $(WARNINGS)
+	CFLAGS ?=
 endif
-LDFLAGS := -Wl,--as-needed `$(PKG_CONFIG) --libs dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
-LDFLAGS_CLIENT := -Wl,--as-needed `$(PKG_CONFIG) --libs dbus-glib-1`
+CFLAGS += $(WARNINGS)
+LDFLAGS ?=
+LDFLAGS_CLIENT := $(LDFLAGS) -Wl,--as-needed `$(PKG_CONFIG) --libs dbus-glib-1`
+LDFLAGS += -Wl,--as-needed `$(PKG_CONFIG) --libs dbus-glib-1 gdk-3.0 gtk+-3.0 libwnck-3.0`
 
 VERSION=1.1.12
 
