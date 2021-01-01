@@ -7,5 +7,5 @@ Name[en_US]=Compiz Boxmenu Editor
 Name=Compiz Boxmenu Editor
 StartupNotify=true
 Terminal=false
-Categories=Application;Accessories;System
+Categories=Application;Utility;System
 Type=Application
