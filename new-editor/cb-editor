@@ -35,8 +35,6 @@ class CBEditor(Gtk.Window):
 		new_button.connect('clicked', self.new_item_dialog)
 		new_button.set_tooltip_text("Create a new menu file or menu item")
 
-		#edit_button = Gtk.ToolButton(Gtk.STOCK_EDIT) # necessary?
-
 		save_button = Gtk.MenuToolButton(Gtk.STOCK_SAVE)
 		save_button.set_menu(self.make_save_menu())
 		save_button.connect('clicked', self.save_one)
@@ -55,9 +53,6 @@ class CBEditor(Gtk.Window):
 		reload_button.connect('clicked', self.reload_menu)
 		reload_button.set_tooltip_text('Reload the daemon')
 
-		#settings_button = Gtk.ToolButton(Gtk.STOCK_PREFERENCES)
-		#settings_button.connect('clicked', self.show_settings)
-
 		about_button = Gtk.ToolButton(Gtk.STOCK_ABOUT)
 		about_button.connect('clicked', self.show_about_dialog)
 		about_button.set_tooltip_text('Show some information about this program')
@@ -69,16 +64,12 @@ class CBEditor(Gtk.Window):
 		sep2.set_draw(False)
 		sep2.set_expand(True)
 		toolbar.insert(new_button, 0)
-		#toolbar.insert(edit_button, 1)
 		toolbar.insert(save_button, 1)
 		toolbar.insert(generate_button, 2)
 		toolbar.insert(delete_button, 3)
 		toolbar.insert(sep, 4)
-		#toolbar.insert(undo_button, 6)
-		#toolbar.insert(redo_button, 7)
 		toolbar.insert(sep2, 5)
 		toolbar.insert(reload_button, 6)
-		#toolbar.insert(settings_button, 8)
 		toolbar.insert(about_button, 7)
 
 		self.vbox.pack_start(toolbar, expand=False, fill=True, padding=0)
@@ -100,13 +91,13 @@ class CBEditor(Gtk.Window):
 		cell = Gtk.CellRendererToggle()
 		cell.set_activatable(True)
 		cell.connect('toggled', self.update_cache)
-		cached.pack_start(cell, expand=True) #, True, 0)
+		cached.pack_start(cell, expand=True)
 		cached.add_attribute(cell, "active", 0)
 
 		name = Gtk.TreeViewColumn('Menu')
 		listview.append_column(name)
 		cell = Gtk.CellRendererText()
-		name.pack_start(cell, expand=True) #, True, 0)
+		name.pack_start(cell, expand=True)
 		name.add_attribute(cell,"text", 1)
 
 		self.tabs=Gtk.Notebook()
@@ -117,10 +108,8 @@ class CBEditor(Gtk.Window):
 		self.tabs.set_show_tabs(True)
 		self.tabs.set_tab_pos(Gtk.PositionType.TOP)
 
-		#self.hbox_item=Gtk.HBox(False, 2)
 
 		self.vbox.pack_start(hbox_main, expand=True, fill=True, padding=0)
-		#self.vbox.pack_end(self.hbox_item, expand=False, fill=False)
 		self.add(self.vbox)
 		self.show_all()
 
@@ -267,8 +256,8 @@ class CBEditor(Gtk.Window):
 				dialog.destroy()
 			except etree.XMLSyntaxError as e:
 				message = Gtk.MessageDialog(parent=self, flags=0, 
-				    type=Gtk.MessageType.ERROR, 
-				    buttons=Gtk.ButtonsType.OK, message_format=None)
+					type=Gtk.MessageType.ERROR,
+					buttons=Gtk.ButtonsType.OK, message_format=None)
 				msg = ("{}\n\nClick the gear icon in the dialog to check"
 				" pipe output.").format(e.msg)
 				message.set_markup(msg)
@@ -442,8 +431,9 @@ class CBEditor(Gtk.Window):
 		dialog=Gtk.AboutDialog()
 		dialog.set_name("Compiz Boxmenu Editor")
 		dialog.set_version("1.1.6")
-		dialog.set_authors(["ShadowKyogre","crdlb"])
+		dialog.set_authors(["ShadowKyogre","mazes_80","crdlb"])
 		dialog.set_comments("A specialized editor for Compiz Boxmenu's menu files")
+		dialog.set_logo_icon_name("help-about")
 		dialog.run()
 		dialog.destroy()
 
@@ -491,7 +481,7 @@ if __name__ == '__main__':
 	except IOError:
 		allnotcache=True
 	elementlist = ['Launcher', 'Menu', 'Separator', 'Windows List',
-	               'Desktops List','Viewports List', 'Recent Documents', 
-				   'Reload', 'Menu File']
+				'Desktops List','Viewports List', 'Recent Documents',
+				'Reload', 'Menu File']
 	CBEditor()
 	Gtk.main()

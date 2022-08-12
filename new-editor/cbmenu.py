@@ -8,14 +8,6 @@ import configparser
 from lxml import etree
 from cb_itemtypes import *
 
-#test lines:
-#import cbmenu,cb_itemtypes
-#from gi.repository import Gtk
-#blah=cbmenu.MenuFile("/home/shadowkyogre/.config/compiz/boxmenu/menu.xml")
-#blurg=Gtk.Window()
-#blurg.add(blah)
-#blurg.show_all()
-
 class MenuFile(Gtk.ScrolledWindow):
 
 	def __init__(self,filename):
@@ -41,15 +33,13 @@ class MenuFile(Gtk.ScrolledWindow):
 		name.set_cell_data_func(cell, self.get_icon)
 
 		cell = Gtk.CellRendererText()
-		name.pack_start(cell, expand=True) #, True, 0)
+		name.pack_start(cell, expand=True)
 		name.set_cell_data_func(cell, self.get_name)
 
 		self.treeview.append_column(name)
 		self.add(self.treeview)
 		targets = [
 			('deskmenu-element', Gtk.TargetFlags.SAME_WIDGET, 0),
-			#('deskmenu-element', Gtk.TargetFlags.SAME_APP, 0),
-			#('deskmenu-element', Gtk.TREE_VIEW_ITEM, 0),
 			('text/uri-list', 0, 1),
 		]
 		self.treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, targets, Gdk.DragAction.DEFAULT|Gdk.DragAction.MOVE)
@@ -164,15 +154,15 @@ class MenuFile(Gtk.ScrolledWindow):
 		model, iter = treeselection.get_selected()
 		data = model.get_string_from_iter(iter)
 
-		selection.set(selection.target, 8, data)
+		selection.set(selection.get_target(), 8, data.encode())
 
 	def on_drag_data_received(self, treeview, context, x, y, selection,
 								info, etime):
 		model = treeview.get_model()
-		data = selection.data
+		data = selection.get_data().decode()
 
 		drop_info = treeview.get_dest_row_at_pos(x, y)
-		if selection.type == 'deskmenu-element':
+		if selection.get_data_type().name() == 'deskmenu-element':
 			source = model[data][0]
 			if drop_info:
 				path, position = drop_info
@@ -183,7 +173,7 @@ class MenuFile(Gtk.ScrolledWindow):
 					return
 
 				dest = model[path][0]
-				if context.action == Gdk.DragAction.MOVE:
+				if context.get_selected_action() == Gdk.DragAction.MOVE:
 					source.node.getparent().remove(source.node)
 
 				if dest.node.tag == 'menu' and position in (Gtk.TreeViewDropPosition.INTO_OR_BEFORE,
@@ -205,12 +195,11 @@ class MenuFile(Gtk.ScrolledWindow):
 					while citer is not None:
 						model.append(fiter, row=(model[citer][0],))
 						citer = model.iter_next(citer)
-				if context.action == Gdk.DragAction.MOVE:
+				if context.get_selected_action() == Gdk.DragAction.MOVE:
 					context.finish(True, True, etime)
 
-		elif selection.type == 'text/uri-list':
+		elif selection.get_data_type().name() == 'text/uri-list':
 			print(selection.data, drop_info)
-			#uri = selection.data.replace('file:///', '/').replace("%20"," ").replace("\x00","").strip()
 			uris = selection.data.replace('file:///', '/').strip('\r\n\x00').split()
 			launchers = []
 			for uri in uris:
@@ -234,7 +223,6 @@ class MenuFile(Gtk.ScrolledWindow):
 				path, position = drop_info
 				dest = model[path][0]
 				diter = model.get_iter(path)
-				#print(dest.node, dest.node.getroot())
 				if dest.node.tag == 'menu' and position in (Gtk.TreeViewDropPosition.INTO_OR_BEFORE,
 					Gtk.TreeViewDropPosition.INTO_OR_AFTER):
 					for launcher in launchers:
@@ -252,7 +240,7 @@ class MenuFile(Gtk.ScrolledWindow):
 							fiter = model.insert_after(None, diter, row=(launcher,))
 							diter = fiter
 						i+=1
-				if context.action == Gdk.DragAction.MOVE:
+				if context.get_selected_action() == Gdk.DragAction.MOVE:
 					context.finish(True, True, etime)
 			else:
 				for launcher in launchers:
@@ -285,7 +273,7 @@ class MenuFile(Gtk.ScrolledWindow):
 				path, col, cellx, celly = pthinfo
 				treeview.grab_focus()
 				treeview.set_cursor(path, col, 0)
-				self.popup.popup(None, None, None, event.button, event.time)
+				self.popup.popup(None, None, None, None, event.button, event.time)
 			return 1
 
 	def get_icon_mode(self):

@@ -23,20 +23,7 @@ class TabButton(Gtk.HBox):
 		self.btn.add(close_image)
 		self.pack_start(self.btn, expand=False, fill=False, padding=0)
 
-		#this reduces the size of the button
-		#style = Gtk.RcStyle()
-		#style.xthickness = 0
-		#style.ythickness = 0
-		#self.btn.modify_style(style)
-
 		self.show_all()
-
-#test code
-#from cbutil import *
-#from gi.repository import Gtk
-#d=Gtk.Dialog()
-#d.vbox.add(CommandText())
-#d.run()
 
 class CommandText(Gtk.HBox):
 	def __init__(self, label_text="Name", mode="Normal", text="", alternate_mode="Execute"):
@@ -48,9 +35,8 @@ class CommandText(Gtk.HBox):
 			self.entry.props.text=text
 
 			self.button=Gtk.Button()
-			image=Gtk.Image.new_from_icon_name("gtk-execute",Gtk.IconSize.LARGE_TOOLBAR)
+			image=Gtk.Image.new_from_icon_name("system-run",Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_image(image)
-			#known bug
 			self.button.set_tooltip_markup("See the output this command generates")
 
 			self.combobox=Gtk.ComboBoxText()
@@ -134,13 +120,6 @@ class CommandText(Gtk.HBox):
 		dialog.run()
 		dialog.destroy()
 
-#test code
-#from cbutil import *
-#from gi.repository import Gtk
-#d=Gtk.Dialog()
-#d.vbox.add(IconSelector())
-#d.run()
-
 class IconSelector(Gtk.HBox):
 	def __init__(self, label_text="Icon", mode="Normal", text=""):
 			GObject.GObject.__init__(self)
@@ -165,12 +144,15 @@ class IconSelector(Gtk.HBox):
 
 			if mode == "File path":
 				size=Gtk.icon_size_lookup(Gtk.IconSize.LARGE_TOOLBAR)[0]
-				try:
-					pixbuf=GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
-					self.image.set_from_pixbuf(pixbuf)
-				except GLib.GError:
+				if self.text != None:
+					try:
+						pixbuf=GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.expanduser(self.text), size, size)
+						self.image.set_from_pixbuf(pixbuf)
+					except GLib.GError:
+						self.image.set_from_pixbuf(None)
+						print("Couldn't set icon from file: %s" %(self.text))
+				else:
 					self.image.set_from_pixbuf(None)
-					print("Couldn't set icon from file: %s" %(self.text))
 			else:
 				self.image.set_from_icon_name(self.text,Gtk.IconSize.LARGE_TOOLBAR)
 			self.button.set_tooltip_text(self.text)
@@ -233,8 +215,8 @@ def set_up():
 	GObject.type_register(CommandText)
 	GObject.type_register(IconSelector)
 
-	GObject.signal_new("text-changed", CommandText, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
-	GObject.signal_new("mode-changed", CommandText, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
+	GObject.signal_new("text-changed", CommandText, GObject.SignalFlags.RUN_FIRST,	None, (GObject.TYPE_STRING,))
+	GObject.signal_new("mode-changed", CommandText, GObject.SignalFlags.RUN_FIRST,	None, (GObject.TYPE_STRING,))
 
 	GObject.signal_new("image-changed", IconSelector, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
 	GObject.signal_new("text-changed", IconSelector, GObject.SignalFlags.RUN_FIRST,  None, (GObject.TYPE_STRING,))
