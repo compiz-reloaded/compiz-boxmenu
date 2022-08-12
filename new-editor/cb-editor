@@ -30,30 +30,30 @@ class CBEditor(Gtk.Window):
 
 		toolbar=Gtk.Toolbar()
 
-		new_button = Gtk.MenuToolButton(Gtk.STOCK_NEW)
+		new_button = Gtk.MenuToolButton(stock_id=Gtk.STOCK_NEW)
 		new_button.set_menu(self.make_new_menu())
 		new_button.connect('clicked', self.new_item_dialog)
 		new_button.set_tooltip_text("Create a new menu file or menu item")
 
-		save_button = Gtk.MenuToolButton(Gtk.STOCK_SAVE)
+		save_button = Gtk.MenuToolButton(stock_id=Gtk.STOCK_SAVE)
 		save_button.set_menu(self.make_save_menu())
 		save_button.connect('clicked', self.save_one)
 		save_button.set_tooltip_text("Save the current menu")
 
-		generate_button = Gtk.ToolButton(Gtk.STOCK_CONVERT)
+		generate_button = Gtk.ToolButton(stock_id=Gtk.STOCK_CONVERT)
 		generate_button.connect('clicked', self.generated_item) #need to import other menus
 		generate_button.set_tooltip_text('Generate menu entries from a pipemenu script')
 
-		delete_button = Gtk.MenuToolButton(Gtk.STOCK_DELETE)
+		delete_button = Gtk.MenuToolButton(stock_id=Gtk.STOCK_DELETE)
 		delete_button.set_menu(self.make_delete_menu())
 		delete_button.connect('clicked', self.delete_item)
 		delete_button.set_tooltip_text('Delete the current menu item')
 
-		reload_button = Gtk.ToolButton(Gtk.STOCK_REFRESH)
+		reload_button = Gtk.ToolButton(stock_id=Gtk.STOCK_REFRESH)
 		reload_button.connect('clicked', self.reload_menu)
 		reload_button.set_tooltip_text('Reload the daemon')
 
-		about_button = Gtk.ToolButton(Gtk.STOCK_ABOUT)
+		about_button = Gtk.ToolButton(stock_id=Gtk.STOCK_ABOUT)
 		about_button.connect('clicked', self.show_about_dialog)
 		about_button.set_tooltip_text('Show some information about this program')
 

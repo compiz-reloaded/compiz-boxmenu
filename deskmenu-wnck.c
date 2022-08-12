@@ -468,8 +468,12 @@ deskmenu_vplist_make_go_item (DeskmenuVplist      *vplist,
 {
 	GtkWidget *item;
 	item = gtk_image_menu_item_new_with_mnemonic (name);
+
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-			gtk_image_new_from_stock (stock_id, GTK_ICON_SIZE_MENU));
+		gtk_image_new_from_pixbuf (
+			gtk_image_new_from_icon_name (stock_id, GTK_ICON_SIZE_MENU)
+		)
+	);
 	g_object_set_data (G_OBJECT (item), "direction",
 			GINT_TO_POINTER (direction));
 	g_signal_connect (G_OBJECT (item), "activate",
@@ -712,7 +716,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 		if (vplist->images)
 		{
 			vplist->go_left = deskmenu_vplist_make_go_item (vplist, WNCK_MOTION_LEFT,
-					"Viewport _Left", GTK_STOCK_GO_BACK);
+					"Viewport _Left", "go-previous");
 		}
 		else
 		{
@@ -725,7 +729,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 		if(vplist->images) //this rips off those arrows if you don't want images AT ALL
 		{
 			vplist->go_right = deskmenu_vplist_make_go_item (vplist, WNCK_MOTION_RIGHT,
-					"Viewport _Right", GTK_STOCK_GO_FORWARD);
+					"Viewport _Right", "go-next");
 		}
 		else
 		{
@@ -739,7 +743,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 		if(vplist->images) //this rips off those arrows if you don't want images AT ALL
 		{
 			vplist->go_up = deskmenu_vplist_make_go_item (vplist, WNCK_MOTION_UP,
-					"Viewport _Up", GTK_STOCK_GO_UP);
+					"Viewport _Up", "go-up");
 		}
 		else
 		{
@@ -753,7 +757,7 @@ deskmenu_vplist_new (DeskmenuVplist *vplist)
 		if(vplist->images) //this rips off those arrows if you don't want images AT ALL
 		{
 			vplist->go_down = deskmenu_vplist_make_go_item (vplist, WNCK_MOTION_DOWN,
-					"Viewport _Down", GTK_STOCK_GO_DOWN);
+					"Viewport _Down", "go-down");
 		}
 		else
 		{
