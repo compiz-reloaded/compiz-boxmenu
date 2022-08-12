@@ -116,7 +116,9 @@ class CBEditor(Gtk.Window):
 	def make_new_menu(self):
 		new_menu=Gtk.Menu()
 		for i in elementlist:
-			new_item = Gtk.ImageMenuItem(i, Gtk.STOCK_NEW)
+			# new_item = Gtk.ImageMenuItem(label=i, Gtk.STOCK_NEW)
+			# will need to port ImageMenuItem to non-deprecated code later
+			new_item = Gtk.ImageMenuItem(label=i)
 			new_item.connect('activate', self.make_new_item, i)
 			new_menu.append(new_item)
 		new_menu.show_all()
@@ -125,11 +127,11 @@ class CBEditor(Gtk.Window):
 	def make_delete_menu(self):
 		delete_menu=Gtk.Menu()
 
-		delete_item=Gtk.ImageMenuItem("Current Item")
+		delete_item=Gtk.ImageMenuItem(label="Current Item")
 		delete_item.connect('activate', self.delete_item)
 		delete_menu.append(delete_item)
 
-		delete_item=Gtk.ImageMenuItem("Current Menu")
+		delete_item=Gtk.ImageMenuItem(label="Current Menu")
 		delete_item.connect('activate', self.delete_menu)
 		delete_menu.append(delete_item)
 
@@ -139,11 +141,11 @@ class CBEditor(Gtk.Window):
 	def make_save_menu(self):
 		save_menu=Gtk.Menu()
 
-		save_item=Gtk.ImageMenuItem("Current Menu")
+		save_item=Gtk.ImageMenuItem(label="Current Menu")
 		save_item.connect('activate', self.save_one)
 		save_menu.append(save_item)
 
-		save_item=Gtk.ImageMenuItem("All")
+		save_item=Gtk.ImageMenuItem(label="All")
 		save_item.connect('activate', self.save_all)
 		save_menu.append(save_item)
 
