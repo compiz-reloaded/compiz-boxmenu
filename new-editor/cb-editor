@@ -474,8 +474,9 @@ if __name__ == '__main__':
 		copyfile(starting_file, menu_path+"/menu.xml")
 	try:
 		cache_file=menu_path+"/precache.ini"
-		parser=configparser.SafeConfigParser()
-		parser.readfp(open(cache_file))
+		parser=configparser.ConfigParser()
+		with open(cache_file) as f:
+			parser.read_file(f)
 		cache=parser.items("Files")
 		allnotcache=False
 	except IOError:
