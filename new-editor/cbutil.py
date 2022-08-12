@@ -91,12 +91,12 @@ class CommandText(Gtk.HBox):
 		cmd=subprocess.Popen(shlex.split(full_text),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		text,errors=cmd.communicate()
 		if text != None:
-			buffer.set_text(text)
+			buffer.set_text(text.decode('utf-8'))
 		else:
 			buffer.set_text("")
 
 		if errors != None:
-			buffer_errors.set_text(errors)
+			buffer_errors.set_text(errors.decode('utf-8'))
 		else:
 			buffer_errors.set_text("")
 
@@ -107,10 +107,14 @@ class CommandText(Gtk.HBox):
 		tabs.set_scrollable(True)
 
 		scrolled=Gtk.ScrolledWindow()
-		scrolled.add(Gtk.TextView(buffer))
+		textview = Gtk.TextView()
+		textview.set_buffer(buffer)
+		scrolled.add(textview)
 
-		scrolled_errors=Gtk.ScrolledWindow()
-		scrolled_errors.add(Gtk.TextView(buffer_errors))
+		scrolled_errors = Gtk.ScrolledWindow()
+		error_textview = Gtk.TextView()
+		error_textview.set_buffer(buffer_errors)
+		scrolled_errors.add(error_textview)
 
 		tabs.append_page(scrolled, Gtk.Label(label="Output"))
 		tabs.append_page(scrolled_errors, Gtk.Label(label="Errors"))
