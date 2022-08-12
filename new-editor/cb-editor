@@ -24,7 +24,7 @@ class CBEditor(Gtk.Window):
 		self.set_icon_name('cbmenu')
 		self.set_border_width(5)
 		self.set_size_request(600, 400)
-		self.vbox=Gtk.VBox(False, 2)
+		self.vbox=Gtk.VBox(homogeneous=False, spacing=2)
 		self.connect('destroy', Gtk.main_quit)
 		hbox_main=Gtk.HPaned()
 
