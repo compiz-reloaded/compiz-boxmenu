@@ -2,9 +2,10 @@
 
 === Requirements ===
 
- * A recent version of GLib 2.x and GTK+ 2.x
+ * A recent version of GLib 2.x and GTK+ 3.x
  * libwnck (2.20 is probably best, but not strictly required)
  * dbus (you must have a running session bus) and dbus-glib (for dbus version)
+ * python-gobject (for the menu editor)
 
 It does not strictly require compiz (but it does need a recent version of the
 vpswitch plugin for 'Initiate on Desktop' to work)
