@@ -112,7 +112,7 @@ dmwin_set_weight (GtkWidget   *label,
 	PangoFontDescription *font_desc;
 	font_desc = pango_font_description_new ();
 	pango_font_description_set_weight (font_desc, weight);
-	gtk_widget_modify_font (label, font_desc);
+	gtk_widget_override_font (label, font_desc);
 	pango_font_description_free (font_desc);
 }
 
