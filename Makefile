@@ -61,7 +61,7 @@ compiz-boxmenu-wlist:
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
 #has manpage
-compiz-boxmenu-daemon:
+compiz-boxmenu-daemon: deskmenu-glue.h
 	$(CC) -o $@ deskmenu-menu.c deskmenu-wnck.c deskmenu-utils.c $(LDFLAGS) $(CPPFLAGS) $(CFLAGS) 
 	m4 -DVERSION=$(VERSION) man/$@.1.in > man/$@.1
 
